@@ -12,8 +12,8 @@ This repository follows the **Google C Style Guide** and uses **Doxygen** for do
 - **Naming**
   - Constants: `kConstantName`
   - Macros: `MACRO_NAME`
-  - Types: `TypeName`
-  - Functions: `FunctionName`
+  - Typesdefs: `TypeName_t`
+  - Functions: `functionName`
   - Variables: `variable_name`
 - **Formatting**
   - Line length: max 80–100 characters.
