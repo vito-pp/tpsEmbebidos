@@ -38,6 +38,8 @@
  * @param count Counter number which will be decreased @ 100 MHz
  *        so to get, e.g., 8 Hz (125 ms) count = 12'500'000. 
  *        f_systick = 100 MHz / count
+ *        count is nonnegative and cant be bigger than 
+ *        2^(25)-1 = 33'554'431, which equals f_systick = 2.98 Hz
  * @return Initialization and registration succeed
  */
 bool SysTick_Init (void (*funcallback)(void), uint32_t count);

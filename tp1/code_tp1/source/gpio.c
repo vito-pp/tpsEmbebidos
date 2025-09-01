@@ -25,7 +25,7 @@ static GPIO_Type * const kGpio[] = GPIO_BASE_PTRS;
  * FILE SCOPE VARIABLES
  ******************************************************************************/
 
-pinIrqFun_t callbackTbl[NUM_PORTS][PINS_PER_PORT];
+pinIrqFun_t callback_tbl[NUM_PORTS][PINS_PER_PORT];
 
 /*******************************************************************************
  *******************************************************************************
@@ -92,7 +92,7 @@ bool gpioIRQ (pin_t pin, irq_mode_t irqMode, pinIrqFun_t irqFun)
   // enable the IRQ through NVIC's ISER register
   __NVIC_EnableIRQ(IRQn_PORTS_BASE + PIN2PORT(pin));
   
-  callbackTbl[PIN2PORT(pin)][PIN2NUM(pin)] = irqFun;
+  callback_tbl[PIN2PORT(pin)][PIN2NUM(pin)] = irqFun;
   return true;
 }
 
@@ -104,7 +104,7 @@ __ISR__ PORTA_IRQHandler(void)
         {
             PORTA->ISFR = 1 << i;
 
-            callbackTbl[PA][i]();
+            callback_tbl[PA][i]();
         }
     }
 }
@@ -117,7 +117,7 @@ __ISR__ PORTB_IRQHandler(void)
         {
             PORTB->ISFR = 1 << i;
 
-            callbackTbl[PB][i]();
+            callback_tbl[PB][i]();
         }
     }
 }
@@ -130,7 +130,7 @@ __ISR__ PORTC_IRQHandler(void)
         {
             PORTC->ISFR = 1 << i;
 
-            callbackTbl[PC][i]();
+            callback_tbl[PC][i]();
         }
     }
 }
@@ -143,7 +143,7 @@ __ISR__ PORTD_IRQHandler(void)
         {
             PORTD->ISFR = 1 << i;
 
-            callbackTbl[PD][i]();
+            callback_tbl[PD][i]();
         }
     }
 }
@@ -156,7 +156,7 @@ __ISR__ PORTE_IRQHandler(void)
         {
             PORTE->ISFR = 1 << i;
 
-            callbackTbl[PE][i]();
+            callback_tbl[PE][i]();
         }
     }
 }
