@@ -18,7 +18,8 @@ This repository follows the **Google C Style Guide** and uses **Doxygen** for do
 - **Formatting**
   - Line length: max 80–100 characters.
   - Braces: Allman style.
-    ```foo (x)
+    ```
+       foo (x)
        { 
              ... ;
        }
