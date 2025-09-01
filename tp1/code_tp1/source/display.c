@@ -12,7 +12,7 @@
 
 #include "display.h"
 #include "hardware.h"
-//#include "timer.h"
+#include "timer.h"
 #include "board.h"
 #include "gpio.h"
 
