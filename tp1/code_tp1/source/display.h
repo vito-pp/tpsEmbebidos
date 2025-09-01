@@ -19,6 +19,26 @@
 /************* DEFINICIONES GENERALES *************/
 #define LEN_TEXT 50          // Máximo de caracteres a mostrar en buffer
 enum { D0, D1, D2, D3 };     // Estados para multiplexar los 4 dígitos
+// Máscaras de segmentos para display 7 segmentos ánodo común
+static const uint8_t DIGITS_CA[16] = {
+    0b0000001, // 0
+    0b1001111, // 1
+    0b0010010, // 2
+    0b0000110, // 3
+    0b1001100, // 4
+    0b0100100, // 5
+    0b0100000, // 6
+    0b0001111, // 7
+    0b0000000, // 8
+    0b0000100, // 9
+    0b0001000, // A
+    0b1100000, // b
+    0b0110001, // C
+    0b1000010, // d
+    0b0110000, // E
+    0b0111000  // F
+};
+
 
 /************* ESTRUCTURA PRINCIPAL *************/
 typedef struct {

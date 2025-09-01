@@ -116,27 +116,28 @@ void modeToDisplay(int mode) {
 
 /* Avanza al siguiente bloque de caracteres en el buffer */
 static void next_character(void) {
-    if (display.text_len < 5) {
-        // Si el texto entra completo en 4 dígitos
-        display.value_0 = arr_text[0];
-        display.value_1 = arr_text[1];
-        display.value_2 = arr_text[2];
-        display.value_3 = arr_text[3];
-    } else if (display.mode != MOVE) {
-        // Modo fijo: muestra caracteres desde posición "mode"
-        display.value_0 = arr_text[display.mode];
-        display.value_1 = arr_text[display.mode + 1];
-        display.value_2 = arr_text[display.mode + 2];
-        display.value_3 = arr_text[display.mode + 3];
-    } else if (char_counter <= (display.text_len - 4)) {
-        // Modo scroll: avanza de a 1 carácter
-        display.value_0 = arr_text[char_counter + 0];
-        display.value_1 = arr_text[char_counter + 1];
-        display.value_2 = arr_text[char_counter + 2];
-        display.value_3 = arr_text[char_counter + 3];
-        ++char_counter;
+    if (display.mode == MOVE && display.text_len > 4) {
+        // Avanza el índice de scroll
+        char_counter = (char_counter + 1) % (display.text_len - 3);
+
+        // Actualiza los dígitos según el nuevo índice
+        display.value_0 = DIGITS_CA[arr_text[char_counter % display.text_len]];
+        display.value_1 = DIGITS_CA[arr_text[(char_counter + 1) % display.text_len]];
+        display.value_2 = DIGITS_CA[arr_text[(char_counter + 2) % display.text_len]];
+        display.value_3 = DIGITS_CA[arr_text[(char_counter + 3) % display.text_len]];
+    } else if (display.mode >= 0 && display.mode <= display.text_len - 4) {
+        // Modo fijo: muestra los caracteres desde la posición indicada
+        int pos = display.mode;
+        display.value_0 = DIGITS_CA[arr_text[pos % display.text_len]];
+        display.value_1 = DIGITS_CA[arr_text[(pos + 1) % display.text_len]];
+        display.value_2 = DIGITS_CA[arr_text[(pos + 2) % display.text_len]];
+        display.value_3 = DIGITS_CA[arr_text[(pos + 3) % display.text_len]];
     } else {
-        char_counter = 0; // Reinicia scroll
+        // Si no hay suficiente texto, muestra lo que haya
+        display.value_0 = (display.text_len > 0) ? DIGITS_CA[arr_text[0]] : 0;
+        display.value_1 = (display.text_len > 1) ? DIGITS_CA[arr_text[1]] : 0;
+        display.value_2 = (display.text_len > 2) ? DIGITS_CA[arr_text[2]] : 0;
+        display.value_3 = (display.text_len > 3) ? DIGITS_CA[arr_text[3]] : 0;
     }
 }
 
