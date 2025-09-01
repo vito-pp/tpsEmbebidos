@@ -116,7 +116,8 @@ void modeToDisplay(int mode) {
 
 /* Avanza al siguiente bloque de caracteres en el buffer */
 static void next_character(void) {
-    if (display.mode == MOVE && display.text_len > 4) {
+    if (display.mode == MOVE && display.text_len > 4) 
+    {
         // Avanza el índice de scroll
         char_counter = (char_counter + 1) % (display.text_len - 3);
 
@@ -125,14 +126,18 @@ static void next_character(void) {
         display.value_1 = DIGITS_CA[arr_text[(char_counter + 1) % display.text_len]];
         display.value_2 = DIGITS_CA[arr_text[(char_counter + 2) % display.text_len]];
         display.value_3 = DIGITS_CA[arr_text[(char_counter + 3) % display.text_len]];
-    } else if (display.mode >= 0 && display.mode <= display.text_len - 4) {
+    } 
+    else if (display.mode >= 0 && display.mode <= display.text_len - 4) 
+    {
         // Modo fijo: muestra los caracteres desde la posición indicada
         int pos = display.mode;
         display.value_0 = DIGITS_CA[arr_text[pos % display.text_len]];
         display.value_1 = DIGITS_CA[arr_text[(pos + 1) % display.text_len]];
         display.value_2 = DIGITS_CA[arr_text[(pos + 2) % display.text_len]];
         display.value_3 = DIGITS_CA[arr_text[(pos + 3) % display.text_len]];
-    } else {
+    } 
+    else 
+    {
         // Si no hay suficiente texto, muestra lo que haya
         display.value_0 = (display.text_len > 0) ? DIGITS_CA[arr_text[0]] : 0;
         display.value_1 = (display.text_len > 1) ? DIGITS_CA[arr_text[1]] : 0;

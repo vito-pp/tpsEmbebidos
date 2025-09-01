@@ -35,6 +35,22 @@
 #define SW_INPUT_TYPE   // ???
 
 
+// PIN BUS
+#define PIN_BUS_0		PORTNUM2PIN(PB,2)
+#define PIN_BUS_1		PORTNUM2PIN(PC,3)
+#define PIN_BUS_2		PORTNUM2PIN(PC,2)
+#define PIN_BUS_3		PORTNUM2PIN(PA,2)
+#define PIN_BUS_4		PORTNUM2PIN(PB,23)
+#define PIN_BUS_5		PORTNUM2PIN(PA,1)
+#define PIN_BUS_6		PORTNUM2PIN(PB,9)
+#define PIN_BUS_7		PORTNUM2PIN(PC,17)
+
+
+// PIN STATE
+#define PIN_STATUS_0		PORTNUM2PIN(PB,20)
+#define PIN_STATUS_1		PORTNUM2PIN(PC,5)
+
+
 /*******************************************************************************
  ******************************************************************************/
 
