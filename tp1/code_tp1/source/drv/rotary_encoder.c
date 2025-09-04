@@ -19,30 +19,6 @@ uint8_t buffer_index = 0;
 const uint8_t CW_PATTERN[5]  = {0b00, 0b01, 0b11, 0b10, 0b00}; // Clockwise
 const uint8_t CCW_PATTERN[5] = {0b00, 0b10, 0b11, 0b01, 0b00}; // Counter-clockwise
 
-int last_encoder_state = 0b11;
-int variable_encoder_state = 0b11;
-int stabilizing_encoder_state = 0b11;
-int current_controler_state = 0b11;
-
-int control_state = WAITING_NEW_STATE;
-
-enum control_states {
-    WAITING_NEW_STATE = 0,
-    STABILIZING_STATE = 1,
-} encoder_states;
-
-
-// Variables de estado
-bool stateA;
-bool stateB;
-
-#define FREQUENCY_SAMPLE 2000 // Hz
-#define STABILIZATION_TIME 350 // us
-
-int cycles_stabilizing = 0;
-int number_of_states_transitioned = 0;
-int adder = 0;
-
 // Author: @SantinoAgosti
 // Date: 2024-01-09
 // Return: int: El valor numerico del encoder, entre 0 y 9.
@@ -53,7 +29,7 @@ int adder = 0;
 // Version Basica 1.0
 // Se actualiza el valor del encoder cuando se detecta un cambio en cualquiera de los pines A o B
 
-void encoder_update(bool stateA, bool stateB) {
+int encoder_update(bool stateA, bool stateB) {
 
     // Pack A and B into 2 bits
     uint8_t state = ((stateA & 0x1) << 1) | (stateB & 0x1);
@@ -80,8 +56,6 @@ void encoder_update(bool stateA, bool stateB) {
         encoder_value--;
         if (encoder_value < 0) encoder_value = 9;
     }
-}
 
-void encoder_button(){
-    // Logica anti rebote de boton?
+    return encoder_value;
 }
