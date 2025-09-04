@@ -1,5 +1,5 @@
 // Analisis de Estados General del Encoder.
-#include <stdbool.h>
+#include "rotary_encoder.h"
 
 // Si RSwitch vale 1 en cualquier instante, el encoder fue apretado.
 
@@ -30,23 +30,23 @@ const uint8_t CCW_PATTERN[5] = {0b00, 0b10, 0b11, 0b01, 0b00}; // Counter-clockw
 // Se actualiza el valor del encoder cuando se detecta un cambio en cualquiera de los pines A o B
 
 int encoder_update(bool stateA, bool stateB) {
-
     // Pack A and B into 2 bits
     uint8_t state = ((stateA & 0x1) << 1) | (stateB & 0x1);
+    // If state is same as previous, return immediately
+    if (encoder_state_buffer[(buffer_index + ENCODER_BUFFER_SIZE - 1) % ENCODER_BUFFER_SIZE] == state) {
+        return encoder_value;
+    }
     // Store in buffer
     encoder_state_buffer[buffer_index] = state;
     buffer_index = (buffer_index + 1) % ENCODER_BUFFER_SIZE;
 
     // Check for CW or CCW pattern
     int match_cw = 1, match_ccw = 1;
-
-    // Itera sobre cada valor del encoder_state_buffer, y verifica si coincide con alguno de los patrones
     for (int i = 0; i < ENCODER_BUFFER_SIZE; i++) {
         uint8_t idx = (buffer_index + i) % ENCODER_BUFFER_SIZE;
         if (encoder_state_buffer[idx] != CW_PATTERN[i]) match_cw = 0;
         if (encoder_state_buffer[idx] != CCW_PATTERN[i]) match_ccw = 0;
     }
-
     if (match_cw) {
         // Clockwise detected
         encoder_value++;
@@ -56,6 +56,5 @@ int encoder_update(bool stateA, bool stateB) {
         encoder_value--;
         if (encoder_value < 0) encoder_value = 9;
     }
-
     return encoder_value;
 }
