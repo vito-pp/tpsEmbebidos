@@ -10,10 +10,18 @@
 // Variable Global del valor que representa el encoder [0,9].
 int encoder_value = 0;
 
+// Buffer for last 5 states (each state: 2 bits, A and B)
+#define ENCODER_BUFFER_SIZE 5
+uint8_t encoder_state_buffer[ENCODER_BUFFER_SIZE] = {0};
+uint8_t buffer_index = 0;
+
+// Patterns for 5-step rotation (typical quadrature encoder)
+const uint8_t CW_PATTERN[5]  = {0b00, 0b01, 0b11, 0b10, 0b00}; // Clockwise
+const uint8_t CCW_PATTERN[5] = {0b00, 0b10, 0b11, 0b01, 0b00}; // Counter-clockwise
+
 int last_encoder_state = 0b11;
 int variable_encoder_state = 0b11;
 int stabilizing_encoder_state = 0b11;
-
 int current_controler_state = 0b11;
 
 int control_state = WAITING_NEW_STATE;
@@ -41,38 +49,37 @@ int adder = 0;
 // info: Funcion llamada en interrupcion para actualizar el valor del encoder.
 // La funcion debe ser llamada periodicamente mediante una interrupcion periodica asociada, 
 // por ejemplo mediante Systick. La frecuencia de sampleo debe ser mayor a 1500Hz.
-// Se confirma la transicion de estado luego de aproximadamente 350us.
 
 // Version Basica 1.0
-// Se actualiza el valor del encoder cuando se detecta un cambio en cualquiera de los pines A o B.
-int encoder_numerical_state(bool clockwise){
+// Se actualiza el valor del encoder cuando se detecta un cambio en cualquiera de los pines A o B
 
-    // Estados Anteriores de pines de Encoders
-    int lastA_state = (last_encoder_state>1) & 0b1;
-    int lastB_state = last_encoder_state & 0b1;
+void encoder_update(bool stateA, bool stateB) {
 
-    // Medicion de estados. Cada estado es un bit
-    // stateA = GPIO_read(pinA);
-    // stateB = GPIO_read(pinB);
+    // Pack A and B into 2 bits
+    uint8_t state = ((stateA & 0x1) << 1) | (stateB & 0x1);
+    // Store in buffer
+    encoder_state_buffer[buffer_index] = state;
+    buffer_index = (buffer_index + 1) % ENCODER_BUFFER_SIZE;
 
-    // Actualizacion de estado de encoder
-    current_encoder_state = (stateA < 1) | stateB;
+    // Check for CW or CCW pattern
+    int match_cw = 1, match_ccw = 1;
 
-    // Cambio de estados
-    if (current_encoder_state != last_encoder_state){
-        
-        // Transicion de A de 0 a 1.
-        if ((stateA != lastA_state) && ){
-            encoder_value++;
-            }
-
-        // AntiClockwise se disminuye el contador.
-        if (stateB != lastB_state){
-            encoder_value--;
-        }
+    // Itera sobre cada valor del encoder_state_buffer, y verifica si coincide con alguno de los patrones
+    for (int i = 0; i < ENCODER_BUFFER_SIZE; i++) {
+        uint8_t idx = (buffer_index + i) % ENCODER_BUFFER_SIZE;
+        if (encoder_state_buffer[idx] != CW_PATTERN[i]) match_cw = 0;
+        if (encoder_state_buffer[idx] != CCW_PATTERN[i]) match_ccw = 0;
     }
-    last_encoder_state = current_encoder_state;
-    
+
+    if (match_cw) {
+        // Clockwise detected
+        encoder_value++;
+        if (encoder_value > 9) encoder_value = 0;
+    } else if (match_ccw) {
+        // Counter-clockwise detected
+        encoder_value--;
+        if (encoder_value < 0) encoder_value = 9;
+    }
 }
 
 void encoder_button(){
