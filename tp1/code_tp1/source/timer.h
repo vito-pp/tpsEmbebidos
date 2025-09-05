@@ -22,7 +22,7 @@
 #define TIMER_TICK_PER_MS   1
 #define TIMER_MS2TICKS(ms)  ((ms)/TIMER_TICK_MS)
 
-#define TIMERS_MAX_QTY      16
+#define TIMERS_MAX_QTY      6
 #define TIMER_INVALID_ID    255
 
 /*******************************************************************************
@@ -41,9 +41,9 @@ typedef struct Timer_t
 {
   tim_id_t id;
   tim_tick_t ticks;
-  tim_tick_t counter;
-  uint8_t mode;
-  bool pending;
+  volatile tim_tick_t counter;
+  volatile bool pending;
+  uint8_t mode;   // singleshot or periodic
   tim_callback_t cb;
 } Timer_t;
 
@@ -56,13 +56,14 @@ typedef struct Timer_t
  ******************************************************************************/
 
 /**
- * @brief Initialice timer and corresponding peripheral
+ * @brief Initialize timer and corresponding peripheral
  */
 void timerInit(void);
 
 /**
  * @brief Request a timer ID
- * @return ID of the timer to use
+ * @return ID of the timer to use. If no timers available returns 
+ * TIMER_INVLALID_ID
  */
 tim_id_t timerGetId(void);
 
@@ -77,7 +78,7 @@ tim_id_t timerGetId(void);
 bool timerStart(tim_id_t id, tim_tick_t ticks, uint8_t mode, tim_callback_t callback);
 
 /**
- * @brief Finish to run a timer
+ * @brief Kills a given timer
  * @param id ID of the timer to stop
  */
 void timerStop(tim_id_t id);
@@ -90,7 +91,7 @@ void timerStop(tim_id_t id);
 bool timerExpired(tim_id_t id);
 
 /**
- * @brief Call respective callbacks if timeout ocurrs. Must be call from main loop.
+ * @brief Call respective callbacks if timeout ocurrs. Must be called from main loop
  */
 void timerUpdate(void);
 
