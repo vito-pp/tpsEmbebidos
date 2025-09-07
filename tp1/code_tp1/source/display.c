@@ -13,8 +13,8 @@
 #include "display.h"
 #include "hardware.h"
 #include "timer.h"
-#include "board.h"
-#include "gpio.h"
+#include "drv/board.h"
+#include "drv/gpio.h"
 
 /************* VARIABLES INTERNAS *************/
 static display_t display;            // Estructura principal

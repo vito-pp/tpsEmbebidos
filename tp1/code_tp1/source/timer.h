@@ -20,7 +20,7 @@
  ******************************************************************************/
 
 #define TIMER_TICK_PER_MS   1
-#define TIMER_MS2TICKS(ms)  ((ms)/TIMER_TICK_MS)
+#define TIMER_MS2TICKS(ms)  ((ms)/TIMER_TICK_PER_MS)
 
 #define TIMERS_MAX_QTY      6
 #define TIMER_INVALID_ID    255
