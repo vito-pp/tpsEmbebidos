@@ -1,3 +1,0 @@
-../SDK/startup/hardware.c:12:6:hw_Init	4	static
-../SDK/startup/hardware.c:42:6:hw_EnableInterrupts	4	static
-../SDK/startup/hardware.c:52:6:hw_DisableInterrupts	4	static
