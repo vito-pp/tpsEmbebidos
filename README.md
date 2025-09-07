@@ -12,7 +12,7 @@ This repository follows the **Google C Style Guide** and uses **Doxygen** for do
 - **Naming**
   - Constants: `kConstantName`
   - Macros: `MACRO_NAME`
-  - Typesdefs: `TypeName_t`
+  - Typedefs: `TypeName_t`
   - Functions: `functionName`
   - Variables: `variable_name`
 - **Formatting**
@@ -28,28 +28,24 @@ This repository follows the **Google C Style Guide** and uses **Doxygen** for do
   - Attach `*` to variable, not type (`int *ptr;`).
 - **Comments**
   - Use `//` for single line, `/* ... */` for multi-line.
-
+  - Comments in english.
 ---
 
 ## Doxygen Documentation
 
-Use **Doxygen** to generate documentation from annotated source code.
+Use **Doxygen** format to document code.
 
 ### Example
 
 ```c
 /**
- * @file gpio.h
- * @brief GPIO driver interface.
+ * @file foo.h
+ * @brief Super cool foo API.
  */
 
 /**
- * @brief Initializes the GPIO module.
- *
- * Sets up registers and enables clock gating.
- *
- * @param port The GPIO port to initialize.
- * @return 0 on success, negative on error.
+ * @brief Explain what foo does.  
+ * @param var Explain what var.
+ * @return true on success, false on error.
  */
-int GPIO_Init(int port);
-
+bool foo(int var);
