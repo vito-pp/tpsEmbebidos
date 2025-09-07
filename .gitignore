@@ -1,0 +1,13 @@
+# Build artifacts
+Debug/
+Release/
+*.o
+*.d
+*.axf
+*.elf
+*.map
+*.su
+
+# IDE settings (personal)
+.vscode/
+

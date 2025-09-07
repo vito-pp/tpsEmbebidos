@@ -16,5 +16,7 @@ OBJS :=
 SUBDIRS := \
 SDK/CMSIS \
 SDK/startup \
+source/app \
+source/drv \
 source \
 
