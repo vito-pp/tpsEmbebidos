@@ -91,7 +91,8 @@ void timerStop(tim_id_t id);
 bool timerExpired(tim_id_t id);
 
 /**
- * @brief Call respective callbacks if timeout ocurrs. Must be called from main loop
+ * @brief Call respective callbacks if timeout ocurrs. Must be called from main 
+ * loop
  */
 void timerUpdate(void);
 

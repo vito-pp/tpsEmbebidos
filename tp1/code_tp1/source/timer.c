@@ -59,7 +59,8 @@ tim_id_t timerGetId(void)
     return TIMER_INVALID_ID; // there were no id's left
 }
 
-bool timerStart(tim_id_t id, tim_tick_t ticks, uint8_t mode, tim_callback_t callback)
+bool timerStart(tim_id_t id, tim_tick_t ticks, uint8_t mode, 
+                tim_callback_t callback)
 {
     if (id >= TIMERS_MAX_QTY || ticks == 0 || timer[id].ticks != 0) 
         return false;   // timer[id].ticks = 0 only when not initialized
