@@ -1,5 +1,8 @@
 // Analisis de Estados General del Encoder.
 #include "rotary_encoder.h"
+#include "gpio.h"
+#include "board.h"
+
 
 // Si RSwitch vale 1 en cualquier instante, el encoder fue apretado.
 
@@ -11,6 +14,8 @@
 // Buffer for last 5 states (each state: 2 bits, A and B)
 static uint8_t encoder_state_buffer[ENCODER_BUFFER_SIZE] = {0};
 static uint8_t buffer_index = 0;
+static uint8_t encoder_value = 0;
+static uint8_t last_encoder_value = 0;
 
 // Patterns for 5-step rotation (typical quadrature encoder)
 const uint8_t CW_PATTERN[5]  = {0b00, 0b01, 0b11, 0b10, 0b00}; // Clockwise
@@ -25,14 +30,23 @@ const uint8_t CCW_PATTERN[5] = {0b00, 0b10, 0b11, 0b01, 0b00}; // Counter-clockw
 
 // Version Basica 1.0
 // Se actualiza el valor del encoder cuando se detecta un cambio en cualquiera de los pines A o B
+static bool stateA = 0;
+static bool stateB = 0;
 
-int encoder_update(bool stateA, bool stateB, int encoder_value) {
+void encoder_update(void) {
+
+   stateA = gpioRead(PORTNUM2PIN(PB, 2));
+   stateB = gpioRead(PORTNUM2PIN(PB, 3));
+    //bool stateC = gpioRead(PORTNUM2PIN(PB, 10));
+
     // Pack A and B into 2 bits
     uint8_t state = ((stateA & 0x1) << 1) | (stateB & 0x1);
+
     // If state is same as previous, return immediately
     if (encoder_state_buffer[(buffer_index + ENCODER_BUFFER_SIZE - 1) % ENCODER_BUFFER_SIZE] == state) {
-        return encoder_value;
+        return;
     }
+
     // Store in buffer
     encoder_state_buffer[buffer_index] = state;
     buffer_index = (buffer_index + 1) % ENCODER_BUFFER_SIZE;
@@ -54,7 +68,14 @@ int encoder_update(bool stateA, bool stateB, int encoder_value) {
         encoder_value--;
         if (encoder_value < 0) encoder_value = 9;
     }
-    return encoder_value;
+
+    if (last_encoder_value != encoder_value){
+    	gpioToggle(PIN_LED_BLUE);
+    }
+
+    last_encoder_value = encoder_value;
+
+    return;
 }
 
 // Encoder button state tracking
@@ -68,7 +89,7 @@ static bool button_long_press_flag = false;
 
 // Con esta funcion se puede hacer logica para detectar una cantidad N de veces apretadas. Si ocurre
 // Se "Mantuvo" el boton.
-int encoder_button_update(bool button_state) {
+static bool encoder_button_update(bool button_state) {
     int result = 0;
     if (button_state) {
         button_press_count++;

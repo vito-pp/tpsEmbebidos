@@ -6,7 +6,8 @@
 #define ENCODER_BUFFER_SIZE 5
 #define MIN_PRESS_SAMPLES 5
 
-int encoder_state(bool stateA, bool stateB, int encoder_value);
+void encoder_update(void);
+static bool encoder_button_update(bool button_state);
 
 
 #endif // ROTARY_ENCODER_H

@@ -9,8 +9,10 @@
  ******************************************************************************/
 
 #include "../drv/board.h"
+#include "../drv/rotary_encoder.h"
 #include "../drv/gpio.h"
 #include "../timer.h"
+#include <stdio.h>
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -20,10 +22,6 @@
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
-
-static void delayLoop(uint32_t veces);
-static void foo(void);
-static void goo(void);
 
 /*******************************************************************************
  *******************************************************************************
@@ -37,22 +35,26 @@ void App_Init (void)
     timerInit();
     tim_id_t id = timerGetId();
     if (id != TIMER_INVALID_ID)
-        timerStart(id, 1000, TIM_MODE_PERIODIC, foo);
+        timerStart(id, 1000, TIM_MODE_PERIODIC, encoder_update);
 
+    /*
     id = timerGetId();
     if (id != TIMER_INVALID_ID)
-            timerStart(id, 500, TIM_MODE_PERIODIC, goo);
-        
+            timerStart(id, 500, TIM_MODE_PERIODIC, goo);    
+    */
+    gpioMode(PORTNUM2PIN(PB, 2), INPUT);
+    gpioMode(PORTNUM2PIN(PB, 3), INPUT);
+    gpioMode(PORTNUM2PIN(PB, 10), INPUT);
     gpioMode(PIN_LED_BLUE, OUTPUT);
-    gpioMode(PIN_LED_RED, OUTPUT);
-    gpioMode(PORTNUM2PIN(PB, 2), OUTPUT);
+
+
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run (void)
 {
-    gpioWrite(PORTNUM2PIN(PB, 2), LOW);
     timerUpdate();
+    // Add other main loop tasks here
 }
 
 /*******************************************************************************
@@ -61,22 +63,6 @@ void App_Run (void)
  *******************************************************************************
  ******************************************************************************/
 
-static void delayLoop(uint32_t veces)
-{
-    while (veces--);
-}
-
-static void foo(void)
-{
-    gpioToggle(PIN_LED_BLUE);
-    gpioWrite(PORTNUM2PIN(PB, 2), HIGH);
-}
-
-static void goo(void)
-{
-    gpioToggle(PIN_LED_RED);
-    gpioWrite(PORTNUM2PIN(PB, 2), HIGH);
-}
 
 /*******************************************************************************
  ******************************************************************************/
