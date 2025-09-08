@@ -7,13 +7,10 @@
 // Necesito una variable global, o general, o objecto de encoder que pueda llevar a cuenta el 
 // valor del encoder.
 
-// Variable Global del valor que representa el encoder [0,9].
-int encoder_value = 0;
 
 // Buffer for last 5 states (each state: 2 bits, A and B)
-#define ENCODER_BUFFER_SIZE 5
-uint8_t encoder_state_buffer[ENCODER_BUFFER_SIZE] = {0};
-uint8_t buffer_index = 0;
+static uint8_t encoder_state_buffer[ENCODER_BUFFER_SIZE] = {0};
+static uint8_t buffer_index = 0;
 
 // Patterns for 5-step rotation (typical quadrature encoder)
 const uint8_t CW_PATTERN[5]  = {0b00, 0b01, 0b11, 0b10, 0b00}; // Clockwise
@@ -29,7 +26,7 @@ const uint8_t CCW_PATTERN[5] = {0b00, 0b10, 0b11, 0b01, 0b00}; // Counter-clockw
 // Version Basica 1.0
 // Se actualiza el valor del encoder cuando se detecta un cambio en cualquiera de los pines A o B
 
-int encoder_update(bool stateA, bool stateB) {
+int encoder_update(bool stateA, bool stateB, int encoder_value) {
     // Pack A and B into 2 bits
     uint8_t state = ((stateA & 0x1) << 1) | (stateB & 0x1);
     // If state is same as previous, return immediately
@@ -47,6 +44,7 @@ int encoder_update(bool stateA, bool stateB) {
         if (encoder_state_buffer[idx] != CW_PATTERN[i]) match_cw = 0;
         if (encoder_state_buffer[idx] != CCW_PATTERN[i]) match_ccw = 0;
     }
+    
     if (match_cw) {
         // Clockwise detected
         encoder_value++;
@@ -57,4 +55,29 @@ int encoder_update(bool stateA, bool stateB) {
         if (encoder_value < 0) encoder_value = 9;
     }
     return encoder_value;
+}
+
+// Encoder button state tracking
+static bool prev_button_state = false;
+static int button_press_count = 0;
+static bool button_long_press_flag = false;
+
+// Call this function periodically with the current button state
+// min_press_samples: minimum cycles for a valid press
+// Returns: 1 if button was pressed for at least min_press_samples cycles, 0 otherwise
+
+// Con esta funcion se puede hacer logica para detectar una cantidad N de veces apretadas. Si ocurre
+// Se "Mantuvo" el boton.
+int encoder_button_update(bool button_state) {
+    int result = 0;
+    if (button_state) {
+        button_press_count++;
+    } else {
+        if (prev_button_state && (button_press_count >= MIN_PRESS_SAMPLES)) {
+            result = 1; // Valid press detected
+        }
+        button_press_count = 0;
+    }
+    prev_button_state = button_state;
+    return result;
 }
