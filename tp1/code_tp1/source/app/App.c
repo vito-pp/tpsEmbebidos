@@ -36,7 +36,7 @@ void App_Init (void)
     timerInit();
     tim_id_t id = timerGetId();
     if (id != TIMER_INVALID_ID)
-        timerStart(id, 1, TIM_MODE_PERIODIC, encoder_update);
+        timerStart(id, 1, TIM_MODE_PERIODIC, encoder_callback);
 
     /*
     id = timerGetId();
