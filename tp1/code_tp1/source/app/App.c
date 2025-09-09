@@ -22,6 +22,7 @@
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
+uint8_t last_button_state = ENC_NONE;
 
 /*******************************************************************************
  *******************************************************************************
@@ -35,7 +36,7 @@ void App_Init (void)
     timerInit();
     tim_id_t id = timerGetId();
     if (id != TIMER_INVALID_ID)
-        timerStart(id, 1000, TIM_MODE_PERIODIC, encoder_update);
+        timerStart(id, 1, TIM_MODE_PERIODIC, encoder_update);
 
     /*
     id = timerGetId();
@@ -54,7 +55,11 @@ void App_Init (void)
 void App_Run (void)
 {
     timerUpdate();
-    // Add other main loop tasks here
+    uint8_t button_state = encoder_update();
+    if (button_state != ENC_NONE && button_state != last_button_state){
+        gpioToggle(PIN_LED_BLUE);
+    }
+    last_button_state = button_state;
 }
 
 /*******************************************************************************
