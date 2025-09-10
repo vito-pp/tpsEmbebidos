@@ -14,7 +14,7 @@ unsigned char unprocessed_digits[MAX_DIGITS];
 void readTrack2Data(void); //interrupts with reading function, if reading doesnt mach N bits, return error message
 void releaseData(void); //callback for when enable IRQ occurs.
 int validateData(void); //returns array real size
-int processStripData(void);
+
 
 //static uint8_t data[STRIP_BUFFER_SIZE];
 static uint8_t is_data_ready;
@@ -22,6 +22,10 @@ static uint8_t is_data_ready;
 //#define MAX_LONG 200
 //#define BUFFER_SIZE 4 // array size / ELEMENT SIZE
 //#define ELEMENT_SIZE 64
+int getIsDataReady(void)
+{
+	return is_data_ready;
+}
 
 int magStrip_Init(void)
 {
@@ -39,6 +43,7 @@ int magStrip_Init(void)
     already_initialized = 1;
     return 1;
 }
+
 int processStripData(void)
 {
 
@@ -71,10 +76,6 @@ void readTrack2Data(void)
 	static unsigned char i = 0;
 	static char es_found = 0;
 
-	if(i == 1)
-	{
-		i = i;
-	}
 	if(es_found)
 	{
 		return;
@@ -82,10 +83,6 @@ void readTrack2Data(void)
 
 	buffer |= ((gpioRead(STRIP_DATA) == STRIP_ACTIVE) << bit_shift++);
 
-	if(buffer != 0)
-	{
-		buffer = buffer;
-	}
 
 	if(bit_shift == 5) //A character has been processed
 	{

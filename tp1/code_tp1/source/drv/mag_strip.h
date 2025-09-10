@@ -9,5 +9,7 @@
 #define DRV_MAG_STRIP_H_
 
 int magStrip_Init(void);
+int processStripData(void);
+int getIsDataReady(void);
 
 #endif /* DRV_MAG_STRIP_H_ */

@@ -47,14 +47,15 @@ void sendSerialData(uint16_t data)
 
 		gpioWrite(SR_CLK, !CLK_ACTIVE);
 		gpioWrite(SR_DATA, data & 0b1);
-		contador = CLOCK;
+		//contador = CLOCK;
 		//while(contador--);
 		gpioWrite(SR_CLK, CLK_ACTIVE);
-		contador = CLOCK;
+		//contador = CLOCK;
 		//while(contador--);
 		data = data >> 1;
 	}
 	gpioWrite(SR_CLK, !CLK_ACTIVE);
 	gpioWrite(SR_ENABLE, !EN_ACTIVE);
+	data = 0;
 	return;
 }

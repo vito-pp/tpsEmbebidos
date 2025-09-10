@@ -14,7 +14,7 @@
 #ifndef DISPLAY_H
 #define DISPLAY_H
 
-int display(int num);
+int display(uint8_t num, uint8_t disp, uint8_t led);
 
 #endif
 

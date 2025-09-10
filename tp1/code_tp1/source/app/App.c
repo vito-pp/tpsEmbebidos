@@ -38,15 +38,14 @@ static void foo(void);
 /* Función que se llama 1 vez, al comienzo del programa */
 void App_Init (void)
 {
-	//int i = magStrip_Init();
-	int j = serialData_init();
+	int i = magStrip_Init();
+	//int j = serialData_init();
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run (void)
 {
-    //gpioWrite(PORTNUM2PIN(PB, 2), LOW);
-	int n = display(1);
+	int n = 2;
 }
 
 /*******************************************************************************
