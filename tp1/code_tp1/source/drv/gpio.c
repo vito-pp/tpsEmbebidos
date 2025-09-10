@@ -77,7 +77,8 @@ void gpioToggle (pin_t pin)
 
 bool gpioRead (pin_t pin)
 {
-  return (kGpio[PIN2PORT(pin)]->PDIR) & (1 << PIN2NUM(pin));
+	int x =  1 && (kGpio[PIN2PORT(pin)]->PDIR) & (1 << PIN2NUM(pin));
+	return x;
 }
 
 bool gpioIRQ (pin_t pin, irq_mode_t irqMode, pinIrqFun_t irqFun)

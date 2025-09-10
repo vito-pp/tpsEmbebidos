@@ -8,9 +8,12 @@
  * INCLUDE HEADER FILES
  ******************************************************************************/
 
-#include "board.h"
-#include "gpio.h"
-#include "SysTick.h"
+#include "../drv/board.h"
+#include "../drv/gpio.h"
+#include "../drv/SysTick.h"
+#include "../drv/mag_strip.h"
+#include "../drv/shift_registers.h"
+#include "../display.h"
 
 
 /*******************************************************************************
@@ -35,15 +38,15 @@ static void foo(void);
 /* Función que se llama 1 vez, al comienzo del programa */
 void App_Init (void)
 {
-    gpioMode(PIN_LED_BLUE, OUTPUT);
-    gpioMode(PORTNUM2PIN(PB, 2), OUTPUT);
-    SysTick_Init(&foo, 12500000);
+	//int i = magStrip_Init();
+	int j = serialData_init();
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run (void)
 {
-    gpioWrite(PORTNUM2PIN(PB, 2), LOW);
+    //gpioWrite(PORTNUM2PIN(PB, 2), LOW);
+	int n = display(1);
 }
 
 /*******************************************************************************
