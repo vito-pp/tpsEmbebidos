@@ -8,5 +8,4 @@
 
 int encoder_state(bool stateA, bool stateB, int encoder_value);
 
-
 #endif // ROTARY_ENCODER_H

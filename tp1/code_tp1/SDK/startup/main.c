@@ -17,5 +17,5 @@ int main (void)
     hw_EnableInterrupts();
 
     __FOREVER__
-        App_Run(); /* Program-specific loop  */
+      App_Run(); /* Program-specific loop  */
 }
