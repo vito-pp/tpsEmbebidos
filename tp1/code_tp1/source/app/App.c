@@ -9,16 +9,17 @@
  ******************************************************************************/
 
 #include <stddef.h>
+#include <stdio.h>
+
 #include "../drv/board.h"
+#include "../drv/rotary_encoder.h"
 #include "../drv/gpio.h"
 #include "../timer.h"
-#include "fsm.h"
-#include "../drv/board.h"
-#include "../drv/gpio.h"
 #include "../drv/SysTick.h"
 #include "../drv/mag_strip.h"
 #include "../drv/shift_registers.h"
 #include "../display.h"
+#include "fsm.h"
 
 
 /*******************************************************************************
@@ -32,6 +33,7 @@
 
 static void delayLoop(uint32_t veces);
 static FSM_State_t *current;
+uint8_t last_button_state = ENC_NONE;
 
 /*******************************************************************************
  *******************************************************************************
@@ -51,34 +53,36 @@ void App_Init (void)
 	int i = magStrip_Init();
 	int j = serialData_init();
 	//int j = serialData_init();
+    tim_id_t id = timerGetId();
+    if (id != TIMER_INVALID_ID)
+        timerStart(id, 1, TIM_MODE_PERIODIC, encoder_callback);
+
+    /*
+    id = timerGetId();
+    if (id != TIMER_INVALID_ID)
+            timerStart(id, 500, TIM_MODE_PERIODIC, goo);    
+    */
+    gpioMode(PORTNUM2PIN(PB, 2), INPUT);
+    gpioMode(PORTNUM2PIN(PB, 3), INPUT);
+    gpioMode(PORTNUM2PIN(PB, 10), INPUT);
+    gpioMode(PIN_LED_BLUE, OUTPUT);
+
+
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run (void)
 {
-    // FSM_event_t event = getEvent();
-    // if (event != EV_NONE)
-        // current = fsmStep(current, event);
-
-    display(1, 0, 0);
-    display(2, 1, 0);
-    display(3, 2, 0);
-    display(4, 3, 0);
-
-    int i;
-    //timerUpdate();
+    timerUpdate();
+    uint8_t button_state = encoder_update();
+    if (button_state != ENC_NONE && button_state != last_button_state){
+        gpioToggle(PIN_LED_BLUE);
+    }
+    last_button_state = button_state;
 }
 
 /*******************************************************************************
  *******************************************************************************
                         LOCAL FUNCTION DEFINITIONS
  *******************************************************************************
- ******************************************************************************/
-
-static void delayLoop(uint32_t veces)
-{
-    while (veces--);
-}
-
-/*******************************************************************************
  ******************************************************************************/

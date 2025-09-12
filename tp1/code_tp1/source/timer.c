@@ -10,7 +10,7 @@
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
 
-#define SYSTICK_COUNT 100000 // --> T_systick = 1 ms
+#define SYSTICK_COUNT 50000 // --> T_systick = 2 ms (f=2kHz)
 
 /*******************************************************************************
  * VARIABLE DECLARATIONS WITH FILE SCOPE
