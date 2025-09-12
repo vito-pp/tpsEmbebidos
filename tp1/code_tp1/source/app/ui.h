@@ -7,5 +7,6 @@
 // returns id read from the magnetic strip
 uint32_t readIdMagStrip(void);
 
-// returns event read from the rotary encoder
+/* returns event read from the rotary encoder and maps it to
+and FMS envent */
 FSM_event_t encoderInput(void);

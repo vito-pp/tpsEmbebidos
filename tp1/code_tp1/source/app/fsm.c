@@ -2,7 +2,7 @@
 #include <unistd.h> // sleep()
 #include <stdlib.h> // exit()
 #include "fsm.h"
-//#include "../drv/rotary_encoder.h"
+#include "../drv/rotary_encoder.h"
 
 /*******************************************************************************
  * DECLARIATION OF STATES
@@ -52,58 +52,59 @@ const FSM_State_t *fsmStep(const FSM_State_t *state_table, FSM_event_t ev)
     return state_table->next_state_table;
 }
 
-// FSM_event_t getEvent(void)
-// {
-//     if (magStripNewData())  return EV_MAG_DATA; // jump to insertPIN
+FSM_event_t getEvent(void)
+{
+    // if (magStripNewData())  return EV_MAG_DATA; // jump to insertPIN
 
-//     if (isDataReady()) // when id&pin have been registered
-//     {
-//         return isValid() ? EV_VALID : EV_INVALID;
-//     }
-// 
-//     // implement TIMEOUT   
-// 
-//     switch (encoderInput()) // input from the user
-//     {
-//     case ENC_CLICK:         return EV_ENTER;
-//     case ENC_DOUBLE_CLICK:  return EV_DOUBLE_ENTER;
-//     case ENC_FORWARD:       return EV_FORWARD;
-//     case ENC_BACKWARD:      return EV_BACKWARD;
-//     case ENC_HOLD:          return EV_RESET;
-//     default:                return EV_NONE;
-//     }
-// }
+    // if (isDataReady()) // when id&pin have been registered
+    // {
+    //     return isValid() ? EV_VALID : EV_INVALID;
+    // }
+
+    // implement TIMEOUT   
+
+    switch (encoder_update()) // input from the user
+    {
+    case ENC_BUTTON_PRESS:      return EV_ENTER;
+    //case ENC_DOUBLE_CLICK:      return EV_DOUBLE_ENTER;
+    case ENC_CW:                return EV_FORWARD;
+    case ENC_CCW:               return EV_BACKWARD;
+    case ENC_BUTTON_LONG_PRESS: return EV_RESET;
+    case ENC_NONE:              return EV_NONE;
+    default:                    return EV_NONE;
+    }
+}
 
 /* ========= ACTION CALLBACKS FOR TESTING ========= */
 
-// Idle
-static void printMenu(void)         { puts("\r[Idle] Menu"); }
-static void reset(void)             { puts("\r[Idle] Menu (reseted)"); }
-static void printInsertId(void)     { puts("\r[Idle] -> Insert ID"); }
+// // Idle
+// static void printMenu(void)         { puts("\r[Idle] Menu"); }
+// static void reset(void)             { puts("\r[Idle] Menu (reseted)"); }
+// static void printInsertId(void)     { puts("\r[Idle] -> Insert ID"); }
 
-// Insert ID / PIN editing
-static void increaseDigit(void)     { puts("\r[Insert] ++digit"); }
-static void decreaseDigit(void)     { puts("\r[Insert] --digit"); }
-static void storeDigit(void)        { puts("\r[Insert] stored digit"); }
-static void eraseDigit(void)        { puts("\r[Insert] erased digit"); }
-static void clearInput(void)        { puts("\r[Insert] clear input"); }
-static void printInsertPin(void)    { puts("\r[Insert] -> Insert PIN"); }
+// // Insert ID / PIN editing
+// static void increaseDigit(void)     { puts("\r[Insert] ++digit"); }
+// static void decreaseDigit(void)     { puts("\r[Insert] --digit"); }
+// static void storeDigit(void)        { puts("\r[Insert] stored digit"); }
+// static void eraseDigit(void)        { puts("\r[Insert] erased digit"); }
+// static void clearInput(void)        { puts("\r[Insert] clear input"); }
+// static void printInsertPin(void)    { puts("\r[Insert] -> Insert PIN"); }
 
-// Validation & results
-static void validateID(void)        { puts("\r[Validate] check ID"); }
-static void validatePIN(void)       { puts("\r[Validate] check PIN"); }
-static void lightLEDs(void)         { puts("\r[Unlock] LED ON"); }
-static void printWrong(void)        { puts("\r[Validate] wrong creds"); }
-static void validation(void)        { puts("\r[Validate] dispatch result"); }
+// // Validation & results
+// static void validateID(void)        { puts("\r[Validate] check ID"); }
+// static void validatePIN(void)       { puts("\r[Validate] check PIN"); }
+// static void lightLEDs(void)         { puts("\r[Unlock] LED ON"); }
+// static void printWrong(void)        { puts("\r[Validate] wrong creds"); }
+// static void validation(void)        { puts("\r[Validate] dispatch result"); }
 
-// Unlock timing
-static void unlockLEDOff(void)      { puts("\r[Unlock] LED OFF"); }
-static void finalDelay(void)
-{ 
-    puts("\r[Unlock] wait done"); 
-    sleep(1);
-    exit(0);
-}
+// // Unlock timing
+// static void unlockLEDOff(void)      { puts("\r[Unlock] LED OFF"); }
+// static void finalDelay(void)
+// { 
+//     puts("\r[Unlock] wait done"); 
+//     sleep(1);
+//     exit(0);
+// }
 
 /*******************************************************************************
  * DEFINITION OF STATES AND THEIR TRANSITIONS
