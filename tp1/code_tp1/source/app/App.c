@@ -13,7 +13,13 @@
 #include "../drv/gpio.h"
 #include "../timer.h"
 #include "fsm.h"
-#include "fsm_table.h"
+#include "../drv/board.h"
+#include "../drv/gpio.h"
+#include "../drv/SysTick.h"
+#include "../drv/mag_strip.h"
+#include "../drv/shift_registers.h"
+#include "../display.h"
+
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -46,6 +52,8 @@ void App_Init (void)
     gpioMode(PORTNUM2PIN(PB, 2), OUTPUT);
 
     current = getInitState();
+	int i = magStrip_Init();
+	//int j = serialData_init();
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
