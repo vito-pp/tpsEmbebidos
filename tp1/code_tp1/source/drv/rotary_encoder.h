@@ -9,7 +9,11 @@
 
 #define LONG_PRESS_TIME 2 //Seconds
 #define INTERRUPT_FREQUENCY 2000 //Hz
+
+#define MAX_DOUBLE_PRESS_COOLDOWN 1 // Seconds
+
 #define LONG_PRESS_CYCLES ((INTERRUPT_FREQUENCY * LONG_PRESS_TIME)*ENCODER_BUFFER_SIZE) //Ciclos
+#define MAX_CYCLES_BETWEEN_DOUBLE_PRESS 1000 //Ciclos
 
 uint8_t encoder_update(void);
 void encoder_callback(void);
@@ -19,6 +23,7 @@ enum {
     ENC_CW,
     ENC_CCW,
     ENC_BUTTON_PRESS,
+    ENC_DOUBLE_PRESS,
     ENC_BUTTON_LONG_PRESS
 };
 

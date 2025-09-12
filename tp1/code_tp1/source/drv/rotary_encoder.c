@@ -13,14 +13,15 @@
 static volatile bool encoder_flag = false;
 static bool long_holding = false;
 
+static bool checking_double_press = 0;
+static uint16_t cycles_since_last_pressed = 0;
+
 // Buffer for last 5 states (each state: 2 bits, A and B)
 static uint8_t encoder_state_buffer[ENCODER_BUFFER_SIZE] = {0};
 static uint8_t encoder_state_button_buffer[ENCODER_BUFFER_SIZE] = {0};
 
 static uint8_t buffer_index_rotation = 0;
 static uint8_t buffer_index_button = 0;
-static uint8_t encoder_value = 0;
-static uint8_t last_encoder_value = 0;
 
 // Patterns for 5-step rotation (typical quadrature encoder)
 const uint8_t CCW_PATTERN[5] = {0b11, 0b01, 0b00, 0b10, 0b11};  // Clockwise
@@ -69,6 +70,7 @@ uint8_t encoder_update(void)
     buffer_index_button = (buffer_index_button + 1) % ENCODER_BUFFER_SIZE;
 
 
+
     // Analisis de Boton ()
         for (int i = 0; i < ENCODER_BUFFER_SIZE; i++)
         {
@@ -76,22 +78,48 @@ uint8_t encoder_update(void)
 
             // Itero a lo largo de todo el buffer del boton. Si esta lleno de unos, entonces es un ciclo mas apretado.
             // Si se presiona durante dos segundos, entonces es un long press.
+
+            // Aca hay una leve consideracion. Cuando yo aprieto una vez, si aprieto despues y mantengo
+            // lo suficientemente largo, el primer click no se analiza como un click, sino que se pierde.
+            // Y unicamente se prioriza el Long Press.
+
             if (cycles_pressed > LONG_PRESS_CYCLES && !long_holding)
             {
             	cycles_pressed = 0;
             	long_holding = true;
                 return ENC_BUTTON_LONG_PRESS;
             }
+            
+            
+            if (checking_double_press){
+                cycles_since_last_pressed++;
+                if (cycles_since_last_pressed > MAX_CYCLES_BETWEEN_DOUBLE_PRESS){
+                    checking_double_press = false;
+                    cycles_since_last_pressed = 0;
 
+                    // Recien devuelvo un Button Press cuando verifique que el usuario no quiso hacer en realidad un double press.
+                    // Efectivamente, esto genera un delay en la respuesta del boton, pero se busca hacer lo mas baja posible.
+                    return ENC_BUTTON_PRESS;
+                }
+            }
 
             // Se solto el boton
             if (encoder_state_button_buffer[idx] != 0)
             {
+
                 long_holding = false;
+
                 if (cycles_pressed >= MIN_PRESS_CYCLES)
                 {
                         cycles_pressed = 0;
-                        return ENC_BUTTON_PRESS;
+                        if (checking_double_press){
+                            checking_double_press = false;
+                            return ENC_DOUBLE_PRESS;
+                        } else {
+                            checking_double_press = true;
+                            cycles_since_last_pressed = 0;
+                        }
+
 
                 }
                 cycles_pressed = 0;
