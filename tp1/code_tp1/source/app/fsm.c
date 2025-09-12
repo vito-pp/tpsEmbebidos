@@ -123,6 +123,7 @@ static const FSM_State_t insert_id0[] =
     {EV_BACKWARD, insert_id1, decreaseDigit},
     {EV_RESET, idle, reset},
     {EV_TIMEOUT, idle, reset},
+    {EV_MAG_DATA, insert_pin0, NULL},
     {EV_NONE, insert_id0, NULL}
 };
 

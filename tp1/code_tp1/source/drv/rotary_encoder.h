@@ -2,6 +2,7 @@
 #define ROTARY_ENCODER_H
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #define ENCODER_BUFFER_SIZE 5
 #define MIN_PRESS_SAMPLES 5

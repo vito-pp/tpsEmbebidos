@@ -43,27 +43,30 @@ static FSM_State_t *current;
 void App_Init (void)
 {
     timerInit();
-    tim_id_t id = timerGetId();
-    if (id != TIMER_INVALID_ID)
-        timerStart(id, 1000, TIM_MODE_PERIODIC, NULL);
-        
-    gpioMode(PIN_LED_BLUE, OUTPUT);
-    gpioMode(PIN_LED_RED, OUTPUT);
-    gpioMode(PORTNUM2PIN(PB, 2), OUTPUT);
+    // tim_id_t id = timerGetId();
+    // if (id != TIMER_INVALID_ID)
+    //     timerStart(id, 1000, TIM_MODE_PERIODIC, NULL);
 
-    current = getInitState();
+    // current = getInitState();
 	int i = magStrip_Init();
+	int j = serialData_init();
 	//int j = serialData_init();
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run (void)
 {
-    FSM_event_t event = getEvent();
-    if (event != EV_NONE)
-        current = fsmStep(current, event);
+    // FSM_event_t event = getEvent();
+    // if (event != EV_NONE)
+        // current = fsmStep(current, event);
 
-    timerUpdate();
+    display(1, 0, 0);
+    display(2, 1, 0);
+    display(3, 2, 0);
+    display(4, 3, 0);
+
+    int i;
+    //timerUpdate();
 }
 
 /*******************************************************************************
