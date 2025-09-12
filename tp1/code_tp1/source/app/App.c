@@ -44,30 +44,22 @@ uint8_t last_button_state = ENC_NONE;
 /* Función que se llama 1 vez, al comienzo del programa */
 void App_Init (void)
 {
-    timerInit();
-    // tim_id_t id = timerGetId();
-    // if (id != TIMER_INVALID_ID)
-    //     timerStart(id, 1000, TIM_MODE_PERIODIC, NULL);
-
+    encoderInit();
     // current = getInitState();
 	int i = magStrip_Init();
 	int j = serialData_init();
 	//int j = serialData_init();
+    timerInit();
     tim_id_t id = timerGetId();
     if (id != TIMER_INVALID_ID)
         timerStart(id, 1, TIM_MODE_PERIODIC, encoder_callback);
+
 
     /*
     id = timerGetId();
     if (id != TIMER_INVALID_ID)
             timerStart(id, 500, TIM_MODE_PERIODIC, goo);    
     */
-    gpioMode(PORTNUM2PIN(PB, 2), INPUT);
-    gpioMode(PORTNUM2PIN(PB, 3), INPUT);
-    gpioMode(PORTNUM2PIN(PB, 10), INPUT);
-    gpioMode(PIN_LED_BLUE, OUTPUT);
-
-
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
@@ -75,10 +67,12 @@ void App_Run (void)
 {
     timerUpdate();
     uint8_t button_state = encoder_update();
-    if (button_state != ENC_NONE && button_state != last_button_state){
+    if (button_state != ENC_NONE && button_state != last_button_state)
+    {
         gpioToggle(PIN_LED_BLUE);
     }
     last_button_state = button_state;
+
 }
 
 /*******************************************************************************
@@ -86,3 +80,8 @@ void App_Run (void)
                         LOCAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
+
+void delayLoop(uint32_t veces)
+{
+	while(veces--);
+}

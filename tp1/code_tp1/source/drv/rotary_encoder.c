@@ -3,6 +3,10 @@
 #include "gpio.h"
 #include "board.h"
 
+#define PIN_ENC_A PORTNUM2PIN(PC,5)
+#define PIN_ENC_B PORTNUM2PIN(PC,7)
+#define PIN_ENC_C PORTNUM2PIN(PC,0)
+
 // Si RSwitch vale 1 en cualquier instante, el encoder fue apretado.
 
 // Estado de inicializacion, el valor del encoder se encuentra en cero.
@@ -48,6 +52,14 @@ void encoder_callback(void)
     encoder_flag = true; // Set flag to indicate encoder state needs updating
 }
 
+void encoderInit()
+{
+    gpioMode(PIN_ENC_A, INPUT);
+    gpioMode(PIN_ENC_B, INPUT);
+    gpioMode(PIN_ENC_C, INPUT);
+    gpioMode(PIN_LED_BLUE, OUTPUT);
+}
+
 uint8_t encoder_update(void)
 {
 
@@ -58,9 +70,9 @@ uint8_t encoder_update(void)
 
     encoder_flag = false;
 
-    stateA = gpioRead(PORTNUM2PIN(PB, 2));
-    stateB = gpioRead(PORTNUM2PIN(PB, 3));
-    stateC = gpioRead(PORTNUM2PIN(PB, 10));
+    stateA = gpioRead(PIN_ENC_A);
+    stateB = gpioRead(PIN_ENC_B);
+    stateC = gpioRead(PIN_ENC_C);
 
     // Pack A and B into 2 bits
     uint8_t state = ((stateA & 0x1) << 1) | (stateB & 0x1);

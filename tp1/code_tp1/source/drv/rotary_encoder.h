@@ -13,6 +13,7 @@
 
 uint8_t encoder_update(void);
 void encoder_callback(void);
+void encoderInit(void);
 
 enum {
     ENC_NONE = 0,
