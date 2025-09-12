@@ -52,11 +52,18 @@ const FSM_State_t *fsmStep(const FSM_State_t *state_table, FSM_event_t ev)
     return state_table->next_state_table;
 }
 
-// uint8_t getEvent(void)
+// FSM_event_t getEvent(void)
 // {
-//     if (magStripNewData())  return EV_MAG_DATA;
+//     if (magStripNewData())  return EV_MAG_DATA; // jump to insertPIN
 
-//     switch (encoderInput())
+//     if (isDataReady()) // when id&pin have been registered
+//     {
+//         return isValid() ? EV_VALID : EV_INVALID;
+//     }
+// 
+//     // implement TIMEOUT   
+// 
+//     switch (encoderInput()) // input from the user
 //     {
 //     case ENC_CLICK:         return EV_ENTER;
 //     case ENC_DOUBLE_CLICK:  return EV_DOUBLE_ENTER;
@@ -84,22 +91,22 @@ static void printInsertPin(void)    { puts("\r[Insert] -> Insert PIN"); }
 
 // Validation & results
 static void validateID(void)        { puts("\r[Validate] check ID"); }
-static void validatePIN(void)       { puts("\r[Validate] check PIN"); }   // was missing
-static void lightLEDs(void)         { puts("\r[Unlock] LED ON"); }        // was missing
-static void printWrong(void)        { puts("\r[Validate] wrong creds"); } // was missing
-static void isValid(void)           { puts("\r[Validate] dispatch result"); } // if your table uses it
+static void validatePIN(void)       { puts("\r[Validate] check PIN"); }
+static void lightLEDs(void)         { puts("\r[Unlock] LED ON"); }
+static void printWrong(void)        { puts("\r[Validate] wrong creds"); }
+static void validation(void)        { puts("\r[Validate] dispatch result"); }
 
-// Unlock timing / misc
+// Unlock timing
 static void unlockLEDOff(void)      { puts("\r[Unlock] LED OFF"); }
 static void finalDelay(void)
 { 
     puts("\r[Unlock] wait done"); 
-    sleep(2);
+    sleep(1);
     exit(0);
 }
 
 /*******************************************************************************
- * DEFINITION OF STATES
+ * DEFINITION OF STATES AND THEIR TRANSITIONS
  ******************************************************************************/
 
 static const FSM_State_t idle[] = 
@@ -255,7 +262,7 @@ static const FSM_State_t validate[] =
 {
     {EV_VALID, unlock, lightLEDs},
     {EV_INVALID, idle, printWrong},
-    {EV_NONE, validate, isValid}
+    {EV_NONE, validate, validation}
 };
 
 static const FSM_State_t unlock[] =

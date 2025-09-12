@@ -39,7 +39,7 @@ typedef struct FSM_State_t
 
 const FSM_State_t *fsmStep(const FSM_State_t *state_table, FSM_event_t ev);
 
-uint8_t getEvent(void);
+//FSM_event_t getEvent(void);
 
 const FSM_State_t *getInitState(void);
 
