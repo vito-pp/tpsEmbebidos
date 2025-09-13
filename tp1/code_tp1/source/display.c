@@ -51,12 +51,27 @@ void display(unsigned int number, bool hide)
 
 	for(i = 0; i < CANT_DISPLAYS; i++)
 	{
+		if(i > 0)
+		{
+			if(number == 0)
+			{
+				current_digit = NONE;
+			}
+			else if(hide)
+			{
+				current_digit = HYPHEN;
+			}
+			else
+			{
+				fill = number %10;
+			}
+		}
 		//Splits i-th display 'ON' time into 'BRIGHTNESS_LEVELS' pieces
 		for(j = 0; j < BRIGHTNESS_LEVELS; j ++)
 		{
 			if(j <= pwm) // turns led (pwm/BRIGHTNESS_LEVELS * 100)% of the time
 			{
-				current_digit = fill? fill:number % 10;
+
 				displayDigit(current_digit, i);
 			}
 			else
@@ -66,10 +81,6 @@ void display(unsigned int number, bool hide)
 		}
 		number /=10;
 
-		if(number == 0) //No more digits to show
-		{
-			fill = hide?HYPHEN:NONE;
-		}
 	}
 }
 void dispClear(void)

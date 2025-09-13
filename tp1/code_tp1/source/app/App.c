@@ -58,13 +58,27 @@ void App_Run (void)
 		id = pan2Id(pan);
 	}
 
-	//No fill
-	display(1,0);
-	display(12,0);
 
+	setPWM(1);
 	// With -
-	display(6,1);
-	display(8,1);
+	int n = 100000000;
+	while(n--)
+	{
+		display(1,1);
+	}
+
+	setPWM(2);
+	int n = 100000000;
+	while(n--)
+	{
+		display(16,1);
+	}
+	setPWM(3);
+	int n = 100000000;
+	while(n--)
+	{
+		display(128,1);
+	}
 }
 
 int pan2Id(uint64_t pan)
