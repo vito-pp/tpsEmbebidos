@@ -4,10 +4,7 @@
 // Idle
 void printMenu(void)
 {
-    display(0, 0, 0);
-    display(1, 1, 0);
-    display(0, 2, 0);
-    display(1, 3, 0); 
+    display(8, 0, 0);
 }
 void reset(void)             
 {

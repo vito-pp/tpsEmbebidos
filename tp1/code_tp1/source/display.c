@@ -42,3 +42,52 @@ int display(uint8_t num, uint8_t disp, uint8_t led)
 
 	return 1;
 }
+
+// // funcion que hizo gonza recien
+// static void shiftDisplay(void)
+// {
+//     static int last = -1;
+//     static int offset = 0;
+
+//     uint64_t i = getNumber();
+
+//     // Count decimal digits (0 -> 1 digit)
+//     int aux = i;
+//     int length = 0;
+//     while(aux)
+//     {
+//         aux = aux/10;
+//         length++;
+//     }
+
+//     // Reset scroll if number changed or fits in 4
+//    /* if (i != last || length <= 4) 
+//     {
+//         last = i;
+//         offset = 0;
+//     }*/
+
+//     if (length <= 4) 
+//     {
+//         offset = 0;
+//         display(i);
+//         return;
+//     }
+
+//     // Compute 10^(length - (offset + 4))
+//     int shift = length - (offset + 4);
+//     int div = 1;
+//     while (shift-- > 0) 
+//     {
+//     div *= 10;
+//     }
+//     int window = (i / div) % 10000;  // take the 4-digit slice
+//     display(window);
+
+//     // Advance and wrap offset
+//     offset++;
+//     if (offset > length - 4) 
+//     {
+//         offset = 0;
+//     }
+// }
