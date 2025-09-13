@@ -61,7 +61,7 @@ void encoderInit()
     gpioMode(PIN_LED_BLUE, OUTPUT);
 }
 
-uint8_t encoder_update(void)
+enc_input_t encoder_update(void)
 {
 
     if (!encoder_flag)

@@ -65,12 +65,12 @@ void App_Init (void)
 void App_Run (void)
 {
     timerUpdate();
-    uint8_t button_state = encoder_update();
-    if (button_state != ENC_NONE && button_state != last_button_state)
-    {
-        gpioToggle(PIN_LED_BLUE);
-    }
-    last_button_state = button_state;
+    // uint8_t button_state = encoder_update();
+    // if (button_state != ENC_NONE && button_state != last_button_state)
+    // {
+    //     gpioToggle(PIN_LED_BLUE);
+    // }
+    // last_button_state = button_state;
 
     event = getEvent();
     current = fsmStep(current, event);

@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <unistd.h> // sleep()
 #include <stdlib.h> // exit()
+
 #include "fsm.h"
+#include "ui.h"
 #include "../drv/rotary_encoder.h"
 
 /*******************************************************************************
@@ -66,7 +68,7 @@ FSM_event_t getEvent(void)
     switch (encoder_update()) // input from the user
     {
     case ENC_BUTTON_PRESS:      return EV_ENTER;
-    //case ENC_DOUBLE_CLICK:      return EV_DOUBLE_ENTER;
+    case ENC_DOUBLE_PRESS:      return EV_DOUBLE_ENTER;
     case ENC_CW:                return EV_FORWARD;
     case ENC_CCW:               return EV_BACKWARD;
     case ENC_BUTTON_LONG_PRESS: return EV_RESET;
