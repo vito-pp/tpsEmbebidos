@@ -36,7 +36,7 @@ static void delayLoop(uint32_t veces);
 static FSM_State_t *current;
 static FSM_event_t event;
 
-uint8_t last_button_state = ENC_NONE;
+enc_input_t last_button_state = ENC_NONE;
 
 /*******************************************************************************
  *******************************************************************************
