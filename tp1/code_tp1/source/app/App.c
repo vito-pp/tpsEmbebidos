@@ -41,7 +41,7 @@ void App_Init (void)
 {
 
 	int i = magStrip_Init();
-	//int j = serialData_init();
+	int j = serialData_init();
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
@@ -58,6 +58,13 @@ void App_Run (void)
 		id = pan2Id(pan);
 	}
 
+	//No fill
+	display(1,0);
+	display(12,0);
+
+	// With -
+	display(6,1);
+	display(8,1);
 }
 
 int pan2Id(uint64_t pan)
