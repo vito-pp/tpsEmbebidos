@@ -5,12 +5,12 @@
  *      Author: Usuario
  */
 
+#include <stdint.h>
 
 #include "board.h"
-#include "timer.h"
 #include "gpio.h"
 #include "shift_registers.h"
-#include <stdint.h>
+#include "../misc/timer.h"
 
 #define DATA_SIZE 16 //contains serial data buffer size in bits
 #define LCLK_ACTIVE LOW

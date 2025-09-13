@@ -4,7 +4,7 @@
 
 #include <stddef.h>
 #include "timer.h"
-#include "drv/SysTick.h"
+#include "../drv/SysTick.h"
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE

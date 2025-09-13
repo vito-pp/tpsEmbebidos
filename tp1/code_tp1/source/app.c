@@ -11,15 +11,15 @@
 #include <stddef.h>
 #include <stdio.h>
 
-#include "../drv/board.h"
-#include "../drv/rotary_encoder.h"
-#include "../drv/gpio.h"
-#include "../timer.h"
-#include "../drv/SysTick.h"
-#include "../drv/mag_strip.h"
-#include "../drv/shift_registers.h"
-#include "../display.h"
-#include "fsm.h"
+#include "drv/board.h"
+#include "drv/rotary_encoder.h"
+#include "drv/gpio.h"
+#include "misc/timer.h"
+#include "drv/SysTick.h"
+#include "drv/mag_strip.h"
+#include "drv/shift_registers.h"
+#include "ui/display.h"
+#include "ui/fsm.h"
 
 
 /*******************************************************************************

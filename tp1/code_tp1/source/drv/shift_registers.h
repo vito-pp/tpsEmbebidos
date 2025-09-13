@@ -8,7 +8,7 @@
 #ifndef DRV_SHIFT_REGISTERS_H_
 #define DRV_SHIFT_REGISTERS_H_
 
-#include<stdint.h>
+#include <stdint.h>
 
 /**
  * @brief Initialize Serial Data communication.

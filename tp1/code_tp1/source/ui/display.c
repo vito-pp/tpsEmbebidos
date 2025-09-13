@@ -12,7 +12,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "drv/shift_registers.h"
+#include "../drv/shift_registers.h"
 #include "display.h"
 
 #define CANT_DISPLAYS 4
