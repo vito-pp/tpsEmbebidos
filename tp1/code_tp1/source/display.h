@@ -27,8 +27,9 @@ int display_init(void);
 /**
  * @brief Displays number on all 4 displays
  * @param number: number to be displayed
+ * @param hide: if TRUE, hides all digits except the corresponding to unit
  */
-void display(unsigned int number);
+void display(unsigned int number, bool hide);
 
 /**
  * @brief Clears display
@@ -38,14 +39,6 @@ void dispClear(void);
  * @brief Sets pwm value
  */
 void setPWM(uint8_t desired_pwm);
-/**
- * @brief Writes character to indexed display. (0-9 or '-')
- * @param num: character to be written
- * @param disp: index of display for number to be displayed (0,1,2,3)
- * @return TRUE: correctly displayed character
- * @return FALSE: invalid character
- */
-bool displayDigit(uint8_t num, uint8_t disp);
 
 /**
  * @brief Turns led on

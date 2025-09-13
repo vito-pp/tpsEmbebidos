@@ -14,10 +14,22 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#define BRIGHTNESS_LEVELS 4
+#define CANT_DISPLAYS 4
+#define HYPHEN 10
+#define NONE 11
 
-uint8_t pwm;
-uint16_t serialCom;
+static uint8_t pwm;
+static uint16_t serialCom;
 
+/**
+ * @brief Writes character to indexed display. (0-9, '-' or none)
+ * @param num: character to be written
+ * @param disp: index of display for number to be displayed (0,1,2,3)
+ * @return TRUE: correctly displayed character
+ * @return FALSE: invalid character
+ */
+static bool displayDigit(uint8_t num, uint8_t disp);
 
 int display_init(void)
 {
@@ -28,34 +40,35 @@ int display_init(void)
 
 void setPWM(uint8_t desired_pwm)
 {
-	pwm = desired_pwm %4;
+	pwm = desired_pwm % BRIGHTNESS_LEVELS;
 }
 
-void display(unsigned int number)
+void display(unsigned int number, bool hide)
 {
-	int i, j, aux = number, length = 0;
+	int i, j;
+	int fill = 0; // fill != 0 means desired numbers have been displayed
+	int current_digit;
 
-	//Counts numbers' length (quantity of digits)
-	while(aux)
+	for(i = 0; i < CANT_DISPLAYS; i++)
 	{
-		aux = aux/10;
-		length++;
-	}
-
-	aux = number;
-	for(i = 0; i < length; i++)
-	{
-		//Splits 'ON' time into 4 pieces
-		for(j = 0; j < 4; j ++)
+		//Splits i-th display 'ON' time into 'BRIGHTNESS_LEVELS' pieces
+		for(j = 0; j < BRIGHTNESS_LEVELS; j ++)
 		{
-			if(j < pwm) // turns led (PWM/4 * 100)% of the time
+			if(j <= pwm) // turns led (pwm/BRIGHTNESS_LEVELS * 100)% of the time
 			{
-				displayDigit(aux % 10, i % 4);
+				current_digit = fill? fill:number % 10;
+				displayDigit(current_digit, i);
 			}
 			else
 			{
 				dispClear();
 			}
+		}
+		number /=10;
+
+		if(number == 0) //No more digits to show
+		{
+			fill = hide?HYPHEN:NONE;
 		}
 	}
 }
@@ -63,7 +76,6 @@ void dispClear(void)
 {
 	serialCom &= 0x3000;
 	sendSerialData(serialCom);
-	return;
 }
 
 bool turnOnLED(uint8_t led)
@@ -98,14 +110,13 @@ bool turnOffLED(uint8_t led)
 		sendSerialData(serialCom);
 		return 1;
 }
-bool displayDigit(uint8_t num, uint8_t disp)
+static bool displayDigit(uint8_t num, uint8_t disp)
 {
-	//int data = bcd7Seg(num%10);
-	if(num >9 || disp >3)
+	if(num > NONE || disp >= CANT_DISPLAYS)
 	{
 		return 0;
 	}
-	const uint16_t bcd_to_7seg[10] = {
+	const uint16_t bcd_to_7seg[] = {
 		    0x3F0, // 0
 		    0x060, // 1
 		    0x5B0, // 2
@@ -115,7 +126,9 @@ bool displayDigit(uint8_t num, uint8_t disp)
 		    0x7D0, // 6
 		    0x070, // 7
 		    0x7F0, // 8
-		    0x6F0  // 9
+		    0x6F0, // 9
+			0x400, // -
+			0x000  // none
 	};
 
 	serialCom &= 0x3000; //Resets all bits except led ones.
