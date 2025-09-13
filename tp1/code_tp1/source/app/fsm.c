@@ -3,7 +3,6 @@
 #include <stdlib.h> // exit()
 
 #include "fsm.h"
-#include "ui.h"
 #include "../drv/rotary_encoder.h"
 
 /*******************************************************************************
