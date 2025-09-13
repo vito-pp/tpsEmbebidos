@@ -32,6 +32,8 @@
  ******************************************************************************/
 
 static void delayLoop(uint32_t veces);
+static void foo(void);
+int pan2Id(uint64_t pan);
 
 static FSM_State_t *current;
 static FSM_event_t event;
@@ -51,7 +53,7 @@ void App_Init (void)
 
 	magStrip_Init();
 
-	serialData_init();
+	display_init();
 
     current = getInitState();
 
@@ -74,6 +76,32 @@ void App_Run (void)
 
     event = getEvent();
     current = fsmStep(current, event);
+// 	uint64_t pan, id;
+// 	uint32_t add_data, disc_data, valid;
+// 	if(getIsDataReady())
+// 	{
+// 		valid = processStripData(&pan, &add_data, &disc_data);
+// 		pan = pan;
+// 		add_data = add_data;
+// 		disc_data = disc_data;
+// 		id = pan2Id(pan);
+// 	}
+
+
+// 	setPWM(0);
+// 	// With -
+// 	int n = 100000000000;
+// 	while(n--)
+// 	{
+// 		display(123,0);
+// 	}
+// }
+
+// int pan2Id(uint64_t pan)
+// {
+// 	int id = pan % 100000000;
+// 	return id;
+// }	
 }
 
 /*******************************************************************************

@@ -1,38 +1,52 @@
 #include "board.h"
 #include "mag_strip.h"
 #include <stdint.h>
+#include <stdio.h>
 
 
 #define STRIP_ACTIVE LOW
 #define MAX_DIGITS 40
 #define START_SENTINEL 0b01011
 #define END_SENTINEL 0b11111
+#define FIELD_SEPARATOR 0b01101
 
-unsigned char unprocessed_digits[MAX_DIGITS];
+static unsigned char unprocessed_digits[MAX_DIGITS];
+static uint8_t reset_reader;
+
+/**
+ * @brief Reads data sent my Magnetic Strip Track 2 reader.
+ */
+static void readTrack2Data(void);
+/**
+ * @brief Enables data to be processed.
+ * 		  Resets Track 2's reader.
+ */
+static void releaseData(void);
+/**
+ * @brief Validates magnetic strip's track 2 data. It should end with
+ * 		END_SENTINEL and all characters should have an odd quantity
+ * 		of bits turned on.
+ * @return 0: Data is invalid: it doesn't have FIELD SEPARATOR or END_SENTINEL,
+ * 			  or at least one	character read has an even quantity of bits
+ * 		      turned on, or string length = 0
+ * @return N: N the length of the string read, doesn't takes into account
+ * 	           END_SENTINEL
+ */
+static uint8_t validateData(void);
 
 
-void readTrack2Data(void); //interrupts with reading function, if reading doesnt mach N bits, return error message
-void releaseData(void); //callback for when enable IRQ occurs.
-int validateData(void); //returns array real size
-
-
-//static uint8_t data[STRIP_BUFFER_SIZE];
 static uint8_t is_data_ready;
 
 //#define MAX_LONG 200
 //#define BUFFER_SIZE 4 // array size / ELEMENT SIZE
 //#define ELEMENT_SIZE 64
-int getIsDataReady(void)
-{
-	return is_data_ready;
-}
 
 int magStrip_Init(void)
 {
 	static int already_initialized = 0;
 	if(already_initialized)
 	{
-		return 1;
+		return 0;
 	}
     gpioMode(STRIP_ENABLE, INPUT);
     gpioMode(STRIP_DATA, INPUT);
@@ -41,31 +55,25 @@ int magStrip_Init(void)
     gpioIRQ(STRIP_ENABLE, PORT_PCR_IRQC_INT_RISING, releaseData);
 
     already_initialized = 1;
+    is_data_ready = 0;
+
     return 1;
 }
 
-int processStripData(void)
+int getIsDataReady(void)
 {
-
-	is_data_ready = 0;
-	return 1;
+	return is_data_ready;
 }
+
+
 void releaseData(void)
 {
-	is_data_ready=1;
+	is_data_ready = 1;
+
+	reset_reader = 1;
+	readTrack2Data();
+
 	return;
-}
-int validateData(void)
-{
-	int i;
-	for(i= 0; i < MAX_DIGITS; i++)
-	{
-		if(unprocessed_digits[i] == END_SENTINEL)
-		{
-			return (i+1);
-		}
-	}
-	return 0;
 }
 
 
@@ -73,8 +81,17 @@ void readTrack2Data(void)
 {
 	static unsigned char bit_shift = 0;
 	static unsigned char buffer= 0;
-	static unsigned char i = 0;
 	static char es_found = 0;
+	static unsigned char i = 0;
+
+	if(reset_reader)
+	{
+		i = 0;
+		buffer = 0;
+		es_found = 0;
+		reset_reader = 0;
+		return;
+	}
 
 	if(es_found)
 	{
@@ -84,7 +101,7 @@ void readTrack2Data(void)
 	buffer |= ((gpioRead(STRIP_DATA) == STRIP_ACTIVE) << bit_shift++);
 
 
-	if(bit_shift == 5) //A character has been processed
+	if(bit_shift == 5) //A character has been read.
 	{
 		unprocessed_digits[i++] = buffer;
 
@@ -92,35 +109,109 @@ void readTrack2Data(void)
 		{
 			es_found = 1;
 		}
-		//Checks if first digit is START SENTINEL
+		//Searches for START SENTINEL to start storing data
 		if(unprocessed_digits[0]!= START_SENTINEL)
 		{
+			//Sets variable to continue looking for START_SENTINEL
 			i = 0;
 			buffer = buffer >> 1;
 			bit_shift = 4;
 		}
 		else
 		{
+			//Clear buffer
 			buffer = 0;
 			bit_shift = 0;
 		}
 	}
 
+
 	return;
 }
-//void readTrack2Data(void)
-//{
-//	if(bit_index <= MAX_LONG)
-//	{
-//		data_buffer[bit_index/ELEMENT_SIZE] |= (gpioRead(STRIP_DATA) == STRIP_ACTIVE)
-//				<< (bit_index - ELEMENT_SIZE * (bit_index/ELEMENT_SIZE) );
-//		bit_index++;
-//	}
-//	//Search for Start Sentinel (0xB Big endian)
-//	if(bit_indexx == 4 && (data_buffer[0] != 0b11010))
-//	{
-//		data_buffer[0] = 0;
-//		bit_index = 0;
-//	}
-//	return;
-//}
+
+
+int processStripData(uint64_t *pan, uint32_t *add_data, uint32_t *disc_data)
+{
+	int i, j;
+	uint64_t aux = 0;
+	is_data_ready = 0;
+	uint8_t length = validateData();
+	if(!length)
+	{
+		return 0;
+	}
+
+	if(pan == NULL || add_data == NULL || disc_data == NULL)
+	{
+		return 0;
+	}
+
+
+	for(i = 1; i < length; i++)
+	{
+		if(unprocessed_digits[i] == FIELD_SEPARATOR)
+		{
+			i++;
+			*pan = aux;
+			break;
+		}
+		aux = aux*10 + (unprocessed_digits[i] & 0b1111); //b4 contains its parity
+	}
+
+	aux = 0;
+	for(j = 0; j< 7; j++)
+	{
+		aux = aux*10 + (unprocessed_digits[i] & 0b1111); //b4 contains its parity
+		i++;
+	}
+	*add_data = aux;
+
+	aux = 0;
+	for(; i < length; i++)
+	{
+		aux = aux*10 + (unprocessed_digits[i] & 0b1111); //b4 contains its parity
+	}
+	*disc_data = aux; //Equals 0 if discretionary data not contained
+
+
+	return 1;
+}
+
+
+uint8_t validateData(void)
+{
+	int i, j;
+	unsigned char char_copy, parity_count;
+	bool fs_found = 0; //Equals TRUE if FIELD SEPARATOR IS FOUND.
+
+	for(i= 0; i < MAX_DIGITS; i++)
+	{
+		if(unprocessed_digits[i] == END_SENTINEL && fs_found)
+		{
+			//String has i elements (doesn't count END_SENTINEL char).
+			return i;
+		}
+		else if(unprocessed_digits[i] == FIELD_SEPARATOR)
+		{
+			fs_found = 1;
+		}
+
+		//Validates char parity
+		char_copy = unprocessed_digits[i];
+		parity_count = 0;
+		for(j = 0; j < 5; j++)
+		{
+			parity_count += 1 & char_copy;
+			char_copy = char_copy >> 1;
+		}
+		if(!(parity_count % 2))
+		{
+			//It's an even number --> Invalid format
+			return 0;
+		}
+		//If function reaches here, current number has a valid format
+	}
+	return 0; //Error, END_SENTINEL or FIELD SEPARATOR NOT FOUND
+}
+
+

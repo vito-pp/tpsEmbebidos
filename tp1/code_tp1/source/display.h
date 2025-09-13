@@ -14,6 +14,50 @@
 #ifndef DISPLAY_H
 #define DISPLAY_H
 
-int display(uint8_t num, uint8_t disp, uint8_t led);
+#include <stdbool.h>
+#include <stdint.h>
 
+/**
+ * @brief Initialize Display (through serial data initialization)
+ * @return TRUE if correctly initialized
+ * @return FALSE if previously initialized
+ */
+int display_init(void);
+
+/**
+ * @brief Displays number on all 4 displays
+ * @param number: number to be displayed
+ * @param hide: if TRUE, hides all digits except the corresponding to unit
+ */
+void display(unsigned int number, bool hide);
+
+/**
+ * @brief Clears display
+ */
+void dispClear(void);
+/**
+ * @brief Sets pwm value
+ */
+void setPWM(uint8_t desired_pwm);
+
+/**
+ * @brief Turns led on
+ * @param led: led to be turned on
+ * @return TRUE led correctly turned on
+ * @return FALSE failed to turn led on
+ */
+bool turnOnLED(uint8_t led);
+
+/**
+ * @brief Turns led off
+ * @param led: led to be turned off
+ * @return TRUE led correctly turned off
+ * @return FALSE failed to turn led off
+ */
+bool turnOffLED(uint8_t led);
+
+<<<<<<< HEAD
 #endif
+=======
+#endif
+>>>>>>> banda-magnetica
