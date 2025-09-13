@@ -41,7 +41,8 @@ void App_Init (void)
 {
 
 	int i = magStrip_Init();
-	int j = serialData_init();
+//	int j = serialData_init();
+	display_init();
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
@@ -59,25 +60,12 @@ void App_Run (void)
 	}
 
 
-	setPWM(1);
+	setPWM(0);
 	// With -
-	int n = 100000000;
+	int n = 100000000000;
 	while(n--)
 	{
-		display(1,1);
-	}
-
-	setPWM(2);
-	int n = 100000000;
-	while(n--)
-	{
-		display(16,1);
-	}
-	setPWM(3);
-	int n = 100000000;
-	while(n--)
-	{
-		display(128,1);
+		display(123,0);
 	}
 }
 

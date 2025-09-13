@@ -14,7 +14,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define BRIGHTNESS_LEVELS 4
+#define BRIGHTNESS_LEVELS 10
 #define CANT_DISPLAYS 4
 #define HYPHEN 10
 #define NONE 11
@@ -46,8 +46,7 @@ void setPWM(uint8_t desired_pwm)
 void display(unsigned int number, bool hide)
 {
 	int i, j;
-	int fill = 0; // fill != 0 means desired numbers have been displayed
-	int current_digit;
+	int current_digit = number % 10;
 
 	for(i = 0; i < CANT_DISPLAYS; i++)
 	{
@@ -63,7 +62,7 @@ void display(unsigned int number, bool hide)
 			}
 			else
 			{
-				fill = number %10;
+				current_digit = number %10;
 			}
 		}
 		//Splits i-th display 'ON' time into 'BRIGHTNESS_LEVELS' pieces
@@ -72,7 +71,7 @@ void display(unsigned int number, bool hide)
 			if(j <= pwm) // turns led (pwm/BRIGHTNESS_LEVELS * 100)% of the time
 			{
 
-				displayDigit(current_digit, i);
+				displayDigit(current_digit, 3 - i);
 			}
 			else
 			{
