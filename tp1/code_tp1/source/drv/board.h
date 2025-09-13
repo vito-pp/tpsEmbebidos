@@ -40,9 +40,9 @@
 #define STRIP_DATA PORTNUM2PIN(PB, 10)
 
 //Shift Register pins
-#define SR_DATA PORTNUM2PIN(PB,2)
-#define SR_CLK PORTNUM2PIN(PB,3)
-#define SR_ENABLE PORTNUM2PIN(PB,10)
+#define SR_DATA PORTNUM2PIN(PC,10)
+#define SR_CLK PORTNUM2PIN(PC,11)
+#define SR_LCLK PORTNUM2PIN(PB,11)
 
 /*******************************************************************************
  ******************************************************************************/

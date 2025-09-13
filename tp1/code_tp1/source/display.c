@@ -7,11 +7,16 @@
  * Soporta desplazamiento de texto (modo MOVE) o selección fija de posición.
  *
  *  Created on: 1 sep. 2025
- *  Author: Gonzalo Louzao
+ *  Author: mGonzalo Louzao
  */
 #include "drv/shift_registers.h"
 
-int display(uint8_t num, uint8_t disp, uint8_t led)
+int display_init(void)
+{
+	return serialData_init();
+}
+
+int display(uint8_t num, uint8_t disp)
 {
 	//int data = bcd7Seg(num%10);
 	if(num >9 || disp >3)

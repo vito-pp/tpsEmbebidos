@@ -27,6 +27,7 @@
 
 static void delayLoop(uint32_t veces);
 static void foo(void);
+int pan2Id(uint64_t pan);
 
 
 /*******************************************************************************
@@ -38,6 +39,7 @@ static void foo(void);
 /* Función que se llama 1 vez, al comienzo del programa */
 void App_Init (void)
 {
+
 	int i = magStrip_Init();
 	//int j = serialData_init();
 }
@@ -45,7 +47,23 @@ void App_Init (void)
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run (void)
 {
-	int n = 2;
+	uint64_t pan, id;
+	uint32_t add_data, disc_data, valid;
+	if(getIsDataReady())
+	{
+		valid = processStripData(&pan, &add_data, &disc_data);
+		pan = pan;
+		add_data = add_data;
+		disc_data = disc_data;
+		id = pan2Id(pan);
+	}
+
+}
+
+int pan2Id(uint64_t pan)
+{
+	int id = pan % 100000000;
+	return id;
 }
 
 /*******************************************************************************

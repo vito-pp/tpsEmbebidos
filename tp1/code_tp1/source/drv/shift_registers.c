@@ -13,19 +13,18 @@
 #include <stdint.h>
 
 #define DATA_SIZE 16 //contains serial data buffer size in bits
-#define EN_ACTIVE LOW
+#define LCLK_ACTIVE LOW
 #define CLK_ACTIVE HIGH
-#define CLOCK 10
 
-int serialData_init(void) //may receive clk
+int serialData_init(void)
 {
 	static int already_initialized = 0;
 	if(already_initialized)
 	{
-		return 1;
+		return 0;
 	}
 	gpioMode(SR_DATA, OUTPUT);
-	gpioMode(SR_ENABLE, OUTPUT);
+	gpioMode(SR_LCLK, OUTPUT);
 	gpioMode(SR_CLK, OUTPUT);
 
 	already_initialized = 1;
@@ -39,23 +38,21 @@ void sendSerialData(uint16_t data)
 
 
 	gpioWrite(SR_CLK, !CLK_ACTIVE);
-	gpioWrite(SR_ENABLE, EN_ACTIVE);
-	//for(i = 0; i < DATA_SIZE; i++)
+	gpioWrite(SR_LCLK, LCLK_ACTIVE);
+
 	i = DATA_SIZE;
 	while(i--)
 	{
 
 		gpioWrite(SR_CLK, !CLK_ACTIVE);
 		gpioWrite(SR_DATA, data & 0b1);
-		//contador = CLOCK;
-		//while(contador--);
+
 		gpioWrite(SR_CLK, CLK_ACTIVE);
-		//contador = CLOCK;
-		//while(contador--);
+
 		data = data >> 1;
 	}
 	gpioWrite(SR_CLK, !CLK_ACTIVE);
-	gpioWrite(SR_ENABLE, !EN_ACTIVE);
+	gpioWrite(SR_LCLK, !LCLK_ACTIVE);
 	data = 0;
 	return;
 }
