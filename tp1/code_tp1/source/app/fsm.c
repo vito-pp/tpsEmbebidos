@@ -3,6 +3,8 @@
 #include <stdlib.h> // exit()
 
 #include "fsm.h"
+#include "display.h"
+#include "validate.h"
 #include "../drv/rotary_encoder.h"
 
 /*******************************************************************************
@@ -113,162 +115,164 @@ FSM_event_t getEvent(void)
 
 static const FSM_State_t idle[] = 
 {
-    {EV_ENTER, insert_id0, printInsertId},
-    {EV_NONE, idle, NULL}
+    {EV_ENTER, insert_id0, NULL},
+    {EV_FORWARD, idle, increaseBrightness},
+    // {EV_BACKWARD, idle, decreaseBrightness},
+    {EV_NONE, idle, printMenu}
 };
 
 static const FSM_State_t insert_id0[] =
 {
-    {EV_ENTER, insert_id1, storeDigit},
+    {EV_ENTER, insert_id1, storeDigitID},
     //{EV_DOUBLE_ENTER, idle, reset},
-    {EV_FORWARD, insert_id1, increaseDigit},
-    {EV_BACKWARD, insert_id1, decreaseDigit},
-    {EV_RESET, idle, reset},
-    {EV_TIMEOUT, idle, reset},
+    {EV_FORWARD, insert_id1, increaseDigitID},
+    {EV_BACKWARD, insert_id1, decreaseDigitID},
+    {EV_RESET, idle, NULL},
+    {EV_TIMEOUT, idle, NULL},
     {EV_MAG_DATA, insert_pin0, NULL},
-    {EV_NONE, insert_id0, NULL}
+    {EV_NONE, insert_id0, printID}
 };
 
 static const FSM_State_t insert_id1[] =
 {
-    {EV_ENTER, insert_id2, storeDigit},
-    {EV_DOUBLE_ENTER, insert_id0, eraseDigit},
-    {EV_FORWARD, insert_id1, increaseDigit},
-    {EV_BACKWARD, insert_id1, decreaseDigit},
-    {EV_RESET, idle, reset},
-    {EV_TIMEOUT, idle, reset},
-    {EV_NONE, insert_id1, NULL}
+    {EV_ENTER, insert_id2, storeDigitID},
+    {EV_DOUBLE_ENTER, insert_id0, eraseDigitID},
+    {EV_FORWARD, insert_id1, increaseDigitID},
+    {EV_BACKWARD, insert_id1, decreaseDigitID},
+    {EV_RESET, idle, NULL},
+    {EV_TIMEOUT, idle, NULL},
+    {EV_NONE, insert_id1, printID}
 };
 
 static const FSM_State_t insert_id2[] =
 {
-    {EV_ENTER, insert_id3, storeDigit},
-    {EV_DOUBLE_ENTER, insert_id1, eraseDigit},
-    {EV_FORWARD, insert_id2, increaseDigit},
-    {EV_BACKWARD, insert_id2, decreaseDigit},
-    {EV_RESET, idle, reset},
-    {EV_TIMEOUT, idle, reset},
-    {EV_NONE, insert_id2, NULL}
+    {EV_ENTER, insert_id3, storeDigitID},
+    {EV_DOUBLE_ENTER, insert_id1, eraseDigitID},
+    {EV_FORWARD, insert_id2, increaseDigitID},
+    {EV_BACKWARD, insert_id2, decreaseDigitID},
+    {EV_RESET, idle, NULL},
+    {EV_TIMEOUT, idle, NULL},
+    {EV_NONE, insert_id2, printID}
 };
 
 static const FSM_State_t insert_id3[] =
 {
-    {EV_ENTER, insert_id4, storeDigit},
-    {EV_DOUBLE_ENTER, insert_id2, eraseDigit},
-    {EV_FORWARD, insert_id3, increaseDigit},
-    {EV_BACKWARD, insert_id3, decreaseDigit},
-    {EV_RESET, idle, reset},
-    {EV_TIMEOUT, idle, reset},
-    {EV_NONE, insert_id3, NULL}
+    {EV_ENTER, insert_id4, storeDigitID},
+    {EV_DOUBLE_ENTER, insert_id2, eraseDigitID},
+    {EV_FORWARD, insert_id3, increaseDigitID},
+    {EV_BACKWARD, insert_id3, decreaseDigitID},
+    {EV_RESET, idle, NULL},
+    {EV_TIMEOUT, idle, NULL},
+    {EV_NONE, insert_id3, printID}
 };
 
 static const FSM_State_t insert_id4[] =
 {
-    {EV_ENTER, insert_id5, storeDigit},
-    {EV_DOUBLE_ENTER, insert_id3, eraseDigit},
-    {EV_FORWARD, insert_id4, increaseDigit},
-    {EV_BACKWARD, insert_id4, decreaseDigit},
-    {EV_RESET, idle, reset},
-    {EV_TIMEOUT, idle, reset},
-    {EV_NONE, insert_id4, NULL}
+    {EV_ENTER, insert_id5, storeDigitID},
+    {EV_DOUBLE_ENTER, insert_id3, eraseDigitID},
+    {EV_FORWARD, insert_id4, increaseDigitID},
+    {EV_BACKWARD, insert_id4, decreaseDigitID},
+    {EV_RESET, idle, NULL},
+    {EV_TIMEOUT, idle, NULL},
+    {EV_NONE, insert_id4, printID}
 };
 
 static const FSM_State_t insert_id5[] =
 {
-    {EV_ENTER, insert_id6, storeDigit},
-    {EV_DOUBLE_ENTER, insert_id4, eraseDigit},
-    {EV_FORWARD, insert_id5, increaseDigit},
-    {EV_BACKWARD, insert_id5, decreaseDigit},
-    {EV_RESET, idle, reset},
-    {EV_TIMEOUT, idle, reset},
-    {EV_NONE, insert_id5, NULL}
+    {EV_ENTER, insert_id6, storeDigitID},
+    {EV_DOUBLE_ENTER, insert_id4, eraseDigitID},
+    {EV_FORWARD, insert_id5, increaseDigitID},
+    {EV_BACKWARD, insert_id5, decreaseDigitID},
+    {EV_RESET, idle, NULL},
+    {EV_TIMEOUT, idle, NULL},
+    {EV_NONE, insert_id5, printID}
 };
 
 static const FSM_State_t insert_id6[] =
 {
-    {EV_ENTER, insert_id7, storeDigit},
-    {EV_DOUBLE_ENTER, insert_id5, eraseDigit},
-    {EV_FORWARD, insert_id6, increaseDigit},
-    {EV_BACKWARD, insert_id6, decreaseDigit},
-    {EV_RESET, idle, reset},
-    {EV_TIMEOUT, idle, reset},
-    {EV_NONE, insert_id6, NULL}
+    {EV_ENTER, insert_id7, storeDigitID},
+    {EV_DOUBLE_ENTER, insert_id5, eraseDigitID},
+    {EV_FORWARD, insert_id6, increaseDigitID},
+    {EV_BACKWARD, insert_id6, decreaseDigitID},
+    {EV_RESET, idle, NULL},
+    {EV_TIMEOUT, idle, NULL},
+    {EV_NONE, insert_id6, printID}
 };
 
 static const FSM_State_t insert_id7[] =
 {
-    {EV_ENTER, insert_pin0, validateID},
-    {EV_DOUBLE_ENTER, insert_id6, eraseDigit},
-    {EV_FORWARD, insert_id7, increaseDigit},
-    {EV_BACKWARD, insert_id7, decreaseDigit},
-    {EV_RESET, idle, reset},
-    {EV_TIMEOUT, idle, reset},
-    {EV_NONE, insert_id7, NULL}
+    {EV_ENTER, insert_pin0, storeDigitID},
+    {EV_DOUBLE_ENTER, insert_id6, eraseDigitID},
+    {EV_FORWARD, insert_id7, increaseDigitID},
+    {EV_BACKWARD, insert_id7, decreaseDigitID},
+    {EV_RESET, idle, NULL},
+    {EV_TIMEOUT, idle, NULL},
+    {EV_NONE, insert_id7, printID}
 };
 
 static const FSM_State_t insert_pin0[] =
 {
-    {EV_ENTER, insert_pin1, storeDigit},
-    //{EV_DOUBLE_ENTER, insert_, eraseDigit},
-    {EV_FORWARD, insert_pin0, increaseDigit},
-    {EV_BACKWARD, insert_pin0, decreaseDigit},
-    {EV_RESET, idle, reset},
-    {EV_TIMEOUT, idle, reset},
-    {EV_NONE, insert_pin0, NULL}
+    {EV_ENTER, insert_pin1, storeDigitPIN},
+    //{EV_DOUBLE_ENTER, insert_, eraseDigitPIN},
+    {EV_FORWARD, insert_pin0, increaseDigitPIN},
+    {EV_BACKWARD, insert_pin0, decreaseDigitPIN},
+    {EV_RESET, idle, NULL},
+    {EV_TIMEOUT, idle, NULL},
+    {EV_NONE, insert_pin0, printPIN}
 };
 
 static const FSM_State_t insert_pin1[] =
 {
-    {EV_ENTER, insert_pin2, storeDigit},
-    {EV_DOUBLE_ENTER, insert_pin0, eraseDigit},
-    {EV_FORWARD, insert_pin1, increaseDigit},
-    {EV_BACKWARD, insert_pin1, decreaseDigit},
-    {EV_RESET, idle, reset},
-    {EV_TIMEOUT, idle, reset},
-    {EV_NONE, insert_pin1, NULL}
+    {EV_ENTER, insert_pin2, storeDigitPIN},
+    {EV_DOUBLE_ENTER, insert_pin0, eraseDigitPIN},
+    {EV_FORWARD, insert_pin1, increaseDigitPIN},
+    {EV_BACKWARD, insert_pin1, decreaseDigitPIN},
+    {EV_RESET, idle, NULL},
+    {EV_TIMEOUT, idle, NULL},
+    {EV_NONE, insert_pin1, printPIN}
 };
 
 static const FSM_State_t insert_pin2[] =
 {
-    {EV_ENTER, insert_pin3, storeDigit},
-    {EV_DOUBLE_ENTER, insert_pin1, eraseDigit},
-    {EV_FORWARD, insert_pin2, increaseDigit},
-    {EV_BACKWARD, insert_pin2, decreaseDigit},
-    {EV_RESET, idle, reset},
-    {EV_TIMEOUT, idle, reset},
-    {EV_NONE, insert_pin2, NULL}
+    {EV_ENTER, insert_pin3, storeDigitPIN},
+    {EV_DOUBLE_ENTER, insert_pin1, eraseDigitPIN},
+    {EV_FORWARD, insert_pin2, increaseDigitPIN},
+    {EV_BACKWARD, insert_pin2, decreaseDigitPIN},
+    {EV_RESET, idle, NULL},
+    {EV_TIMEOUT, idle, NULL},
+    {EV_NONE, insert_pin2, printPIN}
 };
 
 static const FSM_State_t insert_pin3[] =
 {
-    {EV_ENTER, insert_pin4, storeDigit},
-    {EV_DOUBLE_ENTER, insert_pin2, eraseDigit},
-    {EV_FORWARD, insert_pin3, increaseDigit},
-    {EV_BACKWARD, insert_pin3, decreaseDigit},
-    {EV_RESET, idle, reset},
-    {EV_TIMEOUT, idle, reset},
-    {EV_NONE, insert_pin3, NULL}
+    {EV_ENTER, insert_pin4, storeDigitPIN},
+    {EV_DOUBLE_ENTER, insert_pin2, eraseDigitPIN},
+    {EV_FORWARD, insert_pin3, increaseDigitPIN},
+    {EV_BACKWARD, insert_pin3, decreaseDigitPIN},
+    {EV_RESET, idle, NULL},
+    {EV_TIMEOUT, idle, NULL},
+    {EV_NONE, insert_pin3, printPIN}
 };
 
 static const FSM_State_t insert_pin4[] =
 {
-    {EV_ENTER, validate, validatePIN},
-    {EV_DOUBLE_ENTER, insert_pin3, eraseDigit},
-    {EV_FORWARD, insert_pin4, increaseDigit},
-    {EV_BACKWARD, insert_pin4, decreaseDigit},
-    {EV_RESET, idle, reset},
-    {EV_TIMEOUT, idle, reset},
-    {EV_NONE, insert_pin4, NULL}
+    {EV_ENTER, validate, storeDigitPIN},
+    {EV_DOUBLE_ENTER, insert_pin3, eraseDigitPIN},
+    {EV_FORWARD, insert_pin4, increaseDigitPIN},
+    {EV_BACKWARD, insert_pin4, decreaseDigitPIN},
+    {EV_RESET, idle, NULL},
+    {EV_TIMEOUT, idle, NULL},
+    {EV_NONE, insert_pin4, printPIN}
 };
 
 static const FSM_State_t validate[] =
 {
-    {EV_VALID, unlock, lightLEDs},
-    {EV_INVALID, idle, printWrong},
-    {EV_NONE, validate, validation}
+    {EV_VALID, unlock, NULL},
+    {EV_INVALID, idle, NULL},
+    {EV_NONE, validate, NULL}
 };
 
 static const FSM_State_t unlock[] =
 {
-    {EV_NONE, idle, finalDelay}
+    {EV_NONE, idle, NULL}
 };

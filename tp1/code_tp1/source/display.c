@@ -9,12 +9,12 @@
  *  Created on: 1 sep. 2025
  *  Author: mGonzalo Louzao
  */
-#include "drv/shift_registers.h"
-#include "display.h"
 #include <stdint.h>
 #include <stdbool.h>
 
-#define BRIGHTNESS_LEVELS 10
+#include "drv/shift_registers.h"
+#include "display.h"
+
 #define CANT_DISPLAYS 4
 #define HYPHEN 10
 #define NONE 11

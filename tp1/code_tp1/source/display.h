@@ -17,6 +17,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#define BRIGHTNESS_LEVELS 10
+
 /**
  * @brief Initialize Display (through serial data initialization)
  * @return TRUE if correctly initialized
@@ -36,7 +38,7 @@ void display(unsigned int number, bool hide);
  */
 void dispClear(void);
 /**
- * @brief Sets pwm value
+ * @brief Sets pwm value, mod BRIGHTNESS_LEVELS
  */
 void setPWM(uint8_t desired_pwm);
 
@@ -56,8 +58,4 @@ bool turnOnLED(uint8_t led);
  */
 bool turnOffLED(uint8_t led);
 
-<<<<<<< HEAD
-#endif
-=======
-#endif
->>>>>>> banda-magnetica
+#endif // DISPLAY_H_
