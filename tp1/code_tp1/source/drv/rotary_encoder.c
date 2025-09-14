@@ -146,6 +146,12 @@ enc_input_t encoder_update(void)
             }
         }
 
+        // IGNORO todo tipo de rotacion del boton si estoy verificando 
+        // Doble Click.
+        if (checking_double_press){
+            return ENC_NONE;
+        }
+
     // Si no hay cambios de estado de tipo de rotacion, o de presionar el boton, no hacer nada.
     if (encoder_state_buffer[(buffer_index_rotation + ENCODER_BUFFER_SIZE - 1) % ENCODER_BUFFER_SIZE] == state)
     {
