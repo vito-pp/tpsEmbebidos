@@ -34,7 +34,7 @@ int serialData_init(void)
 void sendSerialData(uint16_t data)
 {
 	int i;
-	int contador;
+//	int contador;
 
 
 	gpioWrite(SR_CLK, !CLK_ACTIVE);
