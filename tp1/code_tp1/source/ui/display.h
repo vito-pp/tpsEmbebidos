@@ -17,7 +17,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define BRIGHTNESS_LEVELS 10
+#define BRIGHTNESS_LEVELS 4
 
 /**
  * @brief Initialize Display (through serial data initialization)
@@ -30,8 +30,10 @@ int display_init(void);
  * @brief Displays number on all 4 displays
  * @param number: number to be displayed
  * @param hide: if TRUE, hides all digits except the corresponding to unit
+ * @param lenght: length of the number displayed. if exceeds the degits of 
+ * number, will fill with zeros
  */
-void display(unsigned int number, bool hide);
+void display(unsigned int number, bool hide, uint8_t lenght);
 
 /**
  * @brief Clears display

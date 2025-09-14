@@ -4,7 +4,7 @@
 
 #include "fsm.h"
 #include "display.h"
-#include "validate.h"
+#include "auth_ui.h"
 #include "../drv/rotary_encoder.h"
 #include "../drv/mag_strip.h"
 
@@ -125,11 +125,11 @@ static FSM_State_t idle[] =
 static FSM_State_t insert_id0[] =
 {
     {EV_ENTER, insert_id1, storeDigitID},
-    //{EV_DOUBLE_ENTER, idle, reset},
+    {EV_DOUBLE_ENTER, idle, NULL},
     {EV_FORWARD, insert_id1, increaseDigitID},
     {EV_BACKWARD, insert_id1, decreaseDigitID},
-    {EV_RESET, idle, NULL},
-    {EV_TIMEOUT, idle, NULL},
+    {EV_RESET, idle, reset},
+    {EV_TIMEOUT, idle, reset},
     {EV_MAG_DATA, insert_pin0, NULL},
     {EV_NONE, insert_id0, printID}
 };
@@ -140,8 +140,8 @@ static FSM_State_t insert_id1[] =
     {EV_DOUBLE_ENTER, insert_id0, eraseDigitID},
     {EV_FORWARD, insert_id1, increaseDigitID},
     {EV_BACKWARD, insert_id1, decreaseDigitID},
-    {EV_RESET, idle, NULL},
-    {EV_TIMEOUT, idle, NULL},
+    {EV_RESET, idle, reset},
+    {EV_TIMEOUT, idle, reset},
     {EV_NONE, insert_id1, printID}
 };
 
@@ -151,8 +151,8 @@ static FSM_State_t insert_id2[] =
     {EV_DOUBLE_ENTER, insert_id1, eraseDigitID},
     {EV_FORWARD, insert_id2, increaseDigitID},
     {EV_BACKWARD, insert_id2, decreaseDigitID},
-    {EV_RESET, idle, NULL},
-    {EV_TIMEOUT, idle, NULL},
+    {EV_RESET, idle, reset},
+    {EV_TIMEOUT, idle, reset},
     {EV_NONE, insert_id2, printID}
 };
 
@@ -162,8 +162,8 @@ static FSM_State_t insert_id3[] =
     {EV_DOUBLE_ENTER, insert_id2, eraseDigitID},
     {EV_FORWARD, insert_id3, increaseDigitID},
     {EV_BACKWARD, insert_id3, decreaseDigitID},
-    {EV_RESET, idle, NULL},
-    {EV_TIMEOUT, idle, NULL},
+    {EV_RESET, idle, reset},
+    {EV_TIMEOUT, idle, reset},
     {EV_NONE, insert_id3, printID}
 };
 
@@ -173,8 +173,8 @@ static FSM_State_t insert_id4[] =
     {EV_DOUBLE_ENTER, insert_id3, eraseDigitID},
     {EV_FORWARD, insert_id4, increaseDigitID},
     {EV_BACKWARD, insert_id4, decreaseDigitID},
-    {EV_RESET, idle, NULL},
-    {EV_TIMEOUT, idle, NULL},
+    {EV_RESET, idle, reset},
+    {EV_TIMEOUT, idle, reset},
     {EV_NONE, insert_id4, printID}
 };
 
@@ -184,8 +184,8 @@ static FSM_State_t insert_id5[] =
     {EV_DOUBLE_ENTER, insert_id4, eraseDigitID},
     {EV_FORWARD, insert_id5, increaseDigitID},
     {EV_BACKWARD, insert_id5, decreaseDigitID},
-    {EV_RESET, idle, NULL},
-    {EV_TIMEOUT, idle, NULL},
+    {EV_RESET, idle, reset},
+    {EV_TIMEOUT, idle, reset},
     {EV_NONE, insert_id5, printID}
 };
 
@@ -195,8 +195,8 @@ static FSM_State_t insert_id6[] =
     {EV_DOUBLE_ENTER, insert_id5, eraseDigitID},
     {EV_FORWARD, insert_id6, increaseDigitID},
     {EV_BACKWARD, insert_id6, decreaseDigitID},
-    {EV_RESET, idle, NULL},
-    {EV_TIMEOUT, idle, NULL},
+    {EV_RESET, idle, reset},
+    {EV_TIMEOUT, idle, reset},
     {EV_NONE, insert_id6, printID}
 };
 
@@ -206,8 +206,8 @@ static FSM_State_t insert_id7[] =
     {EV_DOUBLE_ENTER, insert_id6, eraseDigitID},
     {EV_FORWARD, insert_id7, increaseDigitID},
     {EV_BACKWARD, insert_id7, decreaseDigitID},
-    {EV_RESET, idle, NULL},
-    {EV_TIMEOUT, idle, NULL},
+    {EV_RESET, idle, reset},
+    {EV_TIMEOUT, idle, reset},
     {EV_NONE, insert_id7, printID}
 };
 
@@ -217,8 +217,8 @@ static FSM_State_t insert_pin0[] =
     //{EV_DOUBLE_ENTER, insert_, eraseDigitPIN},
     {EV_FORWARD, insert_pin0, increaseDigitPIN},
     {EV_BACKWARD, insert_pin0, decreaseDigitPIN},
-    {EV_RESET, idle, NULL},
-    {EV_TIMEOUT, idle, NULL},
+    {EV_RESET, idle, reset},
+    {EV_TIMEOUT, idle, reset},
     {EV_NONE, insert_pin0, printPIN}
 };
 
@@ -228,8 +228,8 @@ static FSM_State_t insert_pin1[] =
     {EV_DOUBLE_ENTER, insert_pin0, eraseDigitPIN},
     {EV_FORWARD, insert_pin1, increaseDigitPIN},
     {EV_BACKWARD, insert_pin1, decreaseDigitPIN},
-    {EV_RESET, idle, NULL},
-    {EV_TIMEOUT, idle, NULL},
+    {EV_RESET, idle, reset},
+    {EV_TIMEOUT, idle, reset},
     {EV_NONE, insert_pin1, printPIN}
 };
 
@@ -239,8 +239,8 @@ static FSM_State_t insert_pin2[] =
     {EV_DOUBLE_ENTER, insert_pin1, eraseDigitPIN},
     {EV_FORWARD, insert_pin2, increaseDigitPIN},
     {EV_BACKWARD, insert_pin2, decreaseDigitPIN},
-    {EV_RESET, idle, NULL},
-    {EV_TIMEOUT, idle, NULL},
+    {EV_RESET, idle, reset},
+    {EV_TIMEOUT, idle, reset},
     {EV_NONE, insert_pin2, printPIN}
 };
 
@@ -250,8 +250,8 @@ static FSM_State_t insert_pin3[] =
     {EV_DOUBLE_ENTER, insert_pin2, eraseDigitPIN},
     {EV_FORWARD, insert_pin3, increaseDigitPIN},
     {EV_BACKWARD, insert_pin3, decreaseDigitPIN},
-    {EV_RESET, idle, NULL},
-    {EV_TIMEOUT, idle, NULL},
+    {EV_RESET, idle, reset},
+    {EV_TIMEOUT, idle, reset},
     {EV_NONE, insert_pin3, printPIN}
 };
 
@@ -261,8 +261,8 @@ static FSM_State_t insert_pin4[] =
     {EV_DOUBLE_ENTER, insert_pin3, eraseDigitPIN},
     {EV_FORWARD, insert_pin4, increaseDigitPIN},
     {EV_BACKWARD, insert_pin4, decreaseDigitPIN},
-    {EV_RESET, idle, NULL},
-    {EV_TIMEOUT, idle, NULL},
+    {EV_RESET, idle, reset},
+    {EV_TIMEOUT, idle, reset},
     {EV_NONE, insert_pin4, printPIN}
 };
 

@@ -43,7 +43,7 @@ void setPWM(uint8_t desired_pwm)
 	pwm = desired_pwm % BRIGHTNESS_LEVELS;
 }
 
-void display(unsigned int number, bool hide)
+void display(unsigned int number, bool hide, uint8_t lenght)
 {
 	int i, j;
 	int current_digit = number % 10;
@@ -52,7 +52,7 @@ void display(unsigned int number, bool hide)
 	{
 		if(i > 0)
 		{
-			if(number == 0)
+			if(number == 0 && i > lenght)
 			{
 				current_digit = NONE;
 			}
@@ -62,7 +62,7 @@ void display(unsigned int number, bool hide)
 			}
 			else
 			{
-				current_digit = number %10;
+				current_digit = number % 10;
 			}
 		}
 		//Splits i-th display 'ON' time into 'BRIGHTNESS_LEVELS' pieces

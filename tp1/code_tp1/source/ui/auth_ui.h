@@ -28,3 +28,5 @@ void printMenu(void);
 void increaseBrightness(void);
 
 void decreaseBrightness(void);
+
+void reset(void);
