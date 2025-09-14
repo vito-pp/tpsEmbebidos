@@ -5,10 +5,12 @@
 
 // zero-initialized variables
 static uint64_t current_id; 
-static int8_t id_digit_index;
+static uint8_t id_digit_index;
 
 static uint64_t current_pin;
-static int8_t pin_digit_index;
+static uint8_t pin_digit_index;
+
+static uint8_t brightness_index;
 
 // true modulo function
 static unsigned int mod(int a, int n) 
@@ -18,12 +20,12 @@ static unsigned int mod(int a, int n)
 
 void increaseDigitID(void)
 {
-    id_digit_index = mod(++id_digit_index, 10);
+    id_digit_index = mod(id_digit_index + 1, 10);
 }
 
 void decreaseDigitID(void)
 {
-    id_digit_index = mod(--id_digit_index, 10);
+    id_digit_index = mod(id_digit_index - 1, 10);
 }
 
 void storeDigitID(void)
@@ -40,12 +42,12 @@ void eraseDigitID(void)
 
 void increaseDigitPIN(void)
 {
-    pin_digit_index = mod(++pin_digit_index, 10);
+    pin_digit_index = mod(pin_digit_index + 1, 10);
 }
 
 void decreaseDigitPIN(void)
 {
-    pin_digit_index = mod(--pin_digit_index, 10);
+    pin_digit_index = mod(pin_digit_index - 1, 10);
 }
 
 void storeDigitPIN(void)
@@ -77,8 +79,12 @@ void printMenu(void)
 
 void increaseBrightness(void)
 {
-    static int i = 0;
-    setPWM(++i);
+    brightness_index = mod(brightness_index + 1, BRIGHTNESS_LEVELS);
+    setPWM(brightness_index);
 }
 
-// void decreaseBrightness(void);
+void decreaseBrightness(void)
+{
+    brightness_index = mod(brightness_index - 1, BRIGHTNESS_LEVELS);
+    setPWM(brightness_index);
+}

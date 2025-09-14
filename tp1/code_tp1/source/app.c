@@ -31,8 +31,6 @@
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
 
-static void delayLoop(uint32_t veces);
-static void foo(void);
 int pan2Id(uint64_t pan);
 
 static FSM_State_t *current;
@@ -67,12 +65,6 @@ void App_Init (void)
 void App_Run (void)
 {
     timerUpdate();
-    // uint8_t button_state = encoder_update();
-    // if (button_state != ENC_NONE && button_state != last_button_state)
-    // {
-    //     gpioToggle(PIN_LED_BLUE);
-    // }
-    // last_button_state = button_state;
 
     event = getEvent();
     current = fsmStep(current, event);
@@ -87,16 +79,6 @@ void App_Run (void)
 // 		id = pan2Id(pan);
 // 	}
 
-
-// 	setPWM(0);
-// 	// With -
-// 	int n = 100000000000;
-// 	while(n--)
-// 	{
-// 		display(123,0);
-// 	}
-// }
-
 // int pan2Id(uint64_t pan)
 // {
 // 	int id = pan % 100000000;
@@ -109,8 +91,3 @@ void App_Run (void)
                         LOCAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
-
-void delayLoop(uint32_t veces)
-{
-	while(veces--);
-}

@@ -1,47 +1,48 @@
 #include <stdio.h>
-#include <unistd.h> // sleep()
-#include <stdlib.h> // exit()
+//#include <unistd.h> // sleep()
+//#include <stdlib.h> // exit()
 
 #include "fsm.h"
 #include "display.h"
 #include "validate.h"
 #include "../drv/rotary_encoder.h"
+#include "../drv/mag_strip.h"
 
 /*******************************************************************************
  * DECLARIATION OF STATES
  ******************************************************************************/
 
-static const FSM_State_t idle[];
+static FSM_State_t idle[];
 
-static const FSM_State_t insert_id0[];
-static const FSM_State_t insert_id1[];
-static const FSM_State_t insert_id2[];
-static const FSM_State_t insert_id3[];
-static const FSM_State_t insert_id4[];
-static const FSM_State_t insert_id5[];
-static const FSM_State_t insert_id6[];
-static const FSM_State_t insert_id7[];
+static FSM_State_t insert_id0[];
+static FSM_State_t insert_id1[];
+static FSM_State_t insert_id2[];
+static FSM_State_t insert_id3[];
+static FSM_State_t insert_id4[];
+static FSM_State_t insert_id5[];
+static FSM_State_t insert_id6[];
+static FSM_State_t insert_id7[];
 
-static const FSM_State_t insert_pin0[];
-static const FSM_State_t insert_pin1[];
-static const FSM_State_t insert_pin2[];
-static const FSM_State_t insert_pin3[];
-static const FSM_State_t insert_pin4[];
+static FSM_State_t insert_pin0[];
+static FSM_State_t insert_pin1[];
+static FSM_State_t insert_pin2[];
+static FSM_State_t insert_pin3[];
+static FSM_State_t insert_pin4[];
 
-static const FSM_State_t validate[];
+static FSM_State_t validate[];
 
-static const FSM_State_t unlock[];
+static FSM_State_t unlock[];
 
 /*******************************************************************************
  * GLOBAL SCOPE FUNCTION DEFINITIONS
  ******************************************************************************/
 
-const FSM_State_t *getInitState(void)
+FSM_State_t *getInitState(void)
 {
     return idle;
 }
 
-const FSM_State_t *fsmStep(const FSM_State_t *state_table, FSM_event_t ev)
+FSM_State_t *fsmStep(FSM_State_t *state_table, FSM_event_t ev)
 {
     // scan this state's possible transitions for a match or fallback
     while (state_table->event != ev && state_table->event != EV_NONE)
@@ -57,7 +58,7 @@ const FSM_State_t *fsmStep(const FSM_State_t *state_table, FSM_event_t ev)
 
 FSM_event_t getEvent(void)
 {
-    // if (magStripNewData())  return EV_MAG_DATA; // jump to insertPIN
+    if (getIsDataReady())  return EV_MAG_DATA; // jump to insertPIN
 
     // if (isDataReady()) // when id&pin have been registered
     // {
@@ -113,15 +114,15 @@ FSM_event_t getEvent(void)
  * DEFINITION OF STATES AND THEIR TRANSITIONS
  ******************************************************************************/
 
-static const FSM_State_t idle[] = 
+static FSM_State_t idle[] = 
 {
     {EV_ENTER, insert_id0, NULL},
     {EV_FORWARD, idle, increaseBrightness},
-    // {EV_BACKWARD, idle, decreaseBrightness},
+    {EV_BACKWARD, idle, decreaseBrightness},
     {EV_NONE, idle, printMenu}
 };
 
-static const FSM_State_t insert_id0[] =
+static FSM_State_t insert_id0[] =
 {
     {EV_ENTER, insert_id1, storeDigitID},
     //{EV_DOUBLE_ENTER, idle, reset},
@@ -133,7 +134,7 @@ static const FSM_State_t insert_id0[] =
     {EV_NONE, insert_id0, printID}
 };
 
-static const FSM_State_t insert_id1[] =
+static FSM_State_t insert_id1[] =
 {
     {EV_ENTER, insert_id2, storeDigitID},
     {EV_DOUBLE_ENTER, insert_id0, eraseDigitID},
@@ -144,7 +145,7 @@ static const FSM_State_t insert_id1[] =
     {EV_NONE, insert_id1, printID}
 };
 
-static const FSM_State_t insert_id2[] =
+static FSM_State_t insert_id2[] =
 {
     {EV_ENTER, insert_id3, storeDigitID},
     {EV_DOUBLE_ENTER, insert_id1, eraseDigitID},
@@ -155,7 +156,7 @@ static const FSM_State_t insert_id2[] =
     {EV_NONE, insert_id2, printID}
 };
 
-static const FSM_State_t insert_id3[] =
+static FSM_State_t insert_id3[] =
 {
     {EV_ENTER, insert_id4, storeDigitID},
     {EV_DOUBLE_ENTER, insert_id2, eraseDigitID},
@@ -166,7 +167,7 @@ static const FSM_State_t insert_id3[] =
     {EV_NONE, insert_id3, printID}
 };
 
-static const FSM_State_t insert_id4[] =
+static FSM_State_t insert_id4[] =
 {
     {EV_ENTER, insert_id5, storeDigitID},
     {EV_DOUBLE_ENTER, insert_id3, eraseDigitID},
@@ -177,7 +178,7 @@ static const FSM_State_t insert_id4[] =
     {EV_NONE, insert_id4, printID}
 };
 
-static const FSM_State_t insert_id5[] =
+static FSM_State_t insert_id5[] =
 {
     {EV_ENTER, insert_id6, storeDigitID},
     {EV_DOUBLE_ENTER, insert_id4, eraseDigitID},
@@ -188,7 +189,7 @@ static const FSM_State_t insert_id5[] =
     {EV_NONE, insert_id5, printID}
 };
 
-static const FSM_State_t insert_id6[] =
+static FSM_State_t insert_id6[] =
 {
     {EV_ENTER, insert_id7, storeDigitID},
     {EV_DOUBLE_ENTER, insert_id5, eraseDigitID},
@@ -199,7 +200,7 @@ static const FSM_State_t insert_id6[] =
     {EV_NONE, insert_id6, printID}
 };
 
-static const FSM_State_t insert_id7[] =
+static FSM_State_t insert_id7[] =
 {
     {EV_ENTER, insert_pin0, storeDigitID},
     {EV_DOUBLE_ENTER, insert_id6, eraseDigitID},
@@ -210,7 +211,7 @@ static const FSM_State_t insert_id7[] =
     {EV_NONE, insert_id7, printID}
 };
 
-static const FSM_State_t insert_pin0[] =
+static FSM_State_t insert_pin0[] =
 {
     {EV_ENTER, insert_pin1, storeDigitPIN},
     //{EV_DOUBLE_ENTER, insert_, eraseDigitPIN},
@@ -221,7 +222,7 @@ static const FSM_State_t insert_pin0[] =
     {EV_NONE, insert_pin0, printPIN}
 };
 
-static const FSM_State_t insert_pin1[] =
+static FSM_State_t insert_pin1[] =
 {
     {EV_ENTER, insert_pin2, storeDigitPIN},
     {EV_DOUBLE_ENTER, insert_pin0, eraseDigitPIN},
@@ -232,7 +233,7 @@ static const FSM_State_t insert_pin1[] =
     {EV_NONE, insert_pin1, printPIN}
 };
 
-static const FSM_State_t insert_pin2[] =
+static FSM_State_t insert_pin2[] =
 {
     {EV_ENTER, insert_pin3, storeDigitPIN},
     {EV_DOUBLE_ENTER, insert_pin1, eraseDigitPIN},
@@ -243,7 +244,7 @@ static const FSM_State_t insert_pin2[] =
     {EV_NONE, insert_pin2, printPIN}
 };
 
-static const FSM_State_t insert_pin3[] =
+static FSM_State_t insert_pin3[] =
 {
     {EV_ENTER, insert_pin4, storeDigitPIN},
     {EV_DOUBLE_ENTER, insert_pin2, eraseDigitPIN},
@@ -254,7 +255,7 @@ static const FSM_State_t insert_pin3[] =
     {EV_NONE, insert_pin3, printPIN}
 };
 
-static const FSM_State_t insert_pin4[] =
+static FSM_State_t insert_pin4[] =
 {
     {EV_ENTER, validate, storeDigitPIN},
     {EV_DOUBLE_ENTER, insert_pin3, eraseDigitPIN},
@@ -265,14 +266,14 @@ static const FSM_State_t insert_pin4[] =
     {EV_NONE, insert_pin4, printPIN}
 };
 
-static const FSM_State_t validate[] =
+static FSM_State_t validate[] =
 {
     {EV_VALID, unlock, NULL},
     {EV_INVALID, idle, NULL},
     {EV_NONE, validate, NULL}
 };
 
-static const FSM_State_t unlock[] =
+static FSM_State_t unlock[] =
 {
     {EV_NONE, idle, NULL}
 };

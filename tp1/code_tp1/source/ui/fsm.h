@@ -29,7 +29,7 @@ typedef enum
 typedef struct FSM_State_t
 {
     FSM_event_t event;
-    const struct FSM_State_t *next_state_table;
+    struct FSM_State_t *next_state_table;
     void (*action)(void);
 } FSM_State_t;
 
@@ -37,10 +37,10 @@ typedef struct FSM_State_t
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
 
-const FSM_State_t *fsmStep(const FSM_State_t *state_table, FSM_event_t ev);
+FSM_State_t *fsmStep(FSM_State_t *state_table, FSM_event_t ev);
 
 FSM_event_t getEvent(void);
 
-const FSM_State_t *getInitState(void);
+FSM_State_t *getInitState(void);
 
 #endif // FSM_H_
