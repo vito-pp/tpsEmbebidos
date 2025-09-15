@@ -80,7 +80,7 @@ void App_Run (void)
     if (event != EV_NONE)
     {
         timerStop(inactivity_id);
-        timerStart(inactivity_id, 5000, TIM_MODE_PERIODIC, triggerTimeout);
+        timerStart(inactivity_id, 20000, TIM_MODE_PERIODIC, triggerTimeout);
     }
 
     timerUpdate();

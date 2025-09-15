@@ -126,6 +126,7 @@ static FSM_State_t idle[] =
     {EV_ENTER, insert_id0, NULL},
     {EV_FORWARD, idle, increaseBrightness},
     {EV_BACKWARD, idle, decreaseBrightness},
+    {EV_TIMEOUT, idle, reset},
     {EV_NONE, idle, printMenu}
 };
 

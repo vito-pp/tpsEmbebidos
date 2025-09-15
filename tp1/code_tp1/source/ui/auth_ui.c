@@ -46,7 +46,14 @@ void decreaseDigitID(void)
 
 void storeDigitID(void)
 {
-    current_id = (current_id + id_digit_index) * 10;
+    if (id_len != 7) 
+    {
+        current_id = (current_id + id_digit_index) * 10;
+    }
+    else
+    {
+        current_id = current_id + id_digit_index;
+    }
     id_digit_index = 0;
     id_len++;
 }
@@ -89,7 +96,11 @@ void storeDigitPIN(void)
     {
         current_pin /= 10;
     }
-    else
+    else if (pin_len == 4 && pin_digit_index != HYPHEN)
+    {
+        current_pin = current_pin + pin_digit_index;
+    }
+    else if (pin_len != 4)
     {
         current_pin = (current_pin + pin_digit_index) * 10;
     }
@@ -121,7 +132,6 @@ void printPIN(void)
     {
         display(current_pin + pin_digit_index, true, pin_len);
     }
-    turnOnLED(1);
     turnOnLED(2);
 }
 

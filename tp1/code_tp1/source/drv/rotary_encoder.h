@@ -13,8 +13,8 @@
 #define MAX_DOUBLE_PRESS_COOLDOWN 1 // Seconds
 
 #define LONG_PRESS_CYCLES ((INTERRUPT_FREQUENCY * LONG_PRESS_TIME) \
-                            *ENCODER_BUFFER_SIZE) //Ciclos
-#define MAX_CYCLES_BETWEEN_DOUBLE_PRESS 1000 //Ciclos
+                            *ENCODER_BUFFER_SIZE / 2) //Ciclos
+#define MAX_CYCLES_BETWEEN_DOUBLE_PRESS 750 //Ciclos
 
 typedef enum {
     ENC_NONE = 0,
