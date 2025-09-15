@@ -125,9 +125,9 @@ static FSM_State_t idle[] =
 static FSM_State_t insert_id0[] =
 {
     {EV_ENTER, insert_id1, storeDigitID},
-    {EV_DOUBLE_ENTER, idle, NULL},
-    {EV_FORWARD, insert_id1, increaseDigitID},
-    {EV_BACKWARD, insert_id1, decreaseDigitID},
+    {EV_DOUBLE_ENTER, idle, reset},
+    {EV_FORWARD, insert_id0, increaseDigitID},
+    {EV_BACKWARD, insert_id0, decreaseDigitID},
     {EV_RESET, idle, reset},
     {EV_TIMEOUT, idle, reset},
     {EV_MAG_DATA, insert_pin0, NULL},

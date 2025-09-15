@@ -104,4 +104,6 @@ void reset(void)
     current_pin = 0;
     id_digit_index = 0;
     pin_digit_index = 0;
+    id_len = 0;
+    pin_len = 0;
 }
