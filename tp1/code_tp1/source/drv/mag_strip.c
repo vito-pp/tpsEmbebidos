@@ -60,7 +60,7 @@ int magStrip_Init(void)
     return 1;
 }
 
-int getIsDataReady(void)
+int isMagDataReady(void)
 {
 	return is_data_ready;
 }
@@ -210,6 +210,11 @@ uint8_t validateData(void)
 		//If function reaches here, current number has a valid format
 	}
 	return 0; //Error, END_SENTINEL or FIELD SEPARATOR NOT FOUND
+}
+
+void resetMagData(void)
+{
+	is_data_ready = false;
 }
 
 

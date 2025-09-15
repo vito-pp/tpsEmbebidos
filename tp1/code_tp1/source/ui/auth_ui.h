@@ -1,4 +1,8 @@
+#ifndef _AUTH_UI_H_
+#define _AUTH_UI_H_
+
 #include <stdint.h>
+#include <stdbool.h>
 
 void increaseDigitID(void);
 
@@ -31,4 +35,16 @@ void decreaseBrightness(void);
 
 void storeMagStripID(void);
 
+void checkCredentials(void);
+
+bool isDataReady(void);
+
+bool isValid(void);
+
+void unlockLED(void);
+
+void sleepDelay(void);
+
 void reset(void);
+
+#endif // _AUTH_UI_H_

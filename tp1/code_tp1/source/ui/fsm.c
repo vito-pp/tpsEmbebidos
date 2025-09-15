@@ -58,12 +58,12 @@ FSM_State_t *fsmStep(FSM_State_t *state_table, FSM_event_t ev)
 
 FSM_event_t getEvent(void)
 {
-    if (getIsDataReady())  return EV_MAG_DATA; // jump to insertPIN
+    if (isMagDataReady())  return EV_MAG_DATA; // jump to insertPIN
 
-    // if (isDataReady()) // when id&pin have been registered
-    // {
-    //     return isValid() ? EV_VALID : EV_INVALID;
-    // }
+    if (isDataReady()) // when id&pin have been registered
+    {
+        return isValid() ? EV_VALID : EV_INVALID;
+    }
 
     // implement TIMEOUT   
 
@@ -276,11 +276,12 @@ static FSM_State_t insert_pin4[] =
 static FSM_State_t validate[] =
 {
     {EV_VALID, unlock, NULL},
-    {EV_INVALID, idle, NULL},
-    {EV_NONE, validate, NULL}
+    {EV_INVALID, idle, sleepDelay}, // ToDo implement delay
+    {EV_NONE, validate, checkCredentials}
 };
 
 static FSM_State_t unlock[] =
 {
-    {EV_NONE, idle, NULL}
+    {EV_RESET, idle, reset},
+    {EV_NONE, idle, unlockLED}
 };

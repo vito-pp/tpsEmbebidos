@@ -2,6 +2,8 @@
 
 #include "auth_ui.h"
 #include "display.h"
+#include "credentials.h"
+#include "../misc/timer.h"
 #include "../drv/mag_strip.h"
 
 // zero-initialized variables
@@ -16,6 +18,10 @@ static uint8_t brightness_index;
 static uint8_t id_len;
 static uint8_t pin_len;
 
+static bool credentials_checked;
+static bool credentials_ok;
+
+// static local functions prototypes
 static uint64_t pan2Id(uint64_t pan);
 
 static unsigned int mod(int a, int b); 
@@ -26,6 +32,7 @@ static unsigned int mod(int a, int n)
     return ((a % n) + n) % n;
 }
 
+// global functions definitions
 void increaseDigitID(void)
 {
     id_digit_index = mod(id_digit_index + 1, 10);
@@ -147,6 +154,53 @@ void storeMagStripID(void)
     current_id = pan2Id(pan);
 }
 
+void checkCredentials(void)
+{
+    credentials_checked = true;
+    for (size_t i = 0; i < number_of_users; i++) 
+    {
+        if (credentials[i].id  == current_id &&
+            credentials[i].pin == current_pin) 
+        {
+            credentials_ok = true;
+            break;
+        }
+    }
+}
+
+bool isDataReady(void)
+{
+    return credentials_checked;
+}
+
+bool isValid(void)
+{
+    return credentials_ok;
+}
+
+void unlockLED(void)
+{
+    turnOnLED(0);
+    tim_id_t tim_id = timerGetId();
+    if (tim_id != TIMER_INVALID_ID)
+    {
+        timerStart(tim_id, 10000, TIM_MODE_SINGLESHOT, NULL);
+    }
+    while(!timerExpired(tim_id));
+    turnOffLED(0);
+    reset();
+}
+
+void sleepDelay(void)
+{
+    tim_id_t tim_id = timerGetId();
+    if (tim_id != TIMER_INVALID_ID)
+    {
+        timerStart(tim_id, 10000, TIM_MODE_SINGLESHOT, NULL);
+    }
+    while(!timerExpired(tim_id));
+}
+
 void reset(void)
 {
     current_id = 0;
@@ -155,4 +209,7 @@ void reset(void)
     pin_digit_index = 0;
     id_len = 0;
     pin_len = 0;
+    credentials_checked = 0;
+    credentials_ok = 0;
+    resetMagData();
 }

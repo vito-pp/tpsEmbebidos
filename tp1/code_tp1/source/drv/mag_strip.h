@@ -19,7 +19,7 @@ int magStrip_Init(void);
  * @return TRUE if data is ready for processing
  * @return FALSE if data is not ready for processing
  */
-int getIsDataReady(void);
+int isMagDataReady(void);
 /**
  * @brief Converts magnetic strip's data from string to an integer.
  * 		  It also disables data readability.
@@ -38,5 +38,7 @@ int getIsDataReady(void);
  */
 int processStripData(uint64_t *pan, uint32_t *add_data, uint32_t *disc_data);
 
+// ToDo comment
+void resetMagData(void);
 
 #endif /* DRV_MAG_STRIP_H_ */
