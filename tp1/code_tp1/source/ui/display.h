@@ -49,7 +49,7 @@ void setPWM(uint8_t desired_pwm);
 
 /**
  * @brief Turns led on
- * @param led: led to be turned on
+ * @param led: led to be turned on (1-3)
  * @return TRUE led correctly turned on
  * @return FALSE failed to turn led on
  */
@@ -57,10 +57,9 @@ bool turnOnLED(uint8_t led);
 
 /**
  * @brief Turns led off
- * @param led: led to be turned off
  * @return TRUE led correctly turned off
  * @return FALSE failed to turn led off
  */
-bool turnOffLED(uint8_t led);
+void turnOffLEDs(void);
 
 #endif // DISPLAY_H_

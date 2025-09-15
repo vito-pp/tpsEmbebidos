@@ -187,7 +187,7 @@ void unlockLED(void)
         timerStart(tim_id, 10000, TIM_MODE_SINGLESHOT, NULL);
     }
     while(!timerExpired(tim_id));
-    turnOffLED(0);
+    turnOffLEDs();
     reset();
 }
 

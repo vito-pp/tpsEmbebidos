@@ -110,35 +110,29 @@ void dispClear(void)
 
 bool turnOnLED(uint8_t led)
 {
-	if(led>3)
+	led--;
+	if(led >= 3)
 	{
 		return 0; //Invalid led
 	}
+
+	turnOffLEDs();
+
 	switch(led)
 	{
-		case 0: serialCom |= 0x1000 ; break;
-		case 1: serialCom |= 0x2000 ; break;
-		case 2: serialCom |= 0x3000 ; break;
+		case 0: serialCom |= 0x1000; break;
+		case 1: serialCom |= 0x2000; break;
+		case 2: serialCom |= 0x3000; break;
 	}
 	sendSerialData(serialCom);
 	return 1;
-
 }
 
-bool turnOffLED(uint8_t led)
+
+void turnOffLEDs(void)
 {
-	if(led>3)
-		{
-			return 0; //Invalid led
-		}
-		switch(led)
-		{
-			case 0: serialCom &= ~0x1000 ; break;
-			case 1: serialCom &= ~0x2000 ; break;
-			case 2: serialCom &= ~0x3000 ; break;
-		}
-		sendSerialData(serialCom);
-		return 1;
+	serialCom &= ~0x3000;
+	sendSerialData(serialCom);
 }
 
 bool displayDigit(uint8_t num, uint8_t disp)
