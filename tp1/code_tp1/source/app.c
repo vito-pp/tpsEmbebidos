@@ -68,22 +68,6 @@ void App_Run (void)
 
     event = getEvent();
     current = fsmStep(current, event);
-// 	uint64_t pan, id;
-// 	uint32_t add_data, disc_data, valid;
-// 	if(getIsDataReady())
-// 	{
-// 		valid = processStripData(&pan, &add_data, &disc_data);
-// 		pan = pan;
-// 		add_data = add_data;
-// 		disc_data = disc_data;
-// 		id = pan2Id(pan);
-// 	}
-
-// int pan2Id(uint64_t pan)
-// {
-// 	int id = pan % 100000000;
-// 	return id;
-// }	
 }
 
 /*******************************************************************************

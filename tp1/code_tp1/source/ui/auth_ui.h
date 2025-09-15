@@ -29,4 +29,6 @@ void increaseBrightness(void);
 
 void decreaseBrightness(void);
 
+void storeMagStripID(void);
+
 void reset(void);

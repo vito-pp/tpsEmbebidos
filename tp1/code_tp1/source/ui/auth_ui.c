@@ -2,6 +2,7 @@
 
 #include "auth_ui.h"
 #include "display.h"
+#include "../drv/mag_strip.h"
 
 // zero-initialized variables
 static uint64_t current_id; 
@@ -14,6 +15,10 @@ static uint8_t brightness_index;
 
 static uint8_t id_len;
 static uint8_t pin_len;
+
+static uint64_t pan2Id(uint64_t pan);
+
+static unsigned int mod(int a, int b); 
 
 // true modulo function
 static unsigned int mod(int a, int n) 
@@ -48,17 +53,38 @@ void eraseDigitID(void)
 
 void increaseDigitPIN(void)
 {
-    pin_digit_index = mod(pin_digit_index + 1, 10);
+    if (pin_len == 4) // in the last digit '-' (HYPHEN) is also valid
+    {
+        pin_digit_index = mod(pin_digit_index + 1, 11);
+    }
+    else
+    {
+        pin_digit_index = mod(pin_digit_index + 1, 10);
+    }
 }
 
 void decreaseDigitPIN(void)
 {
-    pin_digit_index = mod(pin_digit_index - 1, 10);
+    if (pin_len == 4)
+    {
+        pin_digit_index = mod(pin_digit_index - 1, 11);
+    }
+    else
+    {
+        pin_digit_index = mod(pin_digit_index - 1, 10);
+    }
 }
 
 void storeDigitPIN(void)
 {
-    current_pin = (current_pin + pin_digit_index) * 10;
+    if (pin_digit_index == HYPHEN)
+    {
+        current_pin /= 10;
+    }
+    else
+    {
+        current_pin = (current_pin + pin_digit_index) * 10;
+    }
     pin_digit_index = 0;
     pin_len++;
 }
@@ -77,8 +103,16 @@ void printID(void)
 }
 
 void printPIN(void)
-{
-    display(current_pin + pin_digit_index, true, pin_len);
+{    
+    if (pin_digit_index == HYPHEN)
+    {
+        displayHyphens();
+    }
+    else
+    {
+        display(current_pin + pin_digit_index, true, pin_len);
+    }
+
 }
 
 void printMenu(void)
@@ -96,6 +130,22 @@ void decreaseBrightness(void)
 {
     brightness_index = mod(brightness_index - 1, BRIGHTNESS_LEVELS);
     setPWM(brightness_index);
+}
+
+static uint64_t pan2Id(uint64_t pan)
+{
+	int id = pan % 100000000;
+	return id;
+}
+
+void storeMagStripID(void)
+{
+    uint64_t pan;
+    uint32_t add_data, disc_data;
+
+    processStripData(&pan, &add_data, &disc_data);
+
+    uint64_t id = pan2Id(pan);
 }
 
 void reset(void)

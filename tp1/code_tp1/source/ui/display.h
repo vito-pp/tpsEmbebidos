@@ -17,7 +17,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define BRIGHTNESS_LEVELS 4
+#define BRIGHTNESS_LEVELS 10
+#define HYPHEN 0xA
 
 /**
  * @brief Initialize Display (through serial data initialization)
@@ -34,6 +35,8 @@ int display_init(void);
  * number, will fill with zeros
  */
 void display(unsigned int number, bool hide, uint8_t lenght);
+
+void displayHyphens(void);
 
 /**
  * @brief Clears display

@@ -130,7 +130,7 @@ static FSM_State_t insert_id0[] =
     {EV_BACKWARD, insert_id0, decreaseDigitID},
     {EV_RESET, idle, reset},
     {EV_TIMEOUT, idle, reset},
-    {EV_MAG_DATA, insert_pin0, NULL},
+    {EV_MAG_DATA, insert_pin0, NULL}, // todo
     {EV_NONE, insert_id0, printID}
 };
 

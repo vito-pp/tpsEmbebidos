@@ -16,7 +16,6 @@
 #include "display.h"
 
 #define CANT_DISPLAYS 4
-#define HYPHEN 10
 #define NONE 11
 
 static uint8_t pwm;
@@ -29,7 +28,7 @@ static uint16_t serialCom;
  * @return TRUE: correctly displayed character
  * @return FALSE: invalid character
  */
-static bool displayDigit(uint8_t num, uint8_t disp);
+bool displayDigit(uint8_t num, uint8_t disp);
 
 int display_init(void)
 {
@@ -82,6 +81,27 @@ void display(unsigned int number, bool hide, uint8_t lenght)
 
 	}
 }
+
+void displayHyphens(void)
+{
+	for(int i = 0; i < CANT_DISPLAYS; i++)
+	{
+		//Splits i-th display 'ON' time into 'BRIGHTNESS_LEVELS' pieces
+		for(int j = 0; j < BRIGHTNESS_LEVELS; j ++)
+		{
+			if(j <= pwm) // turns led (pwm/BRIGHTNESS_LEVELS * 100)% of the time
+			{
+
+				displayDigit(HYPHEN, 3 - i);
+			}
+			else
+			{
+				dispClear();
+			}
+		}
+	}
+}
+
 void dispClear(void)
 {
 	serialCom &= 0x3000;
@@ -120,7 +140,8 @@ bool turnOffLED(uint8_t led)
 		sendSerialData(serialCom);
 		return 1;
 }
-static bool displayDigit(uint8_t num, uint8_t disp)
+
+bool displayDigit(uint8_t num, uint8_t disp)
 {
 	if(num > NONE || disp >= CANT_DISPLAYS)
 	{
