@@ -13,7 +13,7 @@
 #include "../misc/timer.h"
 
 #define DATA_SIZE 16 //contains serial data buffer size in bits
-#define LCLK_ACTIVE LOW
+#define LCLK_ACTIVE HIGH
 #define CLK_ACTIVE HIGH
 
 int serialData_init(void)
@@ -38,7 +38,7 @@ void sendSerialData(uint16_t data)
 
 
 	gpioWrite(SR_CLK, !CLK_ACTIVE);
-	gpioWrite(SR_LCLK, LCLK_ACTIVE);
+	gpioWrite(SR_LCLK, !LCLK_ACTIVE);
 
 	i = DATA_SIZE;
 	while(i--)
@@ -52,7 +52,7 @@ void sendSerialData(uint16_t data)
 		data = data >> 1;
 	}
 	gpioWrite(SR_CLK, !CLK_ACTIVE);
-	gpioWrite(SR_LCLK, !LCLK_ACTIVE);
+	gpioWrite(SR_LCLK, LCLK_ACTIVE);
 	data = 0;
-	return;
+	gpioWrite(SR_LCLK, !LCLK_ACTIVE);
 }

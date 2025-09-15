@@ -34,7 +34,6 @@ static void releaseData(void);
  */
 static uint8_t validateData(void);
 
-
 static uint8_t is_data_ready;
 
 //#define MAX_LONG 200
@@ -62,7 +61,9 @@ int magStrip_Init(void)
 
 int isMagDataReady(void)
 {
-	return is_data_ready;
+	bool flag = is_data_ready;
+	resetMagData();
+	return flag;
 }
 
 

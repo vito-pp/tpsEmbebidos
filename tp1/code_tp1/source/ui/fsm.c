@@ -58,8 +58,6 @@ FSM_State_t *fsmStep(FSM_State_t *state_table, FSM_event_t ev)
 
 FSM_event_t getEvent(void)
 {
-    if (isMagDataReady())  return EV_MAG_DATA; // jump to insertPIN
-
     if (isDataReady()) // when id&pin have been registered
     {
         return isValid() ? EV_VALID : EV_INVALID;
@@ -74,9 +72,12 @@ FSM_event_t getEvent(void)
     case ENC_CW:                return EV_FORWARD;
     case ENC_CCW:               return EV_BACKWARD;
     case ENC_BUTTON_LONG_PRESS: return EV_RESET;
-    case ENC_NONE:              return EV_NONE;
-    default:                    return EV_NONE;
+    default:                    break;
     }
+
+    if (isMagDataReady())       return EV_MAG_DATA; // jump to insertPIN
+
+    return EV_NONE;
 }
 
 /* ========= ACTION CALLBACKS FOR TESTING ========= */

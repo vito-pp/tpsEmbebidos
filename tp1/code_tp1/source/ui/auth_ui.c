@@ -107,6 +107,7 @@ void eraseDigitPIN(void)
 void printID(void)
 {
     display(current_id + id_digit_index, false, id_len);
+    turnOnLED(1);
 }
 
 void printPIN(void)
@@ -119,6 +120,8 @@ void printPIN(void)
     {
         display(current_pin + pin_digit_index, true, pin_len);
     }
+    turnOnLED(1);
+    turnOnLED(2);
 }
 
 void printMenu(void)
@@ -180,13 +183,18 @@ bool isValid(void)
 
 void unlockLED(void)
 {
-    turnOnLED(0);
+    dispClear();
     tim_id_t tim_id = timerGetId();
     if (tim_id != TIMER_INVALID_ID)
     {
         timerStart(tim_id, 10000, TIM_MODE_SINGLESHOT, NULL);
     }
-    while(!timerExpired(tim_id));
+    while(!timerExpired(tim_id))
+    {
+        turnOnLED(1);
+        turnOnLED(2);
+        turnOnLED(3);
+    }
     turnOffLEDs();
     reset();
 }
@@ -212,4 +220,5 @@ void reset(void)
     credentials_checked = 0;
     credentials_ok = 0;
     resetMagData();
+    turnOffLEDs();
 }
