@@ -20,6 +20,7 @@
 #include "drv/shift_registers.h"
 #include "ui/display.h"
 #include "ui/fsm.h"
+#include "ui/auth_ui.h"
 
 
 /*******************************************************************************
@@ -37,6 +38,8 @@ static FSM_State_t *current;
 static FSM_event_t event;
 
 enc_input_t last_button_state = ENC_NONE;
+
+tim_id_t inactivity_id;
 
 /*******************************************************************************
  *******************************************************************************
@@ -58,16 +61,29 @@ void App_Init (void)
     timerInit();
     tim_id_t id = timerGetId();
     if (id != TIMER_INVALID_ID)
+    {
         timerStart(id, 1, TIM_MODE_PERIODIC, encoder_callback);
+    }
+    inactivity_id = timerGetId();
+    if (inactivity_id != TIMER_INVALID_ID)
+    {
+        timerStart(id, 5000, TIM_MODE_PERIODIC, triggerTimeout);
+    }
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run (void)
 {
-    timerUpdate();
-
     event = getEvent();
     current = fsmStep(current, event);
+
+    if (event != EV_NONE)
+    {
+        timerStop(inactivity_id);
+        timerStart(inactivity_id, 5000, TIM_MODE_PERIODIC, triggerTimeout);
+    }
+
+    timerUpdate();
 }
 
 /*******************************************************************************

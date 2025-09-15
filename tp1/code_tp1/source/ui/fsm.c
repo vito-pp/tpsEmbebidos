@@ -63,8 +63,6 @@ FSM_event_t getEvent(void)
         return isValid() ? EV_VALID : EV_INVALID;
     }
 
-    // implement TIMEOUT   
-
     switch (encoder_update()) // input from the user
     {
     case ENC_BUTTON_PRESS:      return EV_ENTER;
@@ -78,6 +76,11 @@ FSM_event_t getEvent(void)
     if (isMagDataReady() && validateData()) 
     {      
         return EV_MAG_DATA; // jump to insertPIN
+    }
+
+    if (isTimeout())
+    {
+        return EV_TIMEOUT;
     }
 
     return EV_NONE;

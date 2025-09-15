@@ -20,6 +20,7 @@ static uint8_t pin_len;
 
 static bool credentials_checked;
 static bool credentials_ok;
+static bool timeout_pending;
 
 // static local functions prototypes
 static uint64_t pan2Id(uint64_t pan);
@@ -212,6 +213,16 @@ void invalidCredentials(void)
     reset();
 }
 
+void triggerTimeout(void)
+{
+    timeout_pending = true;
+}
+
+bool isTimeout(void)
+{
+    return timeout_pending;
+}
+
 void reset(void)
 {
     current_id = 0;
@@ -222,6 +233,7 @@ void reset(void)
     pin_len = 0;
     credentials_checked = 0;
     credentials_ok = 0;
+    timeout_pending = false;
     resetMagData();
     turnOffLEDs();
 }
