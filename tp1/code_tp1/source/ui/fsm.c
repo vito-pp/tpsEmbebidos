@@ -130,7 +130,7 @@ static FSM_State_t insert_id0[] =
     {EV_BACKWARD, insert_id0, decreaseDigitID},
     {EV_RESET, idle, reset},
     {EV_TIMEOUT, idle, reset},
-    {EV_MAG_DATA, insert_pin0, NULL}, // todo
+    {EV_MAG_DATA, insert_pin0, storeMagStripID},
     {EV_NONE, insert_id0, printID}
 };
 
@@ -142,6 +142,7 @@ static FSM_State_t insert_id1[] =
     {EV_BACKWARD, insert_id1, decreaseDigitID},
     {EV_RESET, idle, reset},
     {EV_TIMEOUT, idle, reset},
+    {EV_MAG_DATA, insert_pin0, storeMagStripID},
     {EV_NONE, insert_id1, printID}
 };
 
@@ -153,6 +154,7 @@ static FSM_State_t insert_id2[] =
     {EV_BACKWARD, insert_id2, decreaseDigitID},
     {EV_RESET, idle, reset},
     {EV_TIMEOUT, idle, reset},
+    {EV_MAG_DATA, insert_pin0, storeMagStripID},
     {EV_NONE, insert_id2, printID}
 };
 
@@ -164,6 +166,7 @@ static FSM_State_t insert_id3[] =
     {EV_BACKWARD, insert_id3, decreaseDigitID},
     {EV_RESET, idle, reset},
     {EV_TIMEOUT, idle, reset},
+    {EV_MAG_DATA, insert_pin0, storeMagStripID},
     {EV_NONE, insert_id3, printID}
 };
 
@@ -175,6 +178,7 @@ static FSM_State_t insert_id4[] =
     {EV_BACKWARD, insert_id4, decreaseDigitID},
     {EV_RESET, idle, reset},
     {EV_TIMEOUT, idle, reset},
+    {EV_MAG_DATA, insert_pin0, storeMagStripID},
     {EV_NONE, insert_id4, printID}
 };
 
@@ -186,6 +190,7 @@ static FSM_State_t insert_id5[] =
     {EV_BACKWARD, insert_id5, decreaseDigitID},
     {EV_RESET, idle, reset},
     {EV_TIMEOUT, idle, reset},
+    {EV_MAG_DATA, insert_pin0, storeMagStripID},
     {EV_NONE, insert_id5, printID}
 };
 
@@ -197,6 +202,7 @@ static FSM_State_t insert_id6[] =
     {EV_BACKWARD, insert_id6, decreaseDigitID},
     {EV_RESET, idle, reset},
     {EV_TIMEOUT, idle, reset},
+    {EV_MAG_DATA, insert_pin0, storeMagStripID},
     {EV_NONE, insert_id6, printID}
 };
 
@@ -208,6 +214,7 @@ static FSM_State_t insert_id7[] =
     {EV_BACKWARD, insert_id7, decreaseDigitID},
     {EV_RESET, idle, reset},
     {EV_TIMEOUT, idle, reset},
+    {EV_MAG_DATA, insert_pin0, storeMagStripID},
     {EV_NONE, insert_id7, printID}
 };
 

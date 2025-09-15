@@ -112,7 +112,6 @@ void printPIN(void)
     {
         display(current_pin + pin_digit_index, true, pin_len);
     }
-
 }
 
 void printMenu(void)
@@ -145,7 +144,7 @@ void storeMagStripID(void)
 
     processStripData(&pan, &add_data, &disc_data);
 
-    uint64_t id = pan2Id(pan);
+    current_id = pan2Id(pan);
 }
 
 void reset(void)

@@ -129,7 +129,6 @@ void readTrack2Data(void)
 	return;
 }
 
-
 int processStripData(uint64_t *pan, uint32_t *add_data, uint32_t *disc_data)
 {
 	int i, j;
@@ -176,7 +175,6 @@ int processStripData(uint64_t *pan, uint32_t *add_data, uint32_t *disc_data)
 
 	return 1;
 }
-
 
 uint8_t validateData(void)
 {
