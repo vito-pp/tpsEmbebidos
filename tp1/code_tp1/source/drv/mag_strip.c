@@ -2,6 +2,7 @@
 #include "mag_strip.h"
 #include <stdint.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 
 #define STRIP_ACTIVE LOW
@@ -11,7 +12,8 @@
 #define FIELD_SEPARATOR 0b01101
 
 static unsigned char unprocessed_digits[MAX_DIGITS];
-static uint8_t reset_reader;
+static bool reset_reader;
+static bool is_data_ready;
 
 /**
  * @brief Reads data sent my Magnetic Strip Track 2 reader.
@@ -22,19 +24,6 @@ static void readTrack2Data(void);
  * 		  Resets Track 2's reader.
  */
 static void releaseData(void);
-/**
- * @brief Validates magnetic strip's track 2 data. It should end with
- * 		END_SENTINEL and all characters should have an odd quantity
- * 		of bits turned on.
- * @return 0: Data is invalid: it doesn't have FIELD SEPARATOR or END_SENTINEL,
- * 			  or at least one	character read has an even quantity of bits
- * 		      turned on, or string length = 0
- * @return N: N the length of the string read, doesn't takes into account
- * 	           END_SENTINEL
- */
-static uint8_t validateData(void);
-
-static uint8_t is_data_ready;
 
 //#define MAX_LONG 200
 //#define BUFFER_SIZE 4 // array size / ELEMENT SIZE
@@ -59,11 +48,9 @@ int magStrip_Init(void)
     return 1;
 }
 
-int isMagDataReady(void)
+bool isMagDataReady(void)
 {
-	bool flag = is_data_ready;
-	resetMagData();
-	return flag;
+	return is_data_ready;
 }
 
 
@@ -216,6 +203,7 @@ uint8_t validateData(void)
 void resetMagData(void)
 {
 	is_data_ready = false;
+	reset_reader = true;
 }
 
 

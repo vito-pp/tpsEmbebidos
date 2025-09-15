@@ -64,10 +64,10 @@ void App_Init (void)
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run (void)
 {
-     timerUpdate();
+    timerUpdate();
 
-     event = getEvent();
-     current = fsmStep(current, event);
+    event = getEvent();
+    current = fsmStep(current, event);
 }
 
 /*******************************************************************************

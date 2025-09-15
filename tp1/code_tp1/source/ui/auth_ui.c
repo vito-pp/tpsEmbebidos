@@ -152,7 +152,8 @@ void storeMagStripID(void)
     uint64_t pan;
     uint32_t add_data, disc_data;
 
-    processStripData(&pan, &add_data, &disc_data);
+    int success = processStripData(&pan, &add_data, &disc_data);
+    if (!success) return;
 
     current_id = pan2Id(pan);
 }
@@ -199,14 +200,16 @@ void unlockLED(void)
     reset();
 }
 
-void sleepDelay(void)
+void invalidCredentials(void)
 {
+    turnOffLEDs();
     tim_id_t tim_id = timerGetId();
     if (tim_id != TIMER_INVALID_ID)
     {
         timerStart(tim_id, 10000, TIM_MODE_SINGLESHOT, NULL);
     }
     while(!timerExpired(tim_id));
+    reset();
 }
 
 void reset(void)

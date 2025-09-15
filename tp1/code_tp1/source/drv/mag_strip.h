@@ -19,7 +19,7 @@ int magStrip_Init(void);
  * @return TRUE if data is ready for processing
  * @return FALSE if data is not ready for processing
  */
-int isMagDataReady(void);
+bool isMagDataReady(void);
 /**
  * @brief Converts magnetic strip's data from string to an integer.
  * 		  It also disables data readability.
@@ -37,6 +37,18 @@ int isMagDataReady(void);
  * @return FALSE: Data read is not valid.
  */
 int processStripData(uint64_t *pan, uint32_t *add_data, uint32_t *disc_data);
+
+/**
+ * @brief Validates magnetic strip's track 2 data. It should end with
+ * 		END_SENTINEL and all characters should have an odd quantity
+ * 		of bits turned on.
+ * @return 0: Data is invalid: it doesn't have FIELD SEPARATOR or END_SENTINEL,
+ * 			  or at least one	character read has an even quantity of bits
+ * 		      turned on, or string length = 0
+ * @return N: N the length of the string read, doesn't takes into account
+ * 	           END_SENTINEL
+ */
+uint8_t validateData(void);
 
 // ToDo comment
 void resetMagData(void);

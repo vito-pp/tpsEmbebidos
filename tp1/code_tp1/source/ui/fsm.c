@@ -75,7 +75,10 @@ FSM_event_t getEvent(void)
     default:                    break;
     }
 
-    if (isMagDataReady())       return EV_MAG_DATA; // jump to insertPIN
+    if (isMagDataReady() && validateData()) 
+    {      
+        return EV_MAG_DATA; // jump to insertPIN
+    }
 
     return EV_NONE;
 }
@@ -277,7 +280,7 @@ static FSM_State_t insert_pin4[] =
 static FSM_State_t validate[] =
 {
     {EV_VALID, unlock, NULL},
-    {EV_INVALID, idle, sleepDelay}, // ToDo implement delay
+    {EV_INVALID, insert_id0, invalidCredentials},
     {EV_NONE, validate, checkCredentials}
 };
 

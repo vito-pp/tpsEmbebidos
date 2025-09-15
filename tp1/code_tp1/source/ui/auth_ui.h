@@ -43,7 +43,7 @@ bool isValid(void);
 
 void unlockLED(void);
 
-void sleepDelay(void);
+void invalidCredentials(void);
 
 void reset(void);
 
