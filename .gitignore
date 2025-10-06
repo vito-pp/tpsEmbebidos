@@ -13,3 +13,6 @@ Release/
 # IDE settings (personal)
 .vscode/
 
+# Virtual Enviroments
+.venv/
+venv/
