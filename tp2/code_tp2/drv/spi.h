@@ -2,7 +2,7 @@
 #define SPIDRV_H
 
 #include <stdint.h>
-#include <stdio.h>
+#include <stdbool.h>
 
 bool SPI_init(void);
 
@@ -12,12 +12,7 @@ uint64_t getSPIData(void);
 
 int isTxOver(void);
 
-bool sendSPIData(uint64_t);
-
-
-
-
-
+bool sendSPIData(uint64_t data);
 
 
 
