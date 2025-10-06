@@ -1,7 +1,5 @@
 # Rules
 
-This repository follows the **Google C Style Guide** and uses **Doxygen** for documentation.
-
 ---
 
 ## Style Guide
@@ -13,6 +11,7 @@ This repository follows the **Google C Style Guide** and uses **Doxygen** for do
   - Constants: `kConstantName`
   - Macros: `MACRO_NAME`
   - Typedefs: `TypeName_t`
+  - Enum with tiypedefs: `EnumName_e`
   - Functions: `functionName`
   - Variables: `variable_name`
 - **Formatting**
@@ -45,7 +44,7 @@ Use **Doxygen** format to document code.
 
 /**
  * @brief Explain what foo does.  
- * @param var Explain what var.
+ * @param var Explain what var is for.
  * @return true on success, false on error.
  */
 bool foo(int var);
