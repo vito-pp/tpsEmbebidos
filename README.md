@@ -11,7 +11,7 @@
   - Constants: `kConstantName`
   - Macros: `MACRO_NAME`
   - Typedefs: `TypeName_t`
-  - Enum with tiypedefs: `EnumName_e`
+  - Enum with typedefs: `EnumName_e`
   - Functions: `functionName`
   - Variables: `variable_name`
 - **Formatting**
