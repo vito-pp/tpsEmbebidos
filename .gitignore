@@ -10,7 +10,7 @@ Release/
 *.launch
 *.xml
 
-# IDE settings (personal)
+# IDE settings 
 .vscode/
 
 # Virtual Enviroments
