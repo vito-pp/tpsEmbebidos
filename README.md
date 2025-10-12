@@ -13,6 +13,7 @@
   - Typedefs: `TypeName_t`
   - Enum with typedefs: `EnumName_e`
   - Functions: `functionName`
+    - If they have acronyms or capital letters: `UART_SendData()`, `SysTick_Init()`, etc.
   - Variables: `variable_name`
 - **Formatting**
   - Line length: max 80–100 characters.
@@ -48,3 +49,4 @@ Use **Doxygen** format to document code.
  * @return true on success, false on error.
  */
 bool foo(int var);
+```
