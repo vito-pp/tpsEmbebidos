@@ -13,6 +13,7 @@ static SPI_Type* const spi_base_adress[] = SPI_BASE_PTRS;
 
 static PORT_Type * const kPort[] = PORT_BASE_PTRS;
 
+
 int SPIx_pushTx(uint8_t spi_instance, uint16_t data, uint8_t pcs, uint8_t ctar_x,
             bool eoq, bool ctcnt)
 {
@@ -26,6 +27,7 @@ int SPIx_pushTx(uint8_t spi_instance, uint16_t data, uint8_t pcs, uint8_t ctar_x
 
 }
 
+
 uint32_t SPIx_popRx(uint8_t spi_instance)
 {
     return spi_base_adress[spi_instance]->POPR;
@@ -35,6 +37,7 @@ uint32_t SPIx_TXFR0(uint8_t spi_instance)
 {
     return spi_base_adress[spi_instance]->TXFR0;
 }
+
 
 void SPI0_pinConfig(SPI_pins* pins)
 {
@@ -49,6 +52,7 @@ void SPI0_pinConfig(SPI_pins* pins)
     pinConfig(pins->PCS0, ALT2, 0);
 }
 
+
 void pinConfig(uint8_t pin, uint8_t alt, uint8_t irqc)
 {
     kPort[PIN2PORT(pin)]->PCR[PIN2NUM(pin)] &= ~(PORT_PCR_MUX(0b111) | 
@@ -56,6 +60,7 @@ void pinConfig(uint8_t pin, uint8_t alt, uint8_t irqc)
     kPort[PIN2PORT(pin)]->PCR[PIN2NUM(pin)] |= PORT_PCR_MUX(alt);
     kPort[PIN2PORT(pin)]->PCR[PIN2NUM(pin)] |= PORT_PCR_IRQC(irqc);
 }
+
 
 int MCRX_config(uint8_t spi_instance, bool mstre, bool cont_scke, bool rooe,
              bool pcsis)
@@ -74,6 +79,7 @@ int MCRX_config(uint8_t spi_instance, bool mstre, bool cont_scke, bool rooe,
 
     return 0;
 }
+
 
 int CTARX_config(uint8_t spi_instance, uint8_t ctar_x, uint8_t fmsz, 
                     bool cpol , uint8_t cpha, uint8_t lsfe, uint8_t br)
