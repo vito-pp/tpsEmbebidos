@@ -13,6 +13,29 @@ static SPI_Type* const spi_base_adress[] = SPI_BASE_PTRS;
 
 static PORT_Type * const kPort[] = PORT_BASE_PTRS;
 
+int SPIx_pushTx(uint8_t spi_instance, uint16_t data, uint8_t pcs, uint8_t ctar_x,
+            bool eoq, bool ctcnt)
+{
+
+    //Validate all
+    spi_base_adress[spi_instance]->PUSHR |= (SPI_PUSHR_TXDATA(data)
+                                        | SPI_PUSHR_CTAS(ctar_x)
+                                        | SPI_PUSHR_EOQ(eoq &&1)
+                                        | SPI_PUSHR_CTCNT(ctcnt &&1));
+    return 1;
+
+}
+
+uint32_t SPIx_popRx(uint8_t spi_instance)
+{
+    return spi_base_adress[spi_instance]->POPR;
+}
+
+uint32_t SPIx_TXFR0(uint8_t spi_instance)
+{
+    return spi_base_adress[spi_instance]->TXFR0;
+}
+
 void SPI0_pinConfig(SPI_pins* pins)
 {
     pins->SIN = PORTNUM2PIN(PD, 3);
@@ -61,7 +84,7 @@ int CTARX_config(uint8_t spi_instance, uint8_t ctar_x, uint8_t fmsz,
     }
     SPI_Type* spi_x = spi_base_adress[spi_instance];
 
-    if(fmsz > 7 | fmsz < 4)
+    if(fmsz > 15 || fmsz < 4)
     {
         return 1; //invalid
     }
@@ -74,6 +97,10 @@ int CTARX_config(uint8_t spi_instance, uint8_t ctar_x, uint8_t fmsz,
     return 0;
 }
 
+int getStatus(void)
+{
+    //SPI_SR
+}
 bool isSPIDataReady(void)
 {
 
