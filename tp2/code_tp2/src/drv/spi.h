@@ -22,8 +22,7 @@ typedef struct {
  * @param ctcnt Clear Transfer Counter (true to clear, false to not clear).
  * @return 1 on success (data successfully pushed to the transmit buffer).
  */
-int SPIx_pushTx(uint8_t spi_instance, uint16_t data, uint8_t pcs, uint8_t ctar_x,
-            bool eoq, bool ctcnt);
+int SPIx_pushTx(uint8_t spi_instance, uint16_t data, uint8_t pcs, uint8_t ctar_x, bool ctcnt);
 
 /**
  * @brief Pops data from the SPI RX FIFO.
@@ -41,13 +40,17 @@ uint32_t SPIx_popRx(uint8_t spi_instance);
 uint32_t SPIx_TXFR0(uint8_t spi_instance);
 
 /**
- * @brief Configures the pins for the SPI0 module, and saves pin number
- *          on SPI_pins received pointer.
+ * @brief Configures the pins for the SPI0 module, and the Module Configuration Register (MCR).
  * @param pins Pointer to an SPI_pins structure containing
  *             the pin assignments for SPI0 (SIN, SOUT, SCLK, PCS0).
+ * @param mstre Specifies whether the SPI operates in master mode (true) or slave mode (false).
+ * @param cont_scke Enables the Serial Communication Clock (SCK) to run continuously.
+ * @param rooe Enables Receive FIFO Overflow Overwrite
+ * @param pcsis Sets the Peripheral Chip Select (PCS) signals inactive state. 
+ *              FALSE -->  low , TRUE --> high
  * @return None.
  */
-void SPI0_pinConfig(SPI_pins* pins);
+void SPI0_Init(SPI_pins* pins, bool mstre, bool cont_scke, bool rooe, bool pcsis);
 
 /**
  * @brief Configures the multiplexing and interrupt settings for a specified pin.
@@ -57,20 +60,6 @@ void SPI0_pinConfig(SPI_pins* pins);
  * @return None (void function, no return value).
  */
 void pinConfig(uint8_t pin, uint8_t alt, bool irqc);
-
-
-/**
- * @brief Configures the Module Configuration Register (MCR) for the specified SPI instance.
- * @param spi_instance The SPI module instance to be configured (e.g., 0 for SPI0, 1 for SPI1).
- * @param mstre Specifies whether the SPI operates in master mode (true) or slave mode (false).
- * @param cont_scke Enables the Serial Communication Clock (SCK) to run continuously.
- * @param rooe Enables Receive FIFO Overflow Overwrite
- * @param pcsis Sets the Peripheral Chip Select (PCS) signals inactive state. 
- *              FALSE -->  low , TRUE --> high
- * @return 0 on success, -1 if the specified spi_instance is invalid.
- */
-int MCRX_config(uint8_t spi_instance, bool mstre, bool cont_scke, bool rooe,
-             bool pcsis);
 
 /**
  * @brief Configures the Clock and Transfer Attributes Register (CTAR) for the specified SPI instance.
@@ -87,14 +76,13 @@ int MCRX_config(uint8_t spi_instance, bool mstre, bool cont_scke, bool rooe,
  * @param lsfe Specifies the bit order.
  *          TRUE  --> for LSB first 
  *          FASLE --> for MSB first
- * @param br The baud rate prescaler value for the SPI clock (not applied in this function).
- *          SCK baud rate = (fP /PBR) x [(1+DBR)/BR]
+ * @param br BR value in 10 kbps ( Bps = br . 10k bps) options (125, 5, 10, 25)
  * @return 0 on success 
  *         -1 if spi_instance or ctar_x is invalid
  *          1 if fmsz is out of valid range (4-15).
  */
 int CTARX_config(uint8_t spi_instance, uint8_t ctar_x, uint8_t fmsz, 
-                    bool cpol , uint8_t cpha, uint8_t lsfe, uint8_t br);
+                    bool cpol , uint8_t cpha, uint8_t lsfe, uint16_t br);
 
 
 
