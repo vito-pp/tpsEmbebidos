@@ -22,25 +22,22 @@
 
 #define I2C_NUMBER_OF_CHANNELS FSL_FEATURE_SOC_I2C_COUNT /* three I2C modules 
 on the Kinetis K64 */
-#define I2C_POLLING_FLAG false /* set to true to use polling instead of IRQs */
-
-/*******************************************************************************
- * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
- ******************************************************************************/
+#define I2C_POLLING_FLAG false /* set to true to use polling instead of IRQs 
+(no ready yet)*/
 
 /*******************************************************************************
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
-
+/**
+ * @brief Should be called at the start of the progam.
+ * @param channel I2C module number of kinetis, could be 0, 1, 2. Check for 
+ * available modules on your device. Define I2C_NUMBER_OF_CHANNELS appropiately.
+ * @param baud_rate Sets the baud rate in bps.
+ * @return false on error, true on success.
+ */
 bool I2C_MasterInit(uint8_t channel, uint16_t baud_rate);
 
-void I2C_MasterTx(uint8_t channel, uint8_t slave_address, uint8_t *data2send,
-                  size_t len);
-
-void I2C_MasterRx(uint8_t channel, uint8_t slave_address, uint8_t *data2read, 
-                  size_t len);
-
-void I2C_MasterTxRx(uint8_t channel, uint8_t slave_address, uint8_t *data2send, 
-                    size_t send_len, uint8_t *data2read, size_t read_len);
+bool I2C_MasterSendSequence(uint8_t channel, uint16_t *sequence, 
+                            uint32_t sequence_len,uint8_t *recieve_buffer);
 
 #endif // _I2C_H_
