@@ -32,7 +32,7 @@ on the Kinetis K64 */
  ******************************************************************************/
 /**
  * @brief Should be called at the start of the progam.
- * @param channel I2C module number of kinetis, could be 0, 1, 2. Check for 
+ * @param channel   I2C module number of kinetis, could be 0, 1, 2. Check for 
  * available modules on your device. Define I2C_NUMBER_OF_CHANNELS appropiately.
  * @param baud_rate Sets the baud rate in bps.
  * @return false on error, true on success.
@@ -40,12 +40,24 @@ on the Kinetis K64 */
 bool I2C_MasterInit(uint8_t channel, uint16_t baud_rate);
 
 /**
- * @brief Sends a sequence
- * @param channel I2C module number of kinetis, could be 0, 1, 2. Check for 
- * available modules on your device. Define I2C_NUMBER_OF_CHANNELS appropiately.
- * @param sequence Pointer to
- * @param sequence_len
- * @param recieve_buffer
+ * @brief Sends a command/data sequence over I2C with support for restarts, 
+ * writes, and reads. This function executes a complete I2C sequence that can 
+ * include multiple writes, restarts, and reads. Each transmission 
+ * automatically begins with a START condition and ends with a STOP condition, 
+ * so these do not need to be specified in the sequence.
+ *
+ * The sequence is represented as an array of @c uint16_t elements (not 
+ * @c uint8_t) to support out-of-band signaling for @c I2C_RESTART and 
+ * @c I2C_READ operations while maintaining 8-bit data compatibility.
+ * 
+ * @param channel_number   I2C channel number to use for the transmission
+ * @param sequence         Pointer to the I2C operation sequence array
+ * @param sequence_length  Number of elements in the sequence array (minimum: 2)
+ * @param received_data    Buffer to store bytes from I2C_READ operations. Pass 
+ * @c NULL if there are no reads in the sequence. Buffer must be large enough 
+ * to hold one byte per READ operation.
+ * @see I2C_RESTART
+ * @see I2C_READ
  */
 void I2C_MasterSendSequence(uint8_t channel, uint16_t *sequence, 
                             uint32_t sequence_len, uint8_t *recieve_buffer);
