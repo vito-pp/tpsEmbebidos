@@ -58,6 +58,7 @@ typedef struct I2C_Buffer_t
     uint16_t *sequence;
     uint32_t sequence_end;
     uint8_t *recieve_buffer;
+    uint8_t reads_ahead;
     I2C_Status_e status;
     I2C_Mode_e mode;
 } I2C_Buffer_t;
@@ -134,7 +135,7 @@ bool I2C_MasterInit(uint8_t channel_id, uint16_t baud_rate)
     }
 
     // 3) Module configuration
-	setBaudRate(i2c, (__CORE_CLOCK__)/2, baud_rate);
+	setBaudRate(i2c, (__CORE_CLOCK__)/2, baud_rate); // Bus' clk is half core's
     // ToDo (more coplex config): add glitch-filters, high-drive, timeouts, etc.
 	i2c->C1 = 0;
 	i2c->C1 |= I2C_C1_IICEN_MASK; // enable the module (enable last)
@@ -145,7 +146,7 @@ bool I2C_MasterInit(uint8_t channel_id, uint16_t baud_rate)
     return true;
 }
 
-bool I2C_MasterSendSequence(uint8_t channel_id, uint16_t *sequence, 
+void I2C_MasterSendSequence(uint8_t channel_id, uint16_t *sequence, 
                             uint32_t len, uint8_t *recieve_buffer)
 {
     if (channel_id >= I2C_NUMBER_OF_CHANNELS) 
@@ -154,7 +155,7 @@ bool I2C_MasterSendSequence(uint8_t channel_id, uint16_t *sequence,
     }
 
     I2C_Type *i2c = I2C_base_ptrs[channel_id];
-    volatile I2C_Buffer_t *channel =  &(I2C_channel[channel]);
+    volatile I2C_Buffer_t *channel =  &(I2C_channel[channel_id]);
 
     if (channel->status == I2C_BUSY)
     {
@@ -215,6 +216,7 @@ static void I2C_IRQHandler(uint8_t channel_id)
 {
     volatile I2C_Buffer_t *channel = &(I2C_channel[channel_id]);
     I2C_Type* i2c = I2C_base_ptrs[channel_id];
+    uint16_t element;
 
     uint8_t status = i2c->S;
 
@@ -232,6 +234,115 @@ static void I2C_IRQHandler(uint8_t channel_id)
         disable further interrupts. */
         channel->status = I2C_ERROR;
     }
+
+    if (channel->mode == I2C_TX)
+    {
+        if (channel->sequence == channel->sequence_end) // End of transmit
+        {
+            /* Generate STOP (set MST=0), switch to RX mode, and disable 
+            further interrupts. */
+            i2c->C1 &= ~(I2C_C1_MST_MASK | I2C_C1_IICIE_MASK 
+                        |I2C_C1_TXAK_MASK);
+            channel->status = I2C_AVAILABLE;
+            return; // Success
+        }
+
+        if (status & I2C_S_RXAK_MASK) // NACK recieved
+        {
+            i2c->C1 &= ~(I2C_C1_MST_MASK | I2C_C1_IICIE_MASK); /* Generate STOP 
+            and disable further interrupts. */
+            channel->status = I2C_ERROR;
+            return; // Error
+        }
+
+        element = *channel->sequence;
+
+        if (element == I2C_RESTART) // Do we have a reapeted start?
+        {
+            i2c->C1 |= (I2C_C1_RSTA_MASK | I2C_C1_TX_MASK); /* Generate a 
+            repeated start condition and switch to TX */
+            channel->sequence++;
+            element = *channel->sequence;
+            i2c->D = element;
+        }
+        else
+        {
+            if (element == I2C_READ)
+            {
+                channel->mode = I2C_RX;
+                // We need to count how many bytes to read
+                channel->reads_ahead = 1;
+                while(((channel->sequence + channel->reads_ahead) <
+                        channel->sequence_end) && (*(channel->sequence + 
+                        channel->reads_ahead) == I2C_READ))
+                {
+                    channel->reads_ahead++;
+                }
+                i2c->C1 &= ~I2C_C1_TX_MASK; // Switch to RX mode
+
+                if (channel->reads_ahead == 1)
+                {
+                    i2c->C1 |= I2C_C1_TXAK_MASK; // do not ACK the final read
+                }
+                else
+                {
+                    i2c->C1 &= ~I2C_C1_TX_MASK; // ACK but the final read
+                }
+                /* Now comes a dummy read. Thats why we dont increment the 
+                recieve_buffer pointer*/
+                *channel->recieve_buffer = i2c->D;
+                channel->reads_ahead--;
+            }
+            else // Not a restart, not a read, must be a write
+            {
+                i2c->D = element;
+            }
+        }
+    }
+
+    else    // RX mode
+    {
+        switch (channel->reads_ahead)
+        {
+            case 0: /* Last byte to be read. Need to switch to TX to send a Sr 
+            or to avoid to get another I2C read */
+                i2c->C1 |= I2C_C1_TX_MASK;
+                *channel->recieve_buffer++ = i2c->D; // Last read
+
+                if ((channel->sequence < channel->sequence_end) &&
+                    (*channel->sequence == I2C_RESTART)) // Sr?
+                {
+                    i2c->C1 |= I2C_C1_RSTA_MASK; // Generate a Sr
+                    channel->mode = I2C_TX;
+                    channel->sequence++;
+                    element = *channel->sequence;
+                    i2c->D = element;
+                }
+                else
+                {
+                    /* Generate STOP (set MST=0), switch to RX mode, and 
+                    disable further interrupts */
+                    i2c->C1 &= ~(I2C_C1_MST_MASK | I2C_C1_IICIE_MASK 
+                                |I2C_C1_TXAK_MASK);
+                    channel->status = I2C_AVAILABLE;
+                    return;
+                }
+                break;
+
+            case 1:
+                i2c->C1 |= I2C_C1_TXAK_MASK; // Do not ACK the final read
+                *channel->recieve_buffer++ = i2c->D;
+                break;
+
+            default:
+                *channel->recieve_buffer++ = i2c->D;
+                break;
+        }
+
+        channel->reads_ahead--;
+    }
+    channel->sequence++;
+    return;
 }
 
 /*******************************************************************************
@@ -240,15 +351,15 @@ static void I2C_IRQHandler(uint8_t channel_id)
 
 __ISR__ I2C0_IRQHandler(void)
 {
-
+    I2C_IRQHandler(0);
 }
 
 __ISR__ I2C1_IRQHandler(void)
 {
-    
+    I2C_IRQHandler(1);
 }
 
 __ISR__ I2C2_IRQHandler(void)
 {
-    
+    I2C_IRQHandler(2);
 }
