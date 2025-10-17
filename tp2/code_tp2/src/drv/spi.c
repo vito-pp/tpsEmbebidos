@@ -3,10 +3,8 @@
 #include "../CMSIS/MK64F12.h"
 #include "gpio.h"
 #include "board.h"
+#include "hardware.h"
 
-
-#define FRAME_SIZE 8
-#define CTAR_OPTIONS 2
 #define TX_BUFFER_SIZE 30
 #define RX_BUFFER_SIZE 30
 
@@ -17,15 +15,6 @@ static PORT_Type * const kPort[] = PORT_BASE_PTRS;
 static uint32_t tx_buffer[TX_BUFFER_SIZE];
 static uint32_t rx_buffer[RX_BUFFER_SIZE];
 
-/**
- * @brief Pushes data to the SPI0 TX FIFO with specified configuration.
- * @param data The 16-bit data to be transmitted via the SPI interface.
- * @param pcs The Peripheral Chip Select (PCS) signal to be used for the transaction.
- * @param ctar_x The Configuration Register (CTAR) index to define SPI transfer settings.
- * @param ctcnt Clear Transfer Counter (true to clear, false to not clear).
- * @return 1 on success (data successfully pushed to the transmit buffer).
- */
-static int SPI0_pushTx(uint16_t data, uint8_t pcs, bool ctcnt);
 
 /**
  * @brief Configures the multiplexing and interrupt settings for a specified pin.
@@ -36,7 +25,30 @@ static int SPI0_pushTx(uint16_t data, uint8_t pcs, bool ctcnt);
  */
 static void pinConfig(uint8_t pin, uint8_t alt, bool irqc);
 
-void pushTxRoundedBuffer(uint16_t data);
+static void pushTxRoundedBuffer(uint8_t data);
+
+static void SPI0_PushTxRx_IRQ(void);
+
+__ISR__ SPI0_IRQHandler(void)
+{
+    SPI0_PushTxRx_IRQ();
+}
+
+void SPI0_PushTxRx_IRQ(void)
+{
+    static int i = 0;
+    static int j = 0;
+
+    if(tx_buffer[i] != 0xFFFFFFFF)
+    {
+        spi_base_adress[0]->PUSHR = tx_buffer[i];
+        tx_buffer[i] = 0xFFFFFFFF;
+        i = (i + 1) % TX_BUFFER_SIZE;
+    }
+    rx_buffer[j] = spi_base_adress[0]->POPR ;
+    j = (j + 1) % RX_BUFFER_SIZE;
+}
+
 
 void SPI0Master_Init(void)
 {
@@ -44,6 +56,10 @@ void SPI0Master_Init(void)
     for(i= 0; i < TX_BUFFER_SIZE; i++)
     {
         tx_buffer[i] = 0xFFFFFFFF;
+    }
+    for(i= 0; i < RX_BUFFER_SIZE; i++)
+    {
+        rx_buffer[i] = 0xFFFFFFFF;
     }
 
     bool cont_scke = 0;
@@ -70,9 +86,9 @@ void SPI0Master_Init(void)
     //CTAR0 CONFIGURATION
     bool cpol = 0;
     uint8_t cpha = 0;
-    uint8_t lsfe = 0;
+    uint8_t lsfe = 1;
     uint8_t fmsz = 7;
-    uint16_t br= 125;
+    uint16_t br= 500;
 
     spi_x->CTAR[0] |= SPI_CTAR_FMSZ(fmsz &&1);
     spi_x->CTAR[0] |= SPI_CTAR_CPOL(cpol &&1);
@@ -121,10 +137,10 @@ void SPI0_send3Bytes(uint8_t data_1, uint8_t data_2, uint8_t data_3)
     
 }
 
-void pushTxRoundedBuffer(uint16_t data, bool cont)
+void pushTxRoundedBuffer(uint8_t data, bool cont)
 {
     static int index = 0;
-    tx_buffer[index] = data | SPI_PUSHR_CONT(cont) |SPI_PUSHR_PCS(1);
+    tx_buffer[index] = data | SPI_PUSHR_CONT(cont) | SPI_PUSHR_PCS(1);
     index = (index + 1) % TX_BUFFER_SIZE;
 }
 
@@ -140,36 +156,3 @@ uint16_t SPI0_PopRxFIFO(void)
     }
     return 0xFFFF;
 }
-
-
-void SPI0_PushTx_IRQ(void)
-{
-    static int i = 0;
-    if(tx_buffer[i] != 0xFFFFFFFF)
-    {
-        spi_base_adress[0]->PUSHR = tx_buffer[i];
-        tx_buffer[i] = 0xFFFFFFFF;
-        i = (i + 1) % TX_BUFFER_SIZE;
-    }
-    
-}
-
-void SPI0_PopRx_IRQ(void)
-{
-    
-}
-
-
-
-
-uint32_t SPIx_popRx(uint8_t spi_instance)
-{
-    return spi_base_adress[spi_instance]->POPR;
-}
-
-uint32_t SPIx_TXFR0(uint8_t spi_instance)
-{
-    return spi_base_adress[spi_instance]->TXFR0;
-}
-
-//fifo es de 4 x fmsz
