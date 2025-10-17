@@ -137,6 +137,15 @@ void SPI0_send3Bytes(uint8_t data_1, uint8_t data_2, uint8_t data_3)
     
 }
 
+void SPI0_send4Bytes(uint8_t data_1, uint8_t data_2, uint8_t data_3, uint8_t data_4)
+{
+    pushTxRoundedBuffer(data_1,1);
+    pushTxRoundedBuffer(data_2,1);
+    pushTxRoundedBuffer(data_3,1);
+    pushTxRoundedBuffer(data_4,0);
+    
+}
+
 void pushTxRoundedBuffer(uint8_t data, bool cont)
 {
     static int index = 0;
