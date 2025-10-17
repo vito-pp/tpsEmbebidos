@@ -9,6 +9,10 @@ Release/
 *.su
 *.launch
 *.xml
+.settings/
+.cproject
+.project
+
 
 # IDE settings 
 .vscode/
