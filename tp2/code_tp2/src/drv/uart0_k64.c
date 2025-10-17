@@ -1,82 +1,60 @@
 /*
  * uart0_k64.c
  *
- * Implementación UART0 mínima para FRDM-K64F, alineada al TP:
- * - Inicio de módulo, pines PB16/PB17 ALT3, cálculo de SBR/BRFA con sobremuestreo 16x.
- * - TX/RX por polling (TDRE/RDRF).
- * - ISR de RX opcional (un byte + flag).
+ * Implementación UART0 mínima para FRDM-K64F.
+ * Usa la función de las diapositivas para calcular el baudrate:
+ *
+ *   clock = ((uart == UART0) || (uart == UART1)) ? (__CORE_CLOCK__) : (__CORE_CLOCK__ >> 1);
+ *   sbr   = clock / (baud << 4);                 // sbr = clock / (baud * 16)
+ *   brfa  = (clock << 1) / baud - (sbr << 5);    // brfa = 2*clock/baud - 32*sbr
+ *
+ * y luego escribe BDH/BDL/C4.
  */
 
 #include "uart0_k64.h"
 
-/* =====================================
- *  Helpers locales
- * =====================================
- */
-
-/* Determina la frecuencia fuente de UART0 leyendo SOPT2->UART0SRC
- * y usando los helpers del SDK para obtener la frecuencia en Hz. */
-static uint32_t uart0_get_src_clock_hz(void)
+/* ======= Función pedida en diapositivas: cálculo de baudrate ======= */
+static void UART_SetBaudRate(UART_Type *uart, uint32_t baudrate)
 {
-    uint32_t srcSel = (SIM->SOPT2 & SIM_SOPT2_UART0SRC_MASK) >> SIM_SOPT2_UART0SRC_SHIFT;
-    switch (srcSel)
-    {
-        case 0u: /* MCGFLLCLK o MCGPLLCLK/2, según PLLFLLSEL */
-            return CLOCK_GetFreq(kCLOCK_PllFllSelClk);
-        case 1u: /* OSCERCLK */
-            return CLOCK_GetFreq(kCLOCK_Osc0ErClk);
-        case 3u: /* MCGIRCLK */
-            return CLOCK_GetFreq(kCLOCK_McgInternalRefClk);
-        default: /* Valor reservado -> fallback razonable */
-            return CLOCK_GetFreq(kCLOCK_PllFllSelClk);
-    }
+    uint16_t sbr, brfa;
+    uint32_t clock;
+
+    /* UART0/UART1 usan core clock; el resto, típicamente bus clock (= core/2) */
+    clock = ((uart == UART0) || (uart == UART1)) ? (__CORE_CLOCK__) : (__CORE_CLOCK__ >> 1);
+
+    /* Valor por defecto si baud inválido */
+    baudrate = ((baudrate == 0u) ? (UART_HAL_DEFAULT_BAUDRATE) :
+                ((baudrate > 0x1FFFu) ? (UART_HAL_DEFAULT_BAUDRATE) : (baudrate)));
+
+    /* Cálculos según slides */
+    sbr  = (uint16_t)(clock / (baudrate << 4));              // sbr = clock/(baud*16)
+    brfa = (uint16_t)(((clock << 1) / baudrate) - (sbr << 5)); // brfa = 2*clock/baud - 32*sbr
+
+    /* Programar SBR (BDH/BDL) y BRFA (C4) */
+    uart->BDH = UART_BDH_SBR((uint8_t)(sbr >> 8));
+    uart->BDL = UART_BDL_SBR((uint8_t)(sbr & 0xFFu));
+    uart->C4  = (uint8_t)((uart->C4 & ~UART_C4_BRFA_MASK) | UART_C4_BRFA(brfa & 0x1Fu));
 }
 
-/* Programa SBR/BRFA para UART0 a partir de srcClockHz y baud.
- * Fórmula: baud = srcClock / (16 * (SBR + BRFA/32)) */
-static void uart0_program_baud(uint32_t srcClockHz, uint32_t baud)
-{
-    uint16_t sbr = (uint16_t)(srcClockHz / (16u * baud));
-    if (sbr == 0u) sbr = 1u;
-    if (sbr > 0x1FFFu) sbr = 0x1FFFu; /* 13 bits */
-
-    uint32_t brfa = ((2u * srcClockHz) / baud) - (32u * (uint32_t)sbr);
-    if (brfa > 31u) brfa = 31u;
-
-    /* Guardar C2 y deshabilitar TX/RX antes de tocar los divisores */
-    uint8_t c2 = UART0->C2;
-    UART0->C2 = 0u;
-
-    UART0->BDH = (uint8_t)((UART0->BDH & ~UART_BDH_SBR_MASK) | UART_BDH_SBR((sbr >> 8) & 0x1Fu));
-    UART0->BDL = (uint8_t)(sbr & 0xFFu);
-    UART0->C4  = (uint8_t)((UART0->C4 & ~UART_C4_BRFA_MASK) | UART_C4_BRFA(brfa & 0x1Fu));
-
-    UART0->C2 = c2; /* restaurar */
-}
-
-/* Configura los pines PB16 (RX) y PB17 (TX) en ALT3 (UART0). */
+/* ======= Configuración de pines PTB16/PTB17 en ALT3 ======= */
 static void uart0_configure_pins(void)
 {
     ENABLE_PORT_CLOCKB();
-    PORTB->PCR[UART0_TX_PORTB_PIN] = PORT_PCR_MUX(3u);
-    PORTB->PCR[UART0_RX_PORTB_PIN] = PORT_PCR_MUX(3u);
+    PORTB->PCR[UART0_TX_PORTB_PIN] = PORT_PCR_MUX(3u); /* ALT3 */
+    PORTB->PCR[UART0_RX_PORTB_PIN] = PORT_PCR_MUX(3u); /* ALT3 */
 }
 
-/* =====================================
- *  API pública
- * =====================================
- */
-
+/* ======= API pública ======= */
 volatile bool    g_uart0_rx_flag = false;
 volatile uint8_t g_uart0_rx_data = 0u;
 
 void uart0_init(uint32_t baud)
 {
-    /* 1) Clock del módulo y pines */
+    /* 1) Clock módulo UART0 + pines */
     SIM->SCGC4 |= SIM_SCGC4_UART0_MASK;
     uart0_configure_pins();
 
-    /* 2) Deshabilitar TX/RX y limpiar configuración básica (8-N-1) */
+    /* 2) Deshabilitar TX/RX y setear 8-N-1 */
     UART0->C2 = 0u;
     UART0->C1 = 0u; /* M=0 (8 bits), PE=0 */
     UART0->S2 = 0u;
@@ -85,9 +63,8 @@ void uart0_init(uint32_t baud)
     /* 3) (Opcional) habilitar FIFOs */
     UART0->PFIFO = (uint8_t)(UART_PFIFO_TXFE_MASK | UART_PFIFO_RXFE_MASK);
 
-    /* 4) Programar baudrate según la fuente efectiva */
-    uint32_t srcClockHz = uart0_get_src_clock_hz();
-    uart0_program_baud(srcClockHz, baud);
+    /* 4) Baudrate con la función de las diapositivas */
+    UART_SetBaudRate(UART0, baud);
 
     /* 5) Habilitar TX y RX */
     UART0->C2 = (UART_C2_TE_MASK | UART_C2_RE_MASK);
@@ -95,8 +72,10 @@ void uart0_init(uint32_t baud)
 
 void uart0_set_baud(uint32_t baud)
 {
-    uint32_t srcClockHz = uart0_get_src_clock_hz();
-    uart0_program_baud(srcClockHz, baud);
+    uint8_t c2 = UART0->C2;
+    UART0->C2 = 0u;                 /* seguro para modificar divisores */
+    UART_SetBaudRate(UART0, baud);
+    UART0->C2 = c2;
 }
 
 void uart0_enable(bool txEnable, bool rxEnable)
@@ -139,12 +118,10 @@ void uart0_enable_rx_interrupt(bool enable)
 #ifdef UART0K64_USE_ISR
 void UART0_RX_TX_IRQHandler(void)
 {
-    /* Orden correcto: leer S1 y luego D si hay dato (RDRF=1) */
-    uint8_t s1 = UART0->S1;
-    (void)s1;
-    if (s1 & UART_S1_RDRF_MASK)
-    {
-        g_uart0_rx_data = UART0->D;  /* leer D limpia RDRF */
+    /* Orden correcto: leer S1 y luego D si hay RDRF */
+    uint8_t s1 = UART0->S1; (void)s1;
+    if (s1 & UART_S1_RDRF_MASK) {
+        g_uart0_rx_data = UART0->D;
         g_uart0_rx_flag = true;
     }
 }
