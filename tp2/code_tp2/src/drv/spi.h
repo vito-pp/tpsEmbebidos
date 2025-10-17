@@ -23,9 +23,11 @@ void SPI0_PopRx_IRQ(void);
  */
 uint32_t SPIx_popRx(uint8_t spi_instance);
 
-void SPI0_sendByte(uint16_t data_1);
+void SPI0_sendByte(uint8_t data_1);
 
-void SPI0_send3Bytes(uint16_t data_1, uint16_t data_2, uint16_t data_3);
+void SPI0_send2Bytes(uint8_t data_1, uint8_t data_2);
+
+void SPI0_send3Bytes(uint8_t data_1, uint8_t data_2, uint8_t data_3);
 
 
 

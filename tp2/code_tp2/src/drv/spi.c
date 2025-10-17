@@ -100,12 +100,20 @@ void pinConfig(uint8_t pin, uint8_t alt, uint8_t irqc)
     kPort[PIN2PORT(pin)]->PCR[PIN2NUM(pin)] |= PORT_PCR_IRQC(irqc);
 }
 
-void SPI0_sendByte(uint16_t data_1)
+void SPI0_sendByte(uint8_t data_1)
 {
     pushTxRoundedBuffer(data_1,0);
     
 }
-void SPI0_send3Bytes(uint16_t data_1, uint16_t data_2, uint16_t data_3)
+
+void SPI0_send2Bytes(uint8_t data_1, uint8_t data_2)
+{
+    pushTxRoundedBuffer(data_1,1);
+    pushTxRoundedBuffer(data_2,0);
+    
+}
+
+void SPI0_send3Bytes(uint8_t data_1, uint8_t data_2, uint8_t data_3)
 {
     pushTxRoundedBuffer(data_1,1);
     pushTxRoundedBuffer(data_2,1);
@@ -120,13 +128,17 @@ void pushTxRoundedBuffer(uint16_t data, bool cont)
     index = (index + 1) % TX_BUFFER_SIZE;
 }
 
-void SPI0_PopRxFIFO(void)
+uint16_t SPI0_PopRxFIFO(void)
 {
-    static int index = 0;
-    uint16_t aux;
-
-
-
+    static int i = 0;
+    if(rx_buffer[i] != 0xFFFFFFFF)
+    {
+        uint16_t aux = rx_buffer[i];
+        rx_buffer[i] = 0xFFFFFFFF;
+        i = (i + 1) % TX_BUFFER_SIZE;
+        return aux;
+    }
+    return 0xFFFF;
 }
 
 
@@ -144,13 +156,6 @@ void SPI0_PushTx_IRQ(void)
 
 void SPI0_PopRx_IRQ(void)
 {
-    static int i = 0;
-    if(tx_buffer[i] != 0xFFFFFFFF)
-    {
-        spi_base_adress[0]->PUSHR = tx_buffer[i];
-        tx_buffer[i] = 0xFFFFFFFF;
-        i = (i + 1) % TX_BUFFER_SIZE;
-    }
     
 }
 
