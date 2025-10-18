@@ -46,13 +46,6 @@ static const uint16_t scl_div[] =
 
 typedef enum
 {
-    I2C_AVAILABLE,
-    I2C_BUSY,
-    I2C_ERROR
-} I2C_Status_e;
-
-typedef enum
-{
     I2C_TX,
     I2C_RX
 } I2C_Mode_e;
@@ -78,7 +71,7 @@ static void I2C_IRQHandler(uint8_t channel_id);
  * LOCAL VARIABLES
  ******************************************************************************/
 
-volatile I2C_Buffer_t I2C_channel[I2C_NUMBER_OF_CHANNELS];
+volatile static I2C_Buffer_t I2C_channel[I2C_NUMBER_OF_CHANNELS];
 
 /*******************************************************************************
  * FUNCTION DEFINITIONS WITH GLOBAL SCOPE
@@ -150,7 +143,7 @@ bool I2C_MasterInit(uint8_t channel_id, uint16_t baud_rate)
     return true;
 }
 
-void I2C_MasterSendSequence(uint8_t channel_id, uint16_t *sequence, 
+bool I2C_MasterSendSequence(uint8_t channel_id, uint16_t *sequence, 
                             uint32_t len, uint8_t *recieve_buffer)
 {
     if (channel_id >= I2C_NUMBER_OF_CHANNELS) 
@@ -186,6 +179,11 @@ void I2C_MasterSendSequence(uint8_t channel_id, uint16_t *sequence,
     i2c->D = *(channel->sequence)++; // Writes the first byte
     // The ISR handler will take care of the rest. If I2C_POLLING_FLAG is set to true ... (ToDo add I2C_Update() func for polling)
     return true;
+}
+
+I2C_Status_e I2C_GetStatus(uint8_t channel_id)
+{
+    return I2C_channel[channel_id].status;
 }
 
 /*******************************************************************************

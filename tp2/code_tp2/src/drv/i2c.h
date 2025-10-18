@@ -20,12 +20,22 @@
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
 
-#define I2C_NUMBER_OF_CHANNELS FSL_FEATURE_SOC_I2C_COUNT /* three I2C modules 
-on the Kinetis K64 */
+#define I2C_NUMBER_OF_CHANNELS 3 // three I2C modules on the Kinetis K64 
 #define I2C_POLLING_FLAG false /* set to true to use polling instead of IRQs 
 (no ready yet)*/
 #define I2C_RESTART 1<<8 // Reapeted start bit 8-bit symbol
 #define I2C_READ    2<<8 // Read bit 8-bit symbol
+
+/*******************************************************************************
+ * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
+ ******************************************************************************/
+
+typedef enum
+{
+    I2C_AVAILABLE,
+    I2C_BUSY,
+    I2C_ERROR
+} I2C_Status_e;
 
 /*******************************************************************************
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
@@ -56,10 +66,16 @@ bool I2C_MasterInit(uint8_t channel, uint16_t baud_rate);
  * @param received_data    Buffer to store bytes from I2C_READ operations. Pass 
  * @c NULL if there are no reads in the sequence. Buffer must be large enough 
  * to hold one byte per READ operation.
+ * @return true on success, false on error.
  * @see I2C_RESTART
  * @see I2C_READ
  */
-void I2C_MasterSendSequence(uint8_t channel, uint16_t *sequence, 
+bool I2C_MasterSendSequence(uint8_t channel, uint16_t *sequence, 
                             uint32_t sequence_len, uint8_t *recieve_buffer);
+
+/**
+ * @brief Returns the status of the channel selected.
+ */
+I2C_Status_e I2C_GetStatus(uint8_t channel);
 
 #endif // _I2C_H_
