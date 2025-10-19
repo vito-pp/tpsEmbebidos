@@ -27,25 +27,32 @@ static void pinConfig(uint8_t pin, uint8_t alt, uint8_t irqc);
 
 static void pushTxRoundedBuffer(uint8_t data, bool cont);
 
+void SPI0_Flush_HW_RxFIFO_IRQ(void);
 
-
-__ISR__ SPI0_IRQHandler(void)
+void SPI0_CsIRQ(void)
 {
-   // SPI0_PushTxRx_IRQ();
+   SPI0_Flush_HW_RxFIFO_IRQ();
 }
 
+//interrupts when message is sent
+void SPI0_Flush_HW_RxFIFO_IRQ(void)
+{
+	static int j = 0; //Rx FIFO index
+	SPI_Type * spi_x = (SPI_Type*) spi_base_adress[0];
+	while((spi_x->SR & SPI_SR_RXCTR_MASK) >>4)
+	{
+	    rx_buffer[j] = spi_base_adress[0]->POPR;
+	    j = (j + 1) % RX_BUFFER_SIZE;
+	}
+}
 
 //Pushes message to HW FIFO
 //Pushes last received message to SW FIFO
-void SPI0_PushTxRx_IRQ(void)
+void SPI0_UpdateTx(void)
 {
     static int i = 0; //Tx FIFO index
-    static int j = 0; //Rx FIFO index
     uint32_t aux = 0;
 
-
-    //Flushes HW FIFO
-    SPI_Type * spi_x = (SPI_Type*) spi_base_adress[0];
     do
     {
     	aux = tx_buffer[i];
@@ -53,10 +60,6 @@ void SPI0_PushTxRx_IRQ(void)
         if(tx_buffer[i] != 0xFFFFFFFF)
         {
        	    spi_base_adress[0]->PUSHR = tx_buffer[i];
-
-       	    while(!(spi_x->SR &SPI_SR_TCF_MASK));
-
-			spi_x->SR |= SPI_SR_TCF_MASK;
 
 			tx_buffer[i] = 0xFFFFFFFF;
       	    i = (i + 1) % TX_BUFFER_SIZE;
@@ -67,14 +70,20 @@ void SPI0_PushTxRx_IRQ(void)
         }
     }
     while(aux & SPI_PUSHR_CONT_MASK); //Checks if last Tx is the EOQ message.
-
-    while((spi_x->SR & SPI_SR_RXCTR_MASK) >>4)
-    {
-    	rx_buffer[j] = spi_base_adress[0]->POPR;
-    	j = (j + 1) % RX_BUFFER_SIZE;
-    }
 }
 
+bool SPI0_isTransferComplete(void)
+{
+	SPI_Type * spi_x = (SPI_Type*) spi_base_adress[0];
+	if(spi_x->SR & SPI_SR_TCF_MASK)
+	{
+		spi_x->SR |= SPI_SR_TCF_MASK;
+		return 1;
+	}
+
+	return 0;
+
+}
 
 void SPI0Master_Init(void)
 {
@@ -100,7 +109,10 @@ void SPI0Master_Init(void)
     pinConfig(SPI0_SIN, ALT2, 0);
     pinConfig(SPI0_SOUT, ALT2, 0);
     pinConfig(SPI0_SCLK, ALT2, 0);
-    pinConfig(SPI0_PCS0, ALT2, 0);//0b1001);
+    pinConfig(SPI0_PCS0, ALT2, 0);
+
+    gpioMode(SPI0_CS_IRQ, OUTPUT);
+    gpioIRQ (SPI0_PCS0, PORT_PCR_IRQC_INT_RISING, SPI0_CsIRQ);
 
     SPI_Type* spi_x = spi_base_adress[0];
 

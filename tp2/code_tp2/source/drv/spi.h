@@ -6,11 +6,9 @@
 
 
 
-void SPI0_PushTxRx_IRQ(void);
+void SPI0_UpdateTx(void);
 
-
-
-
+bool SPI0_isTransferComplete(void);
 /**
  * @brief Configures the pins for the SPI0 to be used as masters.
  *        Used pins are specified in board.h file.
@@ -22,6 +20,8 @@ void SPI0Master_Init(void);
  * Returns RX data or 0xFFFFFFFF if RX FIFO is empty
  */
 uint32_t SPI0_PopRxFIFO(void);
+
+void SPI0_CsIRQ(void);
 
 void SPI0_sendByte(uint8_t data_1);
 

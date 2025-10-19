@@ -44,7 +44,9 @@ void App_Init (void)
 void App_Run (void)
 {
 	SPI0_send3Bytes(3, 0b10101010, 0b11001100);
-	SPI0_PushTxRx_IRQ();
+
+	while(!SPI0_isTransferComplete());
+	SPI0_UpdateTx();
 
 	int a = SPI0_PopRxFIFO();
 	int b = SPI0_PopRxFIFO();
