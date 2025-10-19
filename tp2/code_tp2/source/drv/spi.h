@@ -8,7 +8,11 @@
 
 void SPI0_PushTxRx_IRQ(void);
 
+bool SPI0_isTxComplete(void);
 
+void SPI0_FlushRX(void);
+
+bool SPI0_isTxQueueEmpty(void);
 
 
 /**

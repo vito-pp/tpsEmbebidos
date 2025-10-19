@@ -5,8 +5,8 @@
 #include "board.h"
 #include "hardware.h"
 
-#define TX_BUFFER_SIZE 12
-#define RX_BUFFER_SIZE 12
+#define TX_BUFFER_SIZE 30
+#define RX_BUFFER_SIZE 30
 
 static SPI_Type* const spi_base_adress[] = SPI_BASE_PTRS;
 
@@ -29,9 +29,15 @@ static void pushTxRoundedBuffer(uint8_t data, bool cont);
 
 
 
-__ISR__ SPI0_IRQHandler(void)
+void SPI0_FlushRX(void)
 {
-   // SPI0_PushTxRx_IRQ();
+	static int j = 0; //Rx FIFO index
+	SPI_Type * spi_x = (SPI_Type*) spi_base_adress[0];
+	while((spi_x->SR & SPI_SR_RXCTR_MASK) >>4)
+	{
+	   	rx_buffer[j] = spi_base_adress[0]->POPR;
+	   	j = (j + 1) % RX_BUFFER_SIZE;
+	}
 }
 
 
@@ -40,23 +46,19 @@ __ISR__ SPI0_IRQHandler(void)
 void SPI0_PushTxRx_IRQ(void)
 {
     static int i = 0; //Tx FIFO index
-    static int j = 0; //Rx FIFO index
+
     uint32_t aux = 0;
-
-
     //Flushes HW FIFO
-    SPI_Type * spi_x = (SPI_Type*) spi_base_adress[0];
     do
     {
     	aux = tx_buffer[i];
-        //uint8_t aux2 = aux  & 0xFF;
+        uint8_t aux2 = aux  & 0xFF;
+
         if(tx_buffer[i] != 0xFFFFFFFF)
         {
        	    spi_base_adress[0]->PUSHR = tx_buffer[i];
 
-       	    while(!(spi_x->SR &SPI_SR_TCF_MASK));
-
-			spi_x->SR |= SPI_SR_TCF_MASK;
+       	    while(!SPI0_isTxComplete());
 
 			tx_buffer[i] = 0xFFFFFFFF;
       	    i = (i + 1) % TX_BUFFER_SIZE;
@@ -67,15 +69,21 @@ void SPI0_PushTxRx_IRQ(void)
         }
     }
     while(aux & SPI_PUSHR_CONT_MASK); //Checks if last Tx is the EOQ message.
-
-    while((spi_x->SR & SPI_SR_RXCTR_MASK) >>4)
-    {
-    	rx_buffer[j] = spi_base_adress[0]->POPR;
-    	j = (j + 1) % RX_BUFFER_SIZE;
-    }
 }
 
+bool SPI0_isTxComplete(void)
+{
+	if((spi_base_adress[0])->SR &SPI_SR_TCF_MASK)
+	{
+		(spi_base_adress[0])->SR |= SPI_SR_TCF_MASK;
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
 
+}
 void SPI0Master_Init(void)
 {
     int i = 0;
@@ -100,7 +108,10 @@ void SPI0Master_Init(void)
     pinConfig(SPI0_SIN, ALT2, 0);
     pinConfig(SPI0_SOUT, ALT2, 0);
     pinConfig(SPI0_SCLK, ALT2, 0);
-    pinConfig(SPI0_PCS0, ALT2, 0);//0b1001);
+    pinConfig(SPI0_PCS0, ALT2, 0);
+
+    gpioMode(SPI0_CS_GPIO, INPUT);
+    gpioIRQ(SPI0_CS_GPIO, PORT_PCR_IRQC_INT_RISING, SPI0_FlushRX);
 
     SPI_Type* spi_x = spi_base_adress[0];
 
@@ -146,6 +157,19 @@ void pinConfig(uint8_t pin, uint8_t alt, uint8_t irqc)
                                             PORT_PCR_IRQC(0b1111));
     kPort[PIN2PORT(pin)]->PCR[PIN2NUM(pin)] |= PORT_PCR_MUX(alt);
     kPort[PIN2PORT(pin)]->PCR[PIN2NUM(pin)] |= PORT_PCR_IRQC(irqc);
+}
+
+bool SPI0_isTxQueueEmpty(void)
+{
+	int i;
+	for(i= 0; i < TX_BUFFER_SIZE; i++)
+	{
+		if(tx_buffer[i] != 0xFFFFFFFF)
+		{
+			return 0;
+		}
+	}
+	return 1;
 }
 
 void SPI0_sendByte(uint8_t data_1)

@@ -43,13 +43,51 @@ void App_Init (void)
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run (void)
 {
-	SPI0_send3Bytes(3, 0b10101010, 0b11001100);
-	SPI0_PushTxRx_IRQ();
 
-	int a = SPI0_PopRxFIFO();
-	int b = SPI0_PopRxFIFO();
-	int c = SPI0_PopRxFIFO();
-	int d = SPI0_PopRxFIFO();
+
+	if(SPI0_isTxQueueEmpty())
+	{
+		SPI0_send3Bytes(1, 2, 3);
+		SPI0_PushTxRx_IRQ();
+
+		SPI0_send4Bytes(4, 5, 6, 7);
+		SPI0_PushTxRx_IRQ();
+
+		SPI0_send2Bytes(8, 9);
+		SPI0_PushTxRx_IRQ();
+
+		SPI0_send2Bytes(10, 11);
+		SPI0_PushTxRx_IRQ();
+
+		SPI0_sendByte(12);
+		SPI0_PushTxRx_IRQ();
+
+		SPI0_send4Bytes(21, 22, 23, 24);
+		SPI0_PushTxRx_IRQ();
+
+		SPI0_send3Bytes(25, 26, 27);
+		SPI0_PushTxRx_IRQ();
+
+		SPI0_send2Bytes(28, 29);
+		SPI0_PushTxRx_IRQ();
+	}
+
+	static uint16_t rx_buffer[30];
+
+	static int i = 0;
+	uint16_t aux;
+	for(;;)
+	{
+		if( (aux = SPI0_PopRxFIFO() ) != 0xFFFF)
+		{
+			rx_buffer[i] = aux;
+			i = (i+1)%30;
+		}
+		else
+		{
+			break;
+		}
+	}
 }
 
 /*******************************************************************************
