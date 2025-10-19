@@ -38,27 +38,58 @@ bool FXOS_Init(uint8_t i2c_ch)
     if (!FXOS_ReadWhoAmI(i2c_ch, &who)) return false;
     while(I2C_GetStatus(i2c_ch) != I2C_AVAILABLE)
     {
-    	I2C_ServicePoll(i2c_ch); // wait for the tx
+        if (I2C_GetStatus(i2c_ch) == I2C_ERROR)
+        		return false;
+
+    	I2C_ServicePoll(i2c_ch); // wait for the tx to end
     }
     if (who != FXOS_WHOAMI_VAL) return false;
 
     // CTRL_REG1 standby: clear ACTIVE (bit 0)
     uint16_t seq1[] = { FXOS_ADDR_W, FXOS_CTRL_REG1, 0x00 };
     if (!I2C_MasterSendSequence(i2c_ch, seq1, 3, NULL)) return false;
+    while(I2C_GetStatus(i2c_ch) != I2C_AVAILABLE)
+    {
+        if (I2C_GetStatus(i2c_ch) == I2C_ERROR)
+        		return false;
+
+    	I2C_ServicePoll(i2c_ch); // wait for the tx to end
+    }
 
     // M_CTRL_REG1: Hybrid mode (ACC+MAG). M_HMS bits [1:0] = 0b11.
     // Also oversampling.
     uint16_t seq2[] = { FXOS_ADDR_W, FXOS_M_CTRL_REG1, 0x1F };
     if (!I2C_MasterSendSequence(i2c_ch, seq2, 3, NULL)) return false;
+    while(I2C_GetStatus(i2c_ch) != I2C_AVAILABLE)
+    {
+        if (I2C_GetStatus(i2c_ch) == I2C_ERROR)
+        		return false;
+
+    	I2C_ServicePoll(i2c_ch); // wait for the tx to end
+    }
 
     // M_CTRL_REG2: auto-increment for MAG
     uint16_t seq3[] = { FXOS_ADDR_W, FXOS_M_CTRL_REG2, 0x20 };
     if (!I2C_MasterSendSequence(i2c_ch, seq3, 3, NULL)) return false;
+    while(I2C_GetStatus(i2c_ch) != I2C_AVAILABLE)
+    {
+        if (I2C_GetStatus(i2c_ch) == I2C_ERROR)
+        		return false;
+
+    	I2C_ServicePoll(i2c_ch); // wait for the tx to end
+    }
 
     // CTRL_REG1: set ODR and ACTIVE=1. For 100 Hz ODR: DR=010, 
     // ACTIVE=1 to 0x19
     uint16_t seq4[] = { FXOS_ADDR_W, FXOS_CTRL_REG1, 0x19 };
     if (!I2C_MasterSendSequence(i2c_ch, seq4, 3, NULL)) return false;
+    while(I2C_GetStatus(i2c_ch) != I2C_AVAILABLE)
+    {
+        if (I2C_GetStatus(i2c_ch) == I2C_ERROR)
+        		return false;
+
+    	I2C_ServicePoll(i2c_ch); // wait for the tx to end
+    }
 
     i2c_channel_id = i2c_ch;
 
@@ -67,9 +98,9 @@ bool FXOS_Init(uint8_t i2c_ch)
 
 bool FXOS_ReadAccelerometer(Vec3_t* mg)
 {
-    FXOS_Acc_ReadRaw(i2c_channel_id, read_raw_buff);
     if (I2C_GetStatus(i2c_channel_id) == I2C_AVAILABLE)
     {
+    	FXOS_Acc_ReadRaw(i2c_channel_id, read_raw_buff);
         FXOS_Acc_Unpack14b(read_raw_buff, &out14);
         FXOS_Acc2mg(&out14, mg);
         return true;
@@ -82,9 +113,9 @@ bool FXOS_ReadAccelerometer(Vec3_t* mg)
 
 bool FXOS_ReadMagnetometer(Vec3_t* uT)
 {
-    FXOS_Mag_ReadRaw(i2c_channel_id, read_raw_buff);
     if (I2C_GetStatus(i2c_channel_id) == I2C_AVAILABLE)
     {
+    	FXOS_Mag_ReadRaw(i2c_channel_id, read_raw_buff);
         FXOS_Mag_Unpack16b(read_raw_buff, &out16);
         FXOS_Mag2uT(&out16, uT);
         return true;
@@ -106,7 +137,7 @@ static bool FXOS_ReadWhoAmI(uint8_t i2c_ch, uint8_t *who)
     {
         FXOS_ADDR_W, FXOS_WHO_AM_I,
         I2C_RESTART, FXOS_ADDR_R,
-        I2C_READ, I2C_READ
+        I2C_READ
     };
     return I2C_MasterSendSequence(i2c_ch, seq, sizeof(seq)/sizeof(seq[0]), who);
 }

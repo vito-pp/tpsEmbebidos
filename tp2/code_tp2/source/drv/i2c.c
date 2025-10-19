@@ -370,7 +370,7 @@ static void I2C_IRQHandler(uint8_t channel_id)
  * ISR Handlers
  ******************************************************************************/
 
-void I2C0_IRQHandler(void)
+__ISR__ I2C0_IRQHandler(void)
 {
     I2C_IRQHandler(0);
 }

@@ -14,13 +14,14 @@
 #include <stddef.h>
 #include <stdbool.h>
 
+#include "../../SDK/CMSIS/MK64F12_features.h"
+
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
 
-#define I2C_NUMBER_OF_CHANNELS 3 // three I2C modules on the Kinetis K64 
-#define I2C_POLLING_FLAG false /* set to true to use polling instead of IRQs 
-(no ready yet)*/
+#define I2C_NUMBER_OF_CHANNELS FSL_FEATURE_SOC_I2C_COUNT // three I2C modules on the Kinetis K64 
+#define I2C_POLLING_FLAG true // Set to true to use polling instead of IRQs 
 #define I2C_RESTART 1<<8 // Reapeted start bit 8-bit symbol
 #define I2C_READ    2<<8 // Read bit 8-bit symbol
 #define I2C_MAX_SEQUENCE_LEN 100

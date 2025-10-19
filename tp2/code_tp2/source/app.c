@@ -30,6 +30,7 @@ static Vec3_t uT, mg;
  ******************************************************************************/
 
 static void delayLoop(uint32_t veces);
+static void __error_handler__(void);
 
 /*******************************************************************************
  *******************************************************************************
@@ -40,15 +41,23 @@ static void delayLoop(uint32_t veces);
 /* Función que se llama 1 vez, al comienzo del programa */
 void App_Init (void)
 {
-    I2C_MasterInit(0, 9600);
-    FXOS_Init(0);
+    gpioMode(PIN_LED_RED, OUTPUT);
+    gpioWrite(PIN_LED_RED, !LED_ACTIVE);
+    if (!I2C_MasterInit(0, 9600))
+    {
+        __error_handler__();
+    }
+    if (!FXOS_Init(0))
+    {
+        __error_handler__();
+    }
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run (void)
 {
     FXOS_ReadAccelerometer(&mg);
-    FXOS_ReadMagnetometer(&uT);
+    //FXOS_ReadMagnetometer(&uT);
     I2C_ServicePoll(0);
     delayLoop(1000);
 }
@@ -62,4 +71,9 @@ void App_Run (void)
 static void delayLoop(uint32_t veces)
 {
     while (veces--);
+}
+
+static void __error_handler__(void)
+{
+    gpioWrite(PIN_LED_RED, LED_ACTIVE);
 }
