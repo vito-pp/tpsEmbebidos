@@ -111,7 +111,7 @@ void SPI0Master_Init(void)
     pinConfig(SPI0_SCLK, ALT2, 0);
     pinConfig(SPI0_PCS0, ALT2, 0);
 
-    gpioMode(SPI0_CS_IRQ, OUTPUT);
+    gpioMode(SPI0_CS_IRQ, INPUT);
     gpioIRQ (SPI0_PCS0, PORT_PCR_IRQC_INT_RISING, SPI0_CsIRQ);
 
     SPI_Type* spi_x = spi_base_adress[0];
