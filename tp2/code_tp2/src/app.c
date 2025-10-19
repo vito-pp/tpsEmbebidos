@@ -1,51 +1,36 @@
 /***************************************************************************//**
   @file     App.c
-  @brief    Application functions
-  @author   todes
- ******************************************************************************/
+  @brief    Test simple: enviar el mismo mensaje continuamente por UART0
+*******************************************************************************/
 
-/*******************************************************************************
- * INCLUDE HEADER FILES
- ******************************************************************************/
+#include <stdbool.h>
+#include "uart0_k64.h"       // Tu driver UART0 (no bloqueante)
+#include "uart_nb_layer.h"   // Capa de abstracción por polling no bloqueante
 
-#include <stddef.h>
-#include <stdio.h>
+#ifndef UART_TEST_BAUD
+#define UART_TEST_BAUD   (115200u)
+#endif
 
-#include "drv/board.h"
-#include "drv/gpio.h"
-#include "misc/timer.h"
-#include "drv/SysTick.h"
+/* Mensaje a enviar continuamente (terminado con \n) */
+static const char *kMsg = "HELLO UART (FRDM-K64F)\n";
 
-/*******************************************************************************
- * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
- ******************************************************************************/
-
-
-/*******************************************************************************
- * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
- ******************************************************************************/
-
-
-/*******************************************************************************
- *******************************************************************************
-                        GLOBAL FUNCTION DEFINITIONS
- *******************************************************************************
- ******************************************************************************/
-
-/* Función que se llama 1 vez, al comienzo del programa */
+/* Se llama 1 vez al inicio */
 void App_Init (void)
 {
-    // write inits
+    uart0_init(UART_TEST_BAUD);   // UART0 en PTB16/17 (VCOM OpenSDA), 115200 8N1
+    uartnb_init();                // Inicializa la capa no bloqueante
 }
 
-/* Función que se llama constantemente en un ciclo infinito */
+/* Se llama en un loop infinito */
 void App_Run (void)
 {
-    // main loop
-}
+    // Bombea UART: drena RX y envía 1 byte si TDRE=1. No bloquea.
+    uartnb_poll();
 
-/*******************************************************************************
- *******************************************************************************
-                        LOCAL FUNCTION DEFINITIONS
- *******************************************************************************
- ******************************************************************************/
+    // Cuando TX queda libre, encolamos el mensaje otra vez
+    if (uartnb_tx_idle()) {
+        (void)uartnb_send_str(kMsg);  // Encola "HELLO UART...\n"
+    }
+
+    // Opcional: acá podés agregar otras tareas no bloqueantes
+}
