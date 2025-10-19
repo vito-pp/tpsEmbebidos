@@ -15,6 +15,8 @@
 #include "drv/gpio.h"
 #include "misc/timer.h"
 #include "drv/SysTick.h"
+#include "drv/spi.h"
+
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -35,13 +37,19 @@
 /* Función que se llama 1 vez, al comienzo del programa */
 void App_Init (void)
 {
-    // write inits
+    SPI0Master_Init();
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run (void)
 {
-    // main loop
+	SPI0_send3Bytes(3, 0b10101010, 0b11001100);
+	SPI0_PushTxRx_IRQ();
+
+	int a = SPI0_PopRxFIFO();
+	int b = SPI0_PopRxFIFO();
+	int c = SPI0_PopRxFIFO();
+	int d = SPI0_PopRxFIFO();
 }
 
 /*******************************************************************************
