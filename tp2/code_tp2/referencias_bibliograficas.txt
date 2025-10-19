@@ -1,3 +1,0 @@
-- Kinetis Reference Manual
-- NXP SDK 
-- FXOS8700CQ datasheet
