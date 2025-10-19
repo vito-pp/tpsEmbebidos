@@ -78,6 +78,10 @@ bool I2C_MasterSendSequence(uint8_t channel, uint16_t *sequence,
  */
 I2C_Status_e I2C_GetStatus(uint8_t channel);
 
+/**
+ * @brief Polling service that should be called from your main loop and after
+ * checking that I2C_GetStatus() returns I2C_AVAILABLE. 
+ */
 void I2C_ServicePoll(uint8_t ch);
 
 #endif // _I2C_H_
