@@ -38,23 +38,27 @@ bool FXOS_Init(uint8_t i2c_ch)
     if (!FXOS_ReadWhoAmI(i2c_ch, &who)) return false;
     while(I2C_GetStatus(i2c_ch) != I2C_AVAILABLE)
     {
-        if (I2C_GetStatus(i2c_ch) == I2C_ERROR)
-        		return false;
+        if (I2C_GetStatus(i2c_ch) == I2C_ERROR) return false;
 
     	I2C_ServicePoll(i2c_ch); // wait for the tx to end
     }
     if (who != FXOS_WHOAMI_VAL) return false;
+
+//    int i = 1 << 12; // god save me from my sins
+//    while(i--);
 
     // CTRL_REG1 standby: clear ACTIVE (bit 0)
     uint16_t seq1[] = { FXOS_ADDR_W, FXOS_CTRL_REG1, 0x00 };
     if (!I2C_MasterSendSequence(i2c_ch, seq1, 3, NULL)) return false;
     while(I2C_GetStatus(i2c_ch) != I2C_AVAILABLE)
     {
-        if (I2C_GetStatus(i2c_ch) == I2C_ERROR)
-        		return false;
+        if (I2C_GetStatus(i2c_ch) == I2C_ERROR) return false;
 
     	I2C_ServicePoll(i2c_ch); // wait for the tx to end
     }
+
+//    i = 1 << 12;
+//	while(i--);
 
     // M_CTRL_REG1: Hybrid mode (ACC+MAG). M_HMS bits [1:0] = 0b11.
     // Also oversampling.
@@ -62,22 +66,26 @@ bool FXOS_Init(uint8_t i2c_ch)
     if (!I2C_MasterSendSequence(i2c_ch, seq2, 3, NULL)) return false;
     while(I2C_GetStatus(i2c_ch) != I2C_AVAILABLE)
     {
-        if (I2C_GetStatus(i2c_ch) == I2C_ERROR)
-        		return false;
+        if (I2C_GetStatus(i2c_ch) == I2C_ERROR) return false;
 
     	I2C_ServicePoll(i2c_ch); // wait for the tx to end
     }
+
+//    i = 1 << 12;
+//	while(i--);
 
     // M_CTRL_REG2: auto-increment for MAG
     uint16_t seq3[] = { FXOS_ADDR_W, FXOS_M_CTRL_REG2, 0x20 };
     if (!I2C_MasterSendSequence(i2c_ch, seq3, 3, NULL)) return false;
     while(I2C_GetStatus(i2c_ch) != I2C_AVAILABLE)
     {
-        if (I2C_GetStatus(i2c_ch) == I2C_ERROR)
-        		return false;
+        if (I2C_GetStatus(i2c_ch) == I2C_ERROR) return false;
 
     	I2C_ServicePoll(i2c_ch); // wait for the tx to end
     }
+
+//    i = 1 << 12;
+//	while(i--);
 
     // CTRL_REG1: set ODR and ACTIVE=1. For 100 Hz ODR: DR=010, 
     // ACTIVE=1 to 0x19
@@ -85,11 +93,13 @@ bool FXOS_Init(uint8_t i2c_ch)
     if (!I2C_MasterSendSequence(i2c_ch, seq4, 3, NULL)) return false;
     while(I2C_GetStatus(i2c_ch) != I2C_AVAILABLE)
     {
-        if (I2C_GetStatus(i2c_ch) == I2C_ERROR)
-        		return false;
+        if (I2C_GetStatus(i2c_ch) == I2C_ERROR) return false;
 
     	I2C_ServicePoll(i2c_ch); // wait for the tx to end
     }
+
+//    i = 1 << 12;
+//	while(i--);
 
     i2c_channel_id = i2c_ch;
 

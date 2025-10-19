@@ -138,7 +138,10 @@ bool I2C_MasterInit(uint8_t channel_id, uint16_t baud_rate)
 	i2c->F &= ~0xF;
 	setBaudRate(i2c, (__CORE_CLOCK__)/2, baud_rate); // Bus' clk is half core's
     // ToDo (more coplex config): add glitch-filters, high-drive, timeouts, etc.
+
+#if !I2C_POLLING_FLAG
 	NVIC_EnableIRQ(I2C_IRQn[channel_id]); // enable interrputs in NVIC
+#endif
 
     return true;
 }
@@ -173,7 +176,11 @@ bool I2C_MasterSendSequence(uint8_t channel_id, uint16_t *sequence,
 
     // Acknowledge the interrupt request
     i2c->S |= I2C_S_IICIF_MASK;
+#if !I2C_POLLING_FLAG
     i2c->C1 = (I2C_C1_IICEN_MASK | I2C_C1_IICIE_MASK);
+#else
+    i2c->C1 = I2C_C1_IICEN_MASK;
+#endif
     // Generate a start condition and prepare for transmitting
     i2c->C1 |= (I2C_C1_MST_MASK | I2C_C1_TX_MASK);
 
@@ -264,6 +271,10 @@ static void I2C_IRQHandler(uint8_t channel_id)
             further interrupts. */
             i2c->C1 &= ~(I2C_C1_MST_MASK | I2C_C1_IICIE_MASK 
                         |I2C_C1_TXAK_MASK);
+            while (i2c->S & I2C_S_BUSY_MASK)
+            {
+            ; // tiny wait, because the last byte is still being transmitted
+            }
             channel->status = I2C_AVAILABLE;
             return; // Success
         }
@@ -345,6 +356,11 @@ static void I2C_IRQHandler(uint8_t channel_id)
                     disable further interrupts */
                     i2c->C1 &= ~(I2C_C1_MST_MASK | I2C_C1_IICIE_MASK 
                                 |I2C_C1_TXAK_MASK);
+                    while (i2c->S & I2C_S_BUSY_MASK)
+                    {
+                    ; /* tiny wait, because the last byte is still being 
+                    transmitted */
+                    }
                     channel->status = I2C_AVAILABLE;
                     return;
                 }

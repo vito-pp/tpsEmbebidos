@@ -57,7 +57,7 @@ void App_Init (void)
 void App_Run (void)
 {
     FXOS_ReadAccelerometer(&mg);
-    //FXOS_ReadMagnetometer(&uT);
+    FXOS_ReadMagnetometer(&uT);
     I2C_ServicePoll(0);
     delayLoop(1000);
 }
