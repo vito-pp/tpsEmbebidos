@@ -177,7 +177,7 @@ void CAN_SPI_Init (void)
 	//gpioMode (PORTNUM2PIN(INT_PORT,INT_PIN), INPUT_PULLDOWN);
 	//gpioIRQ_Config (PORTNUM2PIN(INT_PORT, INT_PIN), PORT_eInterruptFalling);
 
-	gpioMode (PORTNUM2PIN(INT_PORT,INT_PIN+1), INPUT_PULLDOWN);
+	gpioMode (PORTNUM2PIN(INT_PORT,INT_PIN), INPUT_PULLDOWN);
 
 
 	// 2- Reset mode
@@ -297,23 +297,6 @@ RXB_RAWDATA_t CAN_SPI_Get_Data(void)
 	return(pull_Queue_Element(0));
 }
 
-/**
- * @brief
- * @param
- * @return
- */
-
-uint8_t CAN_SPI_Attempt_to_read(void)
-{
-	uint8_t flag = 1;
-	if(!gpioRead(PORTNUM2PIN(INT_PORT,INT_PIN+1)) && !receiving && !transmitting)
-	{
-		CAN_SPI_ReceiveInfo();
-		flag = 0;
-	}
-	return flag;
-}
-
 
 /**
  * @brief
@@ -403,6 +386,23 @@ void CAN_SPI_ReceiveInfo(void)
 	// gpioWrite(CAN_TP_PIN,LOW);
 }
 
+
+/**
+ * @brief
+ * @param
+ * @return
+ */
+
+uint8_t CAN_SPI_Attempt_to_read(void)
+{
+	uint8_t flag = 1;
+	if(!gpioRead(PORTNUM2PIN(INT_PORT,INT_PIN)) && !receiving && !transmitting)
+	{
+		CAN_SPI_ReceiveInfo();
+		flag = 0;
+	}
+	return flag;
+}
 
 /**
  * @brief

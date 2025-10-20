@@ -18,6 +18,7 @@
 #include "drv/FXOS8700CQ.h"
 #include "drv/UART_strings.h"
 #include "drv/UART.h"
+#include "drv/can.h"
 
 #include <stdbool.h>
 
@@ -53,15 +54,18 @@ void App_Init (void)
     gpioMode(PIN_LED_RED, OUTPUT);
     gpioWrite(PIN_LED_RED, !LED_ACTIVE);
 	UART_Init();
-    if (!FXOS_Init(0, 9600))
-    {
-        __error_handler__();
-    }
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run (void)
 {
+    /*------------CAN recieve-----------*/
+    while (CAN_SPI_Is_Read_Ready())
+    {
+        RXB_RAWDATA_t rx = CAN_SPI_Get_Data();
+        // can_dcoder()
+    }
+
 	FXOS_ReadBoth(&mg, &uT);
     delayLoop(1000);
 #if	I2C_POLLING_FLAG
@@ -69,6 +73,25 @@ void App_Run (void)
 #endif
 	vec2rot(&mg, &uT, &rot);
 
+    /*------------CAN transmit-----------*/
+    if (!CAN_SPI_Is_Busy()) 
+    {
+        // Build a single 8-byte CAN payload with accel (mg) compacted to int16
+        int16_t ax = (int16_t)(mg.x + 0.5f);
+        int16_t ay = (int16_t)(mg.y + 0.5f);
+        int16_t az = (int16_t)(mg.z + 0.5f);
+
+        RXB_RAWDATA_t tx = {0};
+        tx.SID = 0x200; // choose your CAN ID scheme
+        tx.DLC = 6; // 3 axes * 2 bytes
+        put_i16_be(&tx.Dn[0], ax);
+        put_i16_be(&tx.Dn[2], ay);
+        put_i16_be(&tx.Dn[4], az);
+
+        CAN_SPI_SendInfo(&tx);  // queues Load-TX + RTS sequence over SPI
+    }
+
+    /*------------UART com with PC-------*/
 	UART_Poll();
 	/* TX no bloqueante */
 	if (UART_TxPending() == 0)
@@ -87,6 +110,11 @@ void App_Run (void)
 	}
 }
 
+void __error_handler__(void)
+{
+    gpioWrite(PIN_LED_RED, LED_ACTIVE);
+}
+
 /*******************************************************************************
  *******************************************************************************
                         LOCAL FUNCTION DEFINITIONS
@@ -98,10 +126,6 @@ static void delayLoop(uint32_t veces)
     while (veces--);
 }
 
-static void __error_handler__(void)
-{
-    gpioWrite(PIN_LED_RED, LED_ACTIVE);
-}
 static inline int clamp_deg_179(float x)
 {
     /* redondeo a entero y saturación al rango [-179..179] */
