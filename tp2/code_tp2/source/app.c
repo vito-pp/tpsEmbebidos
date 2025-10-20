@@ -15,7 +15,7 @@ void App_Init (void)
 
 }
 
-char rx_line[64];
+char rx_line[128];
 
 /* Se llama en un loop infinito */
 void App_Run (void)
@@ -26,9 +26,22 @@ void App_Run (void)
 		if (UART_TxPending() == 0)
 		{
 			/* Intentar encolar (puede no entrar todo a la vez) */
-			UART_SendString("A,0,R,45\n");
+			UART_SendString("A,0,R,-170\n");
+			UART_SendString("A,0,C,-120\n");
+			UART_SendString("A,0,O,-90\n");
+			UART_SendString("A,0,R,-45\n");
+			UART_SendString("A,0,C,0\n");
+			UART_SendString("A,0,O,45\n");
+			UART_SendString("A,0,R,60\n");
+			UART_SendString("A,0,C,90\n");
+			UART_SendString("A,0,O,150\n");
+			UART_SendString("A,1,R,-170\n");
+			UART_SendString("A,1,C,-120\n");
+			UART_SendString("A,1,O,-90\n");
+
 
 		}
+
 
 		/* RX no bloqueante: copiar disponible hasta fin de línea o hasta llenar */
 		int n = UART_ReceiveString(rx_line, sizeof(rx_line));
