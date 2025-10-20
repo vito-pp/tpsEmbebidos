@@ -12,26 +12,16 @@
 
 #include "drv/board.h"
 #include "drv/gpio.h"
-#include "misc/timer.h"
 #include "drv/SysTick.h"
 #include "drv/i2c.h"
 #include "drv/FXOS8700CQ.h"
 #include "drv/UART_strings.h"
 #include "drv/UART.h"
 #include "drv/can.h"
+#include "misc/timer.h"
+#include "misc/codify_can_bus.h"
 
 #include <stdbool.h>
-
-#define NUM_STATIONS 4
-
-typedef struct
-{
-    uint8_t id;
-    Rotation_t rot;
-} Station_t;
-
-Station_t stations[NUM_STATIONS];
-
 
 /*******************************************************************************
  * FILE SCOPE VARIABLES
@@ -72,13 +62,14 @@ void App_Init (void)
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run (void)
 {
+    uint8_t len;
     /*------------CAN recieve-----------*/
     if (CAN_RxStatus() == CAN_RECIEVED)
     {
-        CAN_ReadData(can_bus_rx_buff);
+        len = CAN_ReadData(can_bus_rx_buff);
     }
     // decode can raw data
-    decodeDataForCan(can_bus_rx_buff, stations);
+    decodeDataForCan(can_bus_rx_buff, len, stations);
 
     /*------------Read acc and mag-------*/
 	FXOS_ReadBoth(&mg, &uT);

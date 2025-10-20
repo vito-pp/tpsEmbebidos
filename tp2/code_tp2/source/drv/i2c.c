@@ -247,14 +247,14 @@ static void I2C_IRQHandler(uint8_t channel_id)
 
     i2c->S |= I2C_S_IICIF_MASK; // Acknowledge the IRQ
 
-    if (status & I2C_S_ARBL_MASK)
-    {
-        i2c->S |= I2C_S_ARBL_MASK;
-        i2c->C1 &= ~(I2C_C1_MST_MASK | I2C_C1_IICIE_MASK); /* Generate STOP and
-        disable further interrupts. */
-        channel->status = I2C_ERROR;
-        return;
-    }
+    // if (status & I2C_S_ARBL_MASK)
+    // {
+    //     i2c->S |= I2C_S_ARBL_MASK;
+    //     i2c->C1 &= ~(I2C_C1_MST_MASK | I2C_C1_IICIE_MASK); /* Generate STOP and
+    //     disable further interrupts. */
+    //     channel->status = I2C_ERROR;
+    //     return;
+    // }
 
     if (channel->mode == I2C_TX)
     {
