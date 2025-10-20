@@ -34,7 +34,6 @@ static char rx_line[128];
  ******************************************************************************/
 
 static void delayLoop(uint32_t veces);
-static void __error_handler__(void);
 static void UART_SendRotation0(const Rotation_t *r);
 static inline int clamp_deg_179(float x);
 static void append_int(char **p, int v);
@@ -53,29 +52,27 @@ void App_Init (void)
     gpioMode(PIN_LED_RED, OUTPUT);
     gpioWrite(PIN_LED_RED, !LED_ACTIVE);
 	UART_Init();
-    if (!FXOS_Init(0, 9600))
-    {
-        __error_handler__();
-    }
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run (void)
 {
 	//FXOS_ReadBoth(&mg, &uT);
-    FXOS_ReadMagnetometer(&uT);
+   // FXOS_ReadMagnetometer(&uT);
     
-    while (I2C_GetStatus(0) != I2C_AVAILABLE)
-    {
-        I2C_ServicePoll(0);
-    }
+//    while (I2C_GetStatus(0) != I2C_AVAILABLE)
+//    {
+//        I2C_ServicePoll(0);
+//    }
 
     FXOS_ReadAccelerometer(&mg);
 
+#if I2C_POLLING_FLAG
     while (I2C_GetStatus(0) != I2C_AVAILABLE)
     {
         I2C_ServicePoll(0);
     }
+#endif
     vec2rot(&mg, &uT, &rot);
 
 	UART_Poll();
@@ -96,6 +93,11 @@ void App_Run (void)
 	}
 }
 
+void __error_handler__(void)
+{
+    gpioWrite(PIN_LED_RED, LED_ACTIVE);
+}
+
 /*******************************************************************************
  *******************************************************************************
                         LOCAL FUNCTION DEFINITIONS
@@ -107,10 +109,6 @@ static void delayLoop(uint32_t veces)
      while (veces--);
 }
 
-static void __error_handler__(void)
-{
-    gpioWrite(PIN_LED_RED, LED_ACTIVE);
-}
 static inline int clamp_deg_179(float x)
 {
     /* redondeo a entero y saturación al rango [-179..179] */
