@@ -52,10 +52,11 @@ void App_Init (void)
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run (void)
 {
-    FXOS_ReadAccelerometer(&mg);
-    FXOS_ReadMagnetometer(&uT);
-    I2C_ServicePoll(0);
+	FXOS_ReadBoth(&mg, &uT);
     delayLoop(1000);
+#if	I2C_POLLING_FLAG
+    I2C_ServicePoll(0);
+#endif
 }
 
 /*******************************************************************************

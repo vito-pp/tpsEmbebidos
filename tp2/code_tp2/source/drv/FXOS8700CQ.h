@@ -48,9 +48,9 @@
 
 typedef struct
 {
-float x;
-float y;
-float z;
+    float x;
+    float y;
+    float z;
 } Vec3_t;
 
 bool FXOS_Init(uint8_t i2c_ch, uint32_t baud);
@@ -58,5 +58,7 @@ bool FXOS_Init(uint8_t i2c_ch, uint32_t baud);
 bool FXOS_ReadAccelerometer(Vec3_t *mg);
 
 bool FXOS_ReadMagnetometer(Vec3_t *uT);
+
+bool FXOS_ReadBoth(Vec3_t *mg, Vec3_t *uT);
 
 #endif // _FXOS8700CQ_H_
