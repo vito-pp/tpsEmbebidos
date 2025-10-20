@@ -4,33 +4,38 @@
 *******************************************************************************/
 
 #include <stdbool.h>
-#include "uart0_k64.h"       // Tu driver UART0 (no bloqueante)
-#include "uart_nb_layer.h"   // Capa de abstracción por polling no bloqueante
+#include "drv/UART_strings.h"       // Tu driver UART0 (no bloqueante)
+#include "drv/UART.h"   // Capa de abstracción por polling no bloqueante
 
-#ifndef UART_TEST_BAUD
-#define UART_TEST_BAUD   (115200u)
-#endif
-
-/* Mensaje a enviar continuamente (terminado con \n) */
-static const char *kMsg = "HELLO UART (FRDM-K64F)\n";
 
 /* Se llama 1 vez al inicio */
 void App_Init (void)
 {
-    uart0_init(UART_TEST_BAUD);   // UART0 en PTB16/17 (VCOM OpenSDA), 115200 8N1
-    uartnb_init();                // Inicializa la capa no bloqueante
+	UART_Init();
+
 }
+
+char rx_line[64];
 
 /* Se llama en un loop infinito */
 void App_Run (void)
 {
-    // Bombea UART: drena RX y envía 1 byte si TDRE=1. No bloquea.
-    uartnb_poll();
+        UART_Poll();
 
-    // Cuando TX queda libre, encolamos el mensaje otra vez
-    if (uartnb_tx_idle()) {
-        (void)uartnb_send_str(kMsg);  // Encola "HELLO UART...\n"
-    }
+		/* TX no bloqueante */
+		if (UART_TxPending() == 0)
+		{
+			/* Intentar encolar (puede no entrar todo a la vez) */
+			UART_SendString("A,0,R,45\n");
 
-    // Opcional: acá podés agregar otras tareas no bloqueantes
+		}
+
+		/* RX no bloqueante: copiar disponible hasta fin de línea o hasta llenar */
+		int n = UART_ReceiveString(rx_line, sizeof(rx_line));
+		if (n > 0)
+		{
+			UART_SendString("Recibido: ");
+			UART_SendString(rx_line);
+			UART_SendString("\r\n");
+		}
 }
