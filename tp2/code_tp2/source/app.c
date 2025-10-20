@@ -151,16 +151,16 @@ static void UART_SendRotation0(const Rotation_t *r)
 
     const int roll  = clamp_deg_179(r->roll);
     const int pitch = clamp_deg_179(r->pitch);
-    const int yaw   = r->yaw;
+    const int yaw   = clamp_deg_179(r->yaw);
 
     /* 3 líneas en un solo buffer */
     char buf[256];
     char *p = buf;
 
-    append_str(&p, "A,0,O,"); append_int(&p,yaw);   append_str(&p, "\r\n");
-    append_str(&p, "A,0,R,"); append_int(&p, roll);  append_str(&p, "\r\n");
-    append_str(&p, "A,0,C,"); append_int(&p, pitch); append_str(&p, "\r\n");
-    append_str(&p, "A,0,O,"); append_int(&p, yaw);   append_str(&p, "\r\n");
+    //append_str(&p, "A,0,O,"); append_int(&p,yaw);   append_str(&p, "\r\n");
+    append_str(&p, "A,0,R,"); append_int(&p, roll);  append_str(&p, "\n");
+    append_str(&p, "A,0,C,"); append_int(&p, pitch); append_str(&p, "\n");
+    append_str(&p, "A,0,O,"); append_int(&p, yaw);   append_str(&p, "\n");
     *p = '\0';
 
     UART_SendString(buf);
