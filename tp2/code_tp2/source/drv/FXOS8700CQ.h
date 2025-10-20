@@ -53,7 +53,7 @@ float y;
 float z;
 } Vec3_t;
 
-bool FXOS_Init(uint8_t i2c_ch);
+bool FXOS_Init(uint8_t i2c_ch, uint32_t baud);
 
 bool FXOS_ReadAccelerometer(Vec3_t *mg);
 

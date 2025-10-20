@@ -43,11 +43,7 @@ void App_Init (void)
 {
     gpioMode(PIN_LED_RED, OUTPUT);
     gpioWrite(PIN_LED_RED, !LED_ACTIVE);
-    if (!I2C_MasterInit(0, 9600))
-    {
-        __error_handler__();
-    }
-    if (!FXOS_Init(0))
+    if (!FXOS_Init(0, 9600))
     {
         __error_handler__();
     }

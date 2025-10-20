@@ -20,6 +20,13 @@
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
 
+#define I2C0_SDA_PIN	PORTNUM2PIN(PE,25)
+#define I2C0_SCL_PIN	PORTNUM2PIN(PE,24)
+#define I2C1_SDA_PIN	PORTNUM2PIN(PC,11)
+#define I2C1_SCL_PIN	PORTNUM2PIN(PC,10)
+#define I2C2_SDA_PIN	PORTNUM2PIN(PA,13) // Not in FRDM-K64F
+#define I2C2_SCL_PIN	PORTNUM2PIN(PA,14) // Not in FRDM-K64F
+
 #define I2C_NUMBER_OF_CHANNELS FSL_FEATURE_SOC_I2C_COUNT // three I2C modules on the Kinetis K64 
 #define I2C_POLLING_FLAG true // Set to true to use polling instead of IRQs 
 #define I2C_RESTART 1<<8 // Reapeted start bit 8-bit symbol
@@ -47,7 +54,7 @@ typedef enum
  * @param baud_rate Sets the baud rate in bps.
  * @return false on error, true on success.
  */
-bool I2C_MasterInit(uint8_t channel, uint16_t baud_rate);
+bool I2C_MasterInit(uint8_t channel, uint32_t baud_rate);
 
 /**
  * @brief Sends a command/data sequence over I2C with support for restarts, 

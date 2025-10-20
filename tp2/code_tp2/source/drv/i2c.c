@@ -15,13 +15,6 @@
  * CONSTANTS AND DEFINES
  ******************************************************************************/
 
-#define I2C0_SDA_PIN	PORTNUM2PIN(PE,25)
-#define I2C0_SCL_PIN	PORTNUM2PIN(PE,24)
-#define I2C1_SDA_PIN	PORTNUM2PIN(PC,11)
-#define I2C1_SCL_PIN	PORTNUM2PIN(PC,10)
-#define I2C2_SDA_PIN	PORTNUM2PIN(PA,13) // Not in FRDM-K64F 
-#define I2C2_SCL_PIN	PORTNUM2PIN(PA,14) // Not in FRDM-K64F
-
 #define I2C0_ALT	5
 #define I2C1_ALT	2
 #define I2C2_ALT	5
@@ -78,7 +71,7 @@ static uint16_t sequence_copy[I2C_MAX_SEQUENCE_LEN];
  * FUNCTION DEFINITIONS WITH GLOBAL SCOPE
  ******************************************************************************/
 
-bool I2C_MasterInit(uint8_t channel_id, uint16_t baud_rate)
+bool I2C_MasterInit(uint8_t channel_id, uint32_t baud_rate)
 {
     if (channel_id >= I2C_NUMBER_OF_CHANNELS
         || baud_rate > FSL_FEATURE_I2C_MAX_BAUD_KBPS * 1000) 
