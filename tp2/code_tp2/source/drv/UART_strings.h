@@ -8,11 +8,11 @@
 
 /* Ajustá los tamaños según tu caso de uso */
 #ifndef UART_TX_BUF_SIZE
-#define UART_TX_BUF_SIZE 128
+#define UART_TX_BUF_SIZE 1024
 #endif
 
 #ifndef UART_RX_BUF_SIZE
-#define UART_RX_BUF_SIZE 128
+#define UART_RX_BUF_SIZE 1024
 #endif
 
 /**
