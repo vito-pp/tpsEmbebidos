@@ -22,6 +22,17 @@
 
 #include <stdbool.h>
 
+#define NUM_STATIONS 4
+
+typedef struct
+{
+    uint8_t id;
+    Rotation_t rot;
+} Station_t;
+
+Station_t stations[NUM_STATIONS];
+
+
 /*******************************************************************************
  * FILE SCOPE VARIABLES
  ******************************************************************************/
@@ -29,6 +40,8 @@
 static Vec3_t uT, mg;
 static Rotation_t rot;
 static char rx_line[128];
+static uint8_t can_bus_rx_buff[16];
+static uint8_t can_bus_tx_buff[16];
 
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
@@ -60,12 +73,14 @@ void App_Init (void)
 void App_Run (void)
 {
     /*------------CAN recieve-----------*/
-    while (CAN_SPI_Is_Read_Ready())
+    if (CAN_RxStatus() == CAN_RECIEVED)
     {
-        RXB_RAWDATA_t rx = CAN_SPI_Get_Data();
-        // can_dcoder()
+        CAN_ReadData(can_bus_rx_buff);
     }
+    // decode can raw data
+    decodeDataForCan(can_bus_rx_buff, stations);
 
+    /*------------Read acc and mag-------*/
 	FXOS_ReadBoth(&mg, &uT);
     delayLoop(1000);
 #if	I2C_POLLING_FLAG
@@ -74,22 +89,8 @@ void App_Run (void)
 	vec2rot(&mg, &uT, &rot);
 
     /*------------CAN transmit-----------*/
-    if (!CAN_SPI_Is_Busy()) 
-    {
-        // Build a single 8-byte CAN payload with accel (mg) compacted to int16
-        int16_t ax = (int16_t)(mg.x + 0.5f);
-        int16_t ay = (int16_t)(mg.y + 0.5f);
-        int16_t az = (int16_t)(mg.z + 0.5f);
-
-        RXB_RAWDATA_t tx = {0};
-        tx.SID = 0x200; // choose your CAN ID scheme
-        tx.DLC = 6; // 3 axes * 2 bytes
-        put_i16_be(&tx.Dn[0], ax);
-        put_i16_be(&tx.Dn[2], ay);
-        put_i16_be(&tx.Dn[4], az);
-
-        CAN_SPI_SendInfo(&tx);  // queues Load-TX + RTS sequence over SPI
-    }
+    codeDataForCan(can_bus_tx_buff, &rot);
+    CAN_SendData(can_bus_tx_buff, 16);
 
     /*------------UART com with PC-------*/
 	UART_Poll();
