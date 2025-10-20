@@ -18,10 +18,10 @@
 //In order to initiate message transmission, the TXREQ bit in TXBxCTRL
 // (Sending the SPI RTS command)
 
-void CAN_sendData(uint8_t* data, size_t n_bytes, uint8_t id);
+void CAN_sendData(uint8_t* data, size_t n_bytes);
 uint8_t CAN_readData(uint8_t* data);
 
-void CAN_readBuffer(uint8_t buffer, uint8_t* data);
+uint8_t CAN_rxStatus(void);
 
 
 void CAN_Init(void);

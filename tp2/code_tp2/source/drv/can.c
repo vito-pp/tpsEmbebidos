@@ -48,6 +48,8 @@
 #define	RXB0D0 0b01100110
 #define	RXB1D0 0b01110110
 
+#define RX_STATUS      0xB0u
+
 #define RXLENGTH 13
 
 #define	BUFFER_SIZE 50
@@ -55,7 +57,7 @@
 
 #define ID_G1 0x101
 
-uint8_t getID(uint8_t nm);
+uint16_t getID(uint8_t nm);
 
 uint8_t CAN_readAdress(uint8_t adress);
 uint8_t CAN_writeAdress(uint8_t adress, uint8_t* data, uint8_t n_bytes);
@@ -64,6 +66,9 @@ uint8_t readRxBuffer(uint8_t nm, uint8_t* data);
 
 void loadTxBuffer(uint8_t abc, uint8_t* data, uint8_t n_bytes);
 void request2Send(uint8_t tx);
+
+
+void CAN_readBuffer(uint8_t buffer, uint8_t* data);
 
 uint8_t CAN_writeAdress(uint8_t adress, uint8_t* data, uint8_t n_bytes)
 {
@@ -138,15 +143,20 @@ uint8_t getDLC(uint8_t buffer)
 	return dlc;
 }
 
-uint8_t getID(uint8_t nm)
+uint16_t getID(uint8_t nm)
 {
-	SPI0_send2Bytes(0b10010000 | (nm << 1), 0);
+	uint8_t aux[] = {0b10010000 | (nm << 1), 0, 0};
 	SPI0_pushTxFIFO();
 	while(!SPI0_isTxQueueEmpty());
 
 	SPI0_PopRxFIFO();
 
-	return SPI0_PopRxFIFO();
+	uint8_t hi = SPI0_PopRxFIFO();
+	uint8_t low = SPI0_PopRxFIFO();
+
+	uint16_t id = hi <<3 | (low >> 5 ) ; //gets id
+
+	return id;
 }
 uint8_t readRxBuffer(uint8_t nm, uint8_t* data)
 {
@@ -180,10 +190,33 @@ uint8_t readRxBuffer(uint8_t nm, uint8_t* data)
 	return n_bytes;
 }
 
+
 uint8_t CAN_readData(uint8_t* data)
 {
 	//check buffer que se recibio
+	uint8_t status = CAN_rxStatus();
+
 	uint8_t buffer = 0;
+	bool both_buffers = 0;
+
+	if(!status)
+	{
+		return 0;
+	}
+	if(status == 1)
+	{
+		buffer =1;
+	}
+	if(status == 2)
+	{
+		buffer = 2;
+	}
+	if(status == 4)
+	{
+		both_buffers = 1;
+	}
+
+
 	uint8_t id = 0;
 	//Validates id
 	switch(buffer)
@@ -197,20 +230,46 @@ uint8_t CAN_readData(uint8_t* data)
 	{
 		return 0;
 	}
+	uint8_t size = 0;
 	//Reads buffer
 	switch(buffer)
 	{
-	case 0: readRxBuffer(0b01 ,data);
-	case 1: readRxBuffer(0b11 ,data);
+	case 0: size = readRxBuffer(0b01 ,data);
+	case 1: size = readRxBuffer(0b11 ,data);
 	}
 
+	return size;
 }
 
-void CAN_sendData(uint8_t* data, size_t n_bytes, uint8_t id)
+uint8_t CAN_rxStatus(void)
 {
-	uint8_t aux[] = {ID_G1};
+    SPI0_send2Bytes(RX_STATUS, 0x00);
+    SPI0_PopRxFIFO();                 // eco del cmd
 
-	loadTxBuffer(0, aux, 1);
+    uint8_t s = (uint8_t) (SPI0_PopRxFIFO() & 0xFFu);          // status (LSB)
+
+    /* bit6 -> RXB0, bit7 -> RXB1 */
+    uint8_t r = 0;
+    if (s & 0x40u)	//False ==> nothing received in RXB0
+   {
+    	r |= 0x01u;              // RXB0
+   	}
+    if (s & 0x80u)	//False ==> nothing received in RXB1
+    {
+    	r |= 0x02u;              // RXB1
+    }
+    return r;         // 0 ==>nada,
+    				//3 =>> los dosh
+}
+
+void CAN_sendData(uint8_t* data, size_t n_bytes)
+{
+	uint8_t aux[] = {0b00100000, 0b00100000 }; //G1 id and standard
+
+	loadTxBuffer(0, aux, 2);
+	aux[0] = n_bytes;
+
+	CAN_writeAdress(TXB0DLC, aux, 0); //specifies dlc
 	loadTxBuffer(0b001, data, n_bytes);
 	request2Send(0);
 }

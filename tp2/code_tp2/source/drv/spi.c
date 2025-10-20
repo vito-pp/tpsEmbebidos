@@ -4,6 +4,7 @@
 #include "gpio.h"
 #include "board.h"
 #include "hardware.h"
+#include "../misc/timer.h"
 
 #define TX_BUFFER_SIZE 30
 #define RX_BUFFER_SIZE 30
@@ -63,6 +64,8 @@ void SPI0_pushTxFIFO(void)
 {
     static int i = 0; //Tx FIFO index
 
+
+
     uint32_t aux = 0;
 
     int counter = 0;
@@ -89,6 +92,11 @@ void SPI0_pushTxFIFO(void)
     }
     while((aux & SPI_PUSHR_CONT_MASK) && counter < 4); //Checks if last Tx is the EOQ message.
     										// no more than 4 consecutives push
+}
+
+void clearTxFlag(void)
+{
+	(spi_base_adress[0])->SR = SPI_SR_TCF_MASK;
 }
 
 bool SPI0_isTxComplete(void)
@@ -158,6 +166,7 @@ void SPI0Master_Init(void)
     spi_x->CTAR[0] |= SPI_CTAR_CPOL(cpol &&1);
     spi_x->CTAR[0] |= SPI_CTAR_CPHA(cpha &&1);
     spi_x->CTAR[0] |= SPI_CTAR_LSBFE(lsfe &&1);
+    spi_x->CTAR[0] |= SPI_MCR_FRZ_MASK;
 
 
     //SCK baud rate = (fP /PBR) x [(1+DBR)/BR)]

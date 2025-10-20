@@ -29,6 +29,8 @@ uint32_t SPI0_PopRxFIFO(void);
 
 void SPI0_sendNBytes(uint8_t* data, uint8_t n_bytes);
 
+void clearTxFlag(void);
+
 void SPI0_sendByte(uint8_t data_1);
 
 void SPI0_send2Bytes(uint8_t data_1, uint8_t data_2);
