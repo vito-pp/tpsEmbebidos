@@ -16,6 +16,7 @@
 #include "misc/timer.h"
 #include "drv/SysTick.h"
 #include "drv/spi.h"
+#include "drv/can.h"
 
 
 /*******************************************************************************
@@ -37,7 +38,7 @@
 /* Función que se llama 1 vez, al comienzo del programa */
 void App_Init (void)
 {
-    SPI0Master_Init();
+	CAN_Init();
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
@@ -47,36 +48,17 @@ void App_Run (void)
 
 	if(SPI0_isTxQueueEmpty())
 	{
-		SPI0_send3Bytes(1, 2, 3);
-		SPI0_PushTxRx_IRQ();
-
-		SPI0_send4Bytes(4, 5, 6, 7);
-		SPI0_PushTxRx_IRQ();
-
-		SPI0_send2Bytes(8, 9);
-		SPI0_PushTxRx_IRQ();
-
-		SPI0_send2Bytes(10, 11);
-		SPI0_PushTxRx_IRQ();
-
-		SPI0_sendByte(12);
-		SPI0_PushTxRx_IRQ();
-
-		SPI0_send4Bytes(21, 22, 23, 24);
-		SPI0_PushTxRx_IRQ();
-
-		SPI0_send3Bytes(25, 26, 27);
-		SPI0_PushTxRx_IRQ();
-
-		SPI0_send2Bytes(28, 29);
-		SPI0_PushTxRx_IRQ();
+		uint8_t data[3] = {255, 8, 130};
+		CAN_sendData(data, 3, 0x101);
 	}
 
 	static uint16_t rx_buffer[30];
 
-	static int i = 0;
-	uint16_t aux;
-	for(;;)
+	uint8_t read[16];
+	CAN_readBuffer(0b010, read);
+	//static int i = 0;
+	//uint16_t aux;
+	/*for(;;)
 	{
 		if( (aux = SPI0_PopRxFIFO() ) != 0xFFFF)
 		{
@@ -87,7 +69,7 @@ void App_Run (void)
 		{
 			break;
 		}
-	}
+	}*/
 }
 
 /*******************************************************************************

@@ -247,7 +247,7 @@ static int find_free_txb(uint8_t *ctrl_addr, uint8_t *sid_addr, uint8_t *dlc_add
 can_status_t CAN_DRV_Reset(void)
 {
     SPI0_sendByte(OPC_RESET);
-    (void)SPI0_PopRxFIFO();
+    SPI0_PopRxFIFO();
     if (s_ctx.io.delay_us) s_ctx.io.delay_us(10);
     return CAN_OK;
 }

@@ -6,7 +6,7 @@
 
 
 
-void SPI0_PushTxRx_IRQ(void);
+void SPI0_pushTxFIFO(void);
 
 bool SPI0_isTxComplete(void);
 
@@ -26,6 +26,8 @@ void SPI0Master_Init(void);
  * Returns RX data or 0xFFFFFFFF if RX FIFO is empty
  */
 uint32_t SPI0_PopRxFIFO(void);
+
+void SPI0_sendNBytes(uint8_t* data, uint8_t n_bytes);
 
 void SPI0_sendByte(uint8_t data_1);
 

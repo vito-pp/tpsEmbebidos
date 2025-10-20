@@ -43,7 +43,7 @@ void SPI0_FlushRX(void)
 
 //Pushes message to HW FIFO
 //Pushes last received message to SW FIFO
-void SPI0_PushTxRx_IRQ(void)
+void SPI0_pushTxFIFO(void)
 {
     static int i = 0; //Tx FIFO index
 
@@ -73,9 +73,9 @@ void SPI0_PushTxRx_IRQ(void)
 
 bool SPI0_isTxComplete(void)
 {
-	if((spi_base_adress[0])->SR &SPI_SR_TCF_MASK)
+	if((spi_base_adress[0])->SR & SPI_SR_TCF_MASK)
 	{
-		(spi_base_adress[0])->SR |= SPI_SR_TCF_MASK;
+		(spi_base_adress[0])->SR = SPI_SR_TCF_MASK;
 		return 1;
 	}
 	else
@@ -172,6 +172,17 @@ bool SPI0_isTxQueueEmpty(void)
 	return 1;
 }
 
+void SPI0_sendNBytes(uint8_t* data, uint8_t n_bytes)
+{
+	int i;
+	for(i = 0; i < n_bytes -1; i++)
+	{
+		pushTxRoundedBuffer(data[i],1);
+	}
+
+	pushTxRoundedBuffer(data[i], 0);
+
+}
 void SPI0_sendByte(uint8_t data_1)
 {
     pushTxRoundedBuffer(data_1,0);
