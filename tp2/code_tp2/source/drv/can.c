@@ -53,26 +53,112 @@
 #define	BUFFER_SIZE 50
 #define OVERFLOW -1
 
+#define ID_G1 0x101
 
+uint8_t CAN_readAdress(uint8_t adress);
+uint8_t CAN_writeAdress(uint8_t adress, uint8* data, uint8_t n_bytes);
 
-void CAN_readBuffer(uint8_t buffer, uint8_t* data)
+uint8_t readRxBuffer(uint8_t nm, uint8_t* data);
+
+void loadTxBuffer(uint8_t buffer, uint8_t* data);
+void request2Send(uint8_t tx);
+
+uint8_t CAN_writeAdress(uint8_t adress, uint8_t* data, uint8_t n_bytes)
 {
-	SPI0_send3Bytes(READ_INSTRUCTION, RXB0DLC, 0);
+	int aux [17];
+	aux[0] = WRITE_INSTR;
+	aux[1] = adress;
+
+	int i;
+	for(i = 0; i < n_bytes; i++)
+	{
+		aux[i+2] = data[i];
+	}
+	SPI0_sendNBytes(aux, i+2);
+	SPI0_pushTxFIFO();
+	while(!SPI0_isTxQueueEmpty());
+
+	//flush rx buffer
+	int j;
+	for(j= 0; j < i+2; j++)
+	{
+		SPI0_PopRxFIFO();
+	}
+}
+
+void loadTxBuffer(uint8_t abc, uint8_t* data, uint8_t n_bytes)
+{
+	uint8_t aux[17];
+
+	aux[0] = 0b01000000 | abc;
+
+	int i;
+	for(i = 0; i < n_bytes; i++)
+	{
+		aux[i+1] = data[i];
+	}
+	SPI0_sendNBytes(aux, i+1);
+	SPI0_pushTxFIFO();
+	while(!SPI0_isTxQueueEmpty());
+
+	//flush rx buffer
+	int j;
+	for(j= 0; j < i+1; j++)
+	{
+		SPI0_PopRxFIFO();
+	}
+}
+
+
+
+uint8_t CAN_readAdress(uint8_t adress)
+{
+	SPI0_send3Bytes(READ_INSTRUCTION, adress, 0);
 	SPI0_pushTxFIFO();
 	while(!SPI0_isTxQueueEmpty());
 
 	SPI0_PopRxFIFO();
 	SPI0_PopRxFIFO();
-	uint8_t n_bytes = SPI0_PopRxFIFO();
+	return SPI0_PopRxFIFO();
+}
 
+uint8_t getDLC(uint8_t buffer)
+{
+	uint8_t dlc =  0;
 
+	switch(buffer)
+	{
+	case 0: dlc = CAN_readAdress(RXB0DLC); break;
+	case 1: dlc = CAN_readAdress(RXB1DLC); break;
+	default: break;
+	}
+
+	return dlc;
+}
+
+uint8_t getID(uint8_t nm)
+{
+	SPI0_send2Bytes(0b10010000 | (nm << 1), 0);
+	SPI0_pushTxFIFO();
+	while(!SPI0_isTxQueueEmpty());
+
+	SPI0_PopRxFIFO();
+
+	return SPI0_PopRxFIFO();
+}
+uint8_t readRxBuffer(uint8_t nm, uint8_t* data)
+{
 	uint8_t aux[17];
-	aux[0] = 0b10010000 | buffer;
+	aux[0] = 0b10010000 | (nm<<1);
 	int i;
+
+	uint8_t n_bytes = getDLC();
+
 	for(i = 0; i < n_bytes; i++)
 	{
-		aux[i+1] = 0;
+		aux[i+1] = 0; //Empty array
 	}
+
 	SPI0_sendNBytes(aux, i + 1);
 	SPI0_pushTxFIFO();
 	while(!SPI0_isTxQueueEmpty());
@@ -83,45 +169,58 @@ void CAN_readBuffer(uint8_t buffer, uint8_t* data)
 	{
 		data[i] = SPI0_PopRxFIFO();
 	}
+	return n_bytes;
+}
+
+uint8_t CAN_readData(uint8_t* data)
+{
+	//check buffer que se recibio
+	uint8_t buffer = 0;
+	uint8_t id = 0;
+	//Validates id
+	switch(buffer)
+	{
+	case 0: id =  getId(0); break;
+	case 1: id = getId(0b10); break;
+	default: break;
+	}
+
+	if(id == ID_G1) // ignore our grupo id
+	{
+		return 0;
+	}
+	//Reads buffer
+	switch(buffer)
+	{
+	case 0: readRxBuffer(0b01 ,data);
+	case 1: readRxBuffer(0b11 ,data);
+	}
 
 }
 
 void CAN_sendData(uint8_t* data, size_t n_bytes, uint8_t id)
 {
-	//Load Tx buffer
-	uint8_t aux[17];
-	aux[0] = 0b01000000 | id;
+	int aux[] = {ID_G1};
 
-	int i;
-	for(i = 0; i < n_bytes; i++)
+	loadTxBuffer(0, aux, 1);
+	loadTxBuffer(0b001, data, n_bytes);
+	request2Send();
+}
+
+void request2Send(uint8_t tx)
+{
+	switch(tx)
 	{
-		aux[i+1] = data[i];
-	}
-	SPI0_sendNBytes(aux, i + 1);
-	SPI0_pushTxFIFO();
-	while(!SPI0_isTxQueueEmpty());
-
-	//flush rx buffer
-	int j;
-	for(j= 0; j < i+1; j++)
-	{
-		SPI0_PopRxFIFO();
-	}
-
-
-
-	//REQUEST TO SEND
-	switch(id)
-	{
-		case 0: SPI0_sendByte(0b10000001); break;//last 3 bits T2 T1 T0 to tx
-		default: break;
+	case 0: SPI0_sendByte(0b10000001); break;
+	case 1: SPI0_sendByte(0b10000010); break;
+	case 2: SPI0_sendByte(0b10000100); break;
+	default: break;
 	}
 
 	SPI0_pushTxFIFO();
 	while(!SPI0_isTxQueueEmpty());
 
 	SPI0_PopRxFIFO();
-
 }
 
 
