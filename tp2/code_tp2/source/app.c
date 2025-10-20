@@ -35,6 +35,11 @@ static char rx_line[128];
 
 static void delayLoop(uint32_t veces);
 static void __error_handler__(void);
+static void UART_SendRotation0(const Rotation_t *r);
+static inline int clamp_deg_179(float x);
+static void append_int(char **p, int v);
+static void append_str(char **p, const char *s);
+static void int_to_ascii(int v, char *out);
 
 /*******************************************************************************
  *******************************************************************************
@@ -69,18 +74,7 @@ void App_Run (void)
 	if (UART_TxPending() == 0)
 	{
 		/* Intentar encolar (puede no entrar todo a la vez) */
-		UART_SendString("A,0,R,-170\n");
-		UART_SendString("A,0,C,-120\n");
-		UART_SendString("A,0,O,-90\n");
-		UART_SendString("A,0,R,-45\n");
-		UART_SendString("A,0,C,0\n");
-		UART_SendString("A,0,O,45\n");
-		UART_SendString("A,0,R,60\n");
-		UART_SendString("A,0,C,90\n");
-		UART_SendString("A,0,O,150\n");
-		UART_SendString("A,1,R,-170\n");
-		UART_SendString("A,1,C,-120\n");
-		UART_SendString("A,1,O,-90\n");
+	    UART_SendRotation0(&rot);
 	}
 
 	/* RX no bloqueante: copiar disponible hasta fin de línea o hasta llenar */
@@ -107,4 +101,63 @@ static void delayLoop(uint32_t veces)
 static void __error_handler__(void)
 {
     gpioWrite(PIN_LED_RED, LED_ACTIVE);
+}
+static inline int clamp_deg_179(float x)
+{
+    /* redondeo a entero y saturación al rango [-179..179] */
+    int v = (int)(x >= 0.f ? x + 0.5f : x - 0.5f);
+    if (v > 179)  v = 179;
+    if (v < -179) v = -179;
+    return v;
+}
+
+/* int -> ASCII (C89), soporta negativos, out debe tener >=12 bytes */
+static void int_to_ascii(int v, char *out)
+{
+    char tmp[12];
+    int n = 0;
+    unsigned int u;
+
+    if (v < 0) { *out++ = '-'; u = (unsigned int)(-v); }
+    else       { u = (unsigned int)v; }
+
+    if (u == 0) { *out++ = '0'; *out = '\0'; return; }
+
+    while (u) { tmp[n++] = (char)('0' + (u % 10)); u /= 10; }
+
+    while (n--) *out++ = tmp[n];
+    *out = '\0';
+}
+
+static void append_str(char **p, const char *s)
+{
+    while (*s) *(*p)++ = *s++;
+}
+
+static void append_int(char **p, int v)
+{
+    char nb[12];
+    int_to_ascii(v, nb);
+    append_str(p, nb);
+}
+
+/* Envía: "A,0,R,<roll>\nA,0,C,<pitch>\nA,0,O,<yaw>\n" */
+static void UART_SendRotation0(const Rotation_t *r)
+{
+    if (!r) return;
+
+    const int roll  = clamp_deg_179(r->roll);
+    const int pitch = clamp_deg_179(r->pitch);
+    const int yaw   = clamp_deg_179(r->yaw);
+
+    /* 3 líneas en un solo buffer */
+    char buf[64];
+    char *p = buf;
+
+    append_str(&p, "A,0,R,"); append_int(&p, roll);  append_str(&p, "\n");
+    append_str(&p, "A,0,C,"); append_int(&p, pitch); append_str(&p, "\n");
+    append_str(&p, "A,0,O,"); append_int(&p, yaw);   append_str(&p, "\n");
+    *p = '\0';
+
+    UART_SendString(buf);
 }
