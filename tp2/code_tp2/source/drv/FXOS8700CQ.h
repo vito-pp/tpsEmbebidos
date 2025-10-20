@@ -68,6 +68,6 @@ bool FXOS_ReadMagnetometer(Vec3_t *uT);
 
 bool FXOS_ReadBoth(Vec3_t *mg, Vec3_t *uT);
 
-void vec2rot(Vec3_t *mg, Vec3_t *uT, Rotation_t rot);
+void vec2rot(Vec3_t *mg, Vec3_t *uT, Rotation_t *rot);
 
 #endif // _FXOS8700CQ_H_

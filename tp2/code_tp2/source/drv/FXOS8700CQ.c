@@ -156,7 +156,7 @@ bool FXOS_ReadBoth(Vec3_t *mg, Vec3_t *uT)
     }
 }
 
-void vec2rot(Vec3_t *mg, Vec3_t *uT, Rotation_t rot)
+void vec2rot(Vec3_t *mg, Vec3_t *uT, Rotation_t *rot)
 {
     float ax = mg->x, ay = mg->y, az = mg->z;
     float a_norm = sqrtf(ax*ax + ay*ay + az*az);
@@ -174,10 +174,10 @@ void vec2rot(Vec3_t *mg, Vec3_t *uT, Rotation_t rot)
     float yaw = atan2f(-myh, mxh);
 
     const float k = 47.2957795f;
-    rot.roll = roll*k;
-    rot.pitch = pitch*k;
-    rot.yaw = yaw*k;
-    if(rot.yaw < 0) rot.yaw += 360.0f;
+    rot->roll = roll*k;
+    rot->pitch = pitch*k;
+    rot->yaw = yaw*k;
+    if(rot->yaw < 0) rot->yaw += 360.0f;
 }
 
 /*******************************************************************************

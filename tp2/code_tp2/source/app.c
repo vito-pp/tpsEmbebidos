@@ -18,8 +18,8 @@
 #include "drv/FXOS8700CQ.h"
 
 #include <stdbool.h>
-#include "drv/UART_strings.h"       // Tu driver UART0 (no bloqueante)
-#include "drv/UART.h"   // Capa de abstracción por polling no bloqueante
+#include "drv/UART_strings.h"
+#include "drv/UART.h"
 
 /*******************************************************************************
  * FILE SCOPE VARIABLES
@@ -62,10 +62,9 @@ void App_Run (void)
 #if	I2C_POLLING_FLAG
     I2C_ServicePoll(0);
 #endif
-	vec2rot(&mg, &uT, rot);
+	vec2rot(&mg, &uT, &rot);
 
 	UART_Poll();
-
 	/* TX no bloqueante */
 	if (UART_TxPending() == 0)
 	{

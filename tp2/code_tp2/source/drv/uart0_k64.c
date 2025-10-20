@@ -5,6 +5,7 @@
  * Conserva funciones bloqueantes como wrappers para compatibilidad.
  */
 #include "uart0_k64.h"
+#include "../../SDK/startup/hardware.h"
 
 /* ======= Función pedida en diapositivas: cálculo de baudrate ======= */
 static void UART_SetBaudRate(UART_Type *uart, uint32_t baudrate)
