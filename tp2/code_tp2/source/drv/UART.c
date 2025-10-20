@@ -70,7 +70,7 @@ void UART_Init (void)
 
 	//UART0 Baudrate Setup
 
-		UART_SetBaudRate (UART0, 9600);
+		UART_SetBaudRate (UART0, UART_HAL_DEFAULT_BAUDRATE);
 
 	//Enable UART0 Xmiter and Rcvr
 
@@ -114,4 +114,3 @@ unsigned char UART_Recieve_Data()
 		return 0; // No se recibio data
 	}
 }
-

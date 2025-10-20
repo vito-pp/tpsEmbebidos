@@ -62,12 +62,15 @@ void App_Init (void)
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run (void)
 {
-	FXOS_ReadBoth(&mg, &uT);
-    delayLoop(1000);
-#if	I2C_POLLING_FLAG
-    I2C_ServicePoll(0);
-#endif
-	vec2rot(&mg, &uT, &rot);
+	//FXOS_ReadBoth(&mg, &uT);
+    FXOS_ReadMagnetometer(&uT);
+    while (I2C_GetStatus(0) != I2C_AVAILABLE)
+    {
+        I2C_ServicePoll(0);
+    }
+    FXOS_ReadAccelerometer(&mg);
+
+    vec2rot(&mg, &uT, &rot);
 
 	UART_Poll();
 	/* TX no bloqueante */
@@ -95,7 +98,7 @@ void App_Run (void)
 
 static void delayLoop(uint32_t veces)
 {
-    while (veces--);
+     while (veces--);
 }
 
 static void __error_handler__(void)
@@ -148,15 +151,16 @@ static void UART_SendRotation0(const Rotation_t *r)
 
     const int roll  = clamp_deg_179(r->roll);
     const int pitch = clamp_deg_179(r->pitch);
-    const int yaw   = clamp_deg_179(r->yaw);
+    const int yaw   = r->yaw;
 
     /* 3 líneas en un solo buffer */
-    char buf[64];
+    char buf[256];
     char *p = buf;
 
-    append_str(&p, "A,0,R,"); append_int(&p, roll);  append_str(&p, "\n");
-    append_str(&p, "A,0,C,"); append_int(&p, pitch); append_str(&p, "\n");
-    append_str(&p, "A,0,O,"); append_int(&p, yaw);   append_str(&p, "\n");
+    append_str(&p, "A,0,O,"); append_int(&p,yaw);   append_str(&p, "\r\n");
+    append_str(&p, "A,0,R,"); append_int(&p, roll);  append_str(&p, "\r\n");
+    append_str(&p, "A,0,C,"); append_int(&p, pitch); append_str(&p, "\r\n");
+    append_str(&p, "A,0,O,"); append_int(&p, yaw);   append_str(&p, "\r\n");
     *p = '\0';
 
     UART_SendString(buf);
