@@ -49,13 +49,12 @@ void App_Run (void)
 	if(SPI0_isTxQueueEmpty())
 	{
 		uint8_t data[3] = {255, 8, 130};
-		CAN_sendData(data, 3, 0x101);
+
 	}
 
 	static uint16_t rx_buffer[30];
 
 	uint8_t read[16];
-	CAN_readBuffer(0b010, read);
 	//static int i = 0;
 	//uint16_t aux;
 	/*for(;;)

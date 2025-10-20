@@ -55,17 +55,19 @@
 
 #define ID_G1 0x101
 
+uint8_t getID(uint8_t nm);
+
 uint8_t CAN_readAdress(uint8_t adress);
-uint8_t CAN_writeAdress(uint8_t adress, uint8* data, uint8_t n_bytes);
+uint8_t CAN_writeAdress(uint8_t adress, uint8_t* data, uint8_t n_bytes);
 
 uint8_t readRxBuffer(uint8_t nm, uint8_t* data);
 
-void loadTxBuffer(uint8_t buffer, uint8_t* data);
+void loadTxBuffer(uint8_t abc, uint8_t* data, uint8_t n_bytes);
 void request2Send(uint8_t tx);
 
 uint8_t CAN_writeAdress(uint8_t adress, uint8_t* data, uint8_t n_bytes)
 {
-	int aux [17];
+	uint8_t aux [17];
 	aux[0] = WRITE_INSTR;
 	aux[1] = adress;
 
@@ -152,7 +154,13 @@ uint8_t readRxBuffer(uint8_t nm, uint8_t* data)
 	aux[0] = 0b10010000 | (nm<<1);
 	int i;
 
-	uint8_t n_bytes = getDLC();
+	uint8_t n_bytes = 0;
+	switch(nm)
+	{
+	case 0b01: n_bytes= getDLC(0); break;
+	case 0b11: n_bytes= getDLC(0); break;
+	}
+
 
 	for(i = 0; i < n_bytes; i++)
 	{
@@ -180,8 +188,8 @@ uint8_t CAN_readData(uint8_t* data)
 	//Validates id
 	switch(buffer)
 	{
-	case 0: id =  getId(0); break;
-	case 1: id = getId(0b10); break;
+	case 0: id =  getID(0); break;
+	case 1: id = getID(0b10); break;
 	default: break;
 	}
 
@@ -200,11 +208,11 @@ uint8_t CAN_readData(uint8_t* data)
 
 void CAN_sendData(uint8_t* data, size_t n_bytes, uint8_t id)
 {
-	int aux[] = {ID_G1};
+	uint8_t aux[] = {ID_G1};
 
 	loadTxBuffer(0, aux, 1);
 	loadTxBuffer(0b001, data, n_bytes);
-	request2Send();
+	request2Send(0);
 }
 
 void request2Send(uint8_t tx)

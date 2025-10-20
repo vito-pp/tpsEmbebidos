@@ -15,7 +15,6 @@ static PORT_Type * const kPort[] = PORT_BASE_PTRS;
 static uint32_t tx_buffer[TX_BUFFER_SIZE];
 static uint32_t rx_buffer[RX_BUFFER_SIZE];
 
-
 /**
  * @brief Configures the multiplexing and interrupt settings for a specified pin.
  * @param pin The pin to be configured.
@@ -27,7 +26,23 @@ static void pinConfig(uint8_t pin, uint8_t alt, uint8_t irqc);
 
 static void pushTxRoundedBuffer(uint8_t data, bool cont);
 
+void sclkIRQ(void);
 
+void sclkIRQ(void)
+{
+	static int cont = 0;
+
+	if(cont == 31)
+	{
+		SPI0_FlushRX();
+		SPI0_pushTxFIFO();
+	}
+
+
+	cont = (cont + 1 )% 32; //size of 4 bytes tx
+
+
+}
 
 void SPI0_FlushRX(void)
 {
@@ -48,6 +63,8 @@ void SPI0_pushTxFIFO(void)
     static int i = 0; //Tx FIFO index
 
     uint32_t aux = 0;
+
+    int counter = 0;
     //Flushes HW FIFO
     do
     {
@@ -62,13 +79,15 @@ void SPI0_pushTxFIFO(void)
 
 			tx_buffer[i] = 0xFFFFFFFF;
       	    i = (i + 1) % TX_BUFFER_SIZE;
+      	    counter++;
         }
         else
         {
         	break;
         }
     }
-    while(aux & SPI_PUSHR_CONT_MASK); //Checks if last Tx is the EOQ message.
+    while((aux & SPI_PUSHR_CONT_MASK) && counter <= 4); //Checks if last Tx is the EOQ message.
+    										// no more than 4 consecutives push
 }
 
 bool SPI0_isTxComplete(void)
@@ -112,6 +131,11 @@ void SPI0Master_Init(void)
 
     gpioMode(SPI0_CS_GPIO, INPUT);
     gpioIRQ(SPI0_CS_GPIO, PORT_PCR_IRQC_INT_RISING, SPI0_FlushRX);
+
+    gpioMode(SPI0_CLK_GPIO, INPUT);
+    gpioIRQ(SPI0_CLK_GPIO, PORT_PCR_IRQC_INT_RISING, sclkIRQ );
+
+
 
     SPI_Type* spi_x = spi_base_adress[0];
 
