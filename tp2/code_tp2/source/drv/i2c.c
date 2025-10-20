@@ -177,13 +177,13 @@ bool I2C_MasterSendSequence(uint8_t channel_id, uint16_t *sequence,
     // Generate a start condition and prepare for transmitting
     i2c->C1 |= (I2C_C1_MST_MASK | I2C_C1_TX_MASK);
 
-    if (i2c->S & I2C_S_ARBL_MASK) // Lost of arbitration
-    {
-        // Clean everything and leave
-        i2c->C1 &= ~(I2C_C1_MST_MASK | I2C_C1_TX_MASK);
-        channel->status = I2C_ERROR;
-        return false;
-    }
+//    if (i2c->S & I2C_S_ARBL_MASK) // Lost of arbitration
+//    {
+//        // Clean everything and leave
+//        i2c->C1 &= ~(I2C_C1_MST_MASK | I2C_C1_TX_MASK);
+//        channel->status = I2C_ERROR;
+//        return false;
+//    }
 
     i2c->D = *(channel->sequence)++; // Writes the first byte
     // The ISR handler will take care of the rest
