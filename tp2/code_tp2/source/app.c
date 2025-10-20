@@ -64,12 +64,18 @@ void App_Run (void)
 {
 	//FXOS_ReadBoth(&mg, &uT);
     FXOS_ReadMagnetometer(&uT);
+    
     while (I2C_GetStatus(0) != I2C_AVAILABLE)
     {
         I2C_ServicePoll(0);
     }
+
     FXOS_ReadAccelerometer(&mg);
 
+    while (I2C_GetStatus(0) != I2C_AVAILABLE)
+    {
+        I2C_ServicePoll(0);
+    }
     vec2rot(&mg, &uT, &rot);
 
 	UART_Poll();
@@ -157,10 +163,9 @@ static void UART_SendRotation0(const Rotation_t *r)
     char buf[256];
     char *p = buf;
 
-    append_str(&p, "A,0,O,"); append_int(&p,yaw);   append_str(&p, "\r\n");
-    append_str(&p, "A,0,R,"); append_int(&p, roll);  append_str(&p, "\r\n");
-    append_str(&p, "A,0,C,"); append_int(&p, pitch); append_str(&p, "\r\n");
-    append_str(&p, "A,0,O,"); append_int(&p, yaw);   append_str(&p, "\r\n");
+    append_str(&p, "A,0,O,"); append_int(&p,yaw);   append_str(&p, "\n");
+    append_str(&p, "A,0,R,"); append_int(&p, roll);  append_str(&p, "\n");
+    append_str(&p, "A,0,C,"); append_int(&p, pitch); append_str(&p, "\n");
     *p = '\0';
 
     UART_SendString(buf);

@@ -161,12 +161,12 @@ bool FXOS_ReadBoth(Vec3_t *mg, Vec3_t *uT)
 
 void vec2rot(Vec3_t *mg, Vec3_t *uT, Rotation_t *rot)
 {
-    // float ax = mg->x, ay = mg->y, az = mg->z;
-    // float a_norm = sqrtf(ax*ax + ay*ay + az*az);
-    // if (a_norm == 0) return;
+    float ax = mg->x, ay = mg->y, az = mg->z;
+    float a_norm = sqrtf(ax*ax + ay*ay + az*az);
+    if (a_norm == 0) return;
 
-    // float pitch = atan2f(ay, az);
-    // float roll = atan2f(-ax, sqrtf(ay*ay + az*az));
+    float pitch = atan2f(ay, az);
+    float roll = atan2f(-ax, sqrtf(ay*ay + az*az));
 
     // float sr = sinf(pitch), cr = cosf(pitch);
     // float sp = sinf(roll), cp = cosf(roll);
@@ -174,21 +174,20 @@ void vec2rot(Vec3_t *mg, Vec3_t *uT, Rotation_t *rot)
     // float mxh = uT->x*cp + uT->z*sp;
     // float myh = uT->x*sr*sp + uT->y*cr - uT->z*sr*cp;
 
-    // float yaw = atan2f(-myh, mxh);
+    float yaw = atan2f(uT->y, uT->x);
 
-    // const float k = 47.2957795f;
-    // rot->roll = -roll*k;
-    // rot->pitch = -pitch*k;
-    // rot->yaw = yaw*k;
-//    if(rot->yaw < 0) rot->yaw += 360.0f;
+    const float k = 57.2957795f;
+    rot->roll = -roll*k;
+    rot->pitch = -pitch*k;
+    rot->yaw = yaw*k;
 
-    float ax = (signed int)(((signed int)mg->x) * 3.9);
-    float ay = (signed int)(((signed int)mg->y) * 3.9);
-    float az = (signed int)(((signed int)mg->z) * 3.9);
+    // float ax = (signed int)(((signed int)mg->x) * 3.9);
+    // float ay = (signed int)(((signed int)mg->y) * 3.9);
+    // float az = (signed int)(((signed int)mg->z) * 3.9);
 
-    rot->pitch = 180 * atan(ax/sqrt(ay*ay + az*az))/M_PI;
-    rot->roll = 180 * atan(ay/sqrt(ax*ax + az*az))/M_PI;
-    rot->yaw = 180 * atan(az/sqrt(ax*ax + az*az))/M_PI;
+    // rot->pitch = 180 * atan(ax/sqrt(ay*ay + az*az))/M_PI;
+    // rot->roll = 180 * atan(ay/sqrt(ax*ax + az*az))/M_PI;
+    // rot->yaw = 180 * atan(az/sqrt(ax*ax + az*az))/M_PI;
 }
 
 /*******************************************************************************
