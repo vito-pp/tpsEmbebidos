@@ -1,6 +1,8 @@
 #include "FXOS8700CQ.h"
 #include "i2c.h"
 
+#include <math.h>
+
 typedef struct
 {
     int16_t x;
@@ -152,6 +154,30 @@ bool FXOS_ReadBoth(Vec3_t *mg, Vec3_t *uT)
     {
         return false;
     }
+}
+
+void vec2rot(Vec3_t *mg, Vec3_t *uT, Rotation_t rot)
+{
+    float ax = mg->x, ay = mg->y, az = mg->z;
+    float a_norm = sqrtf(ax*ax + ay*ay + az*az);
+    if (a_norm == 0) return;
+
+    float roll = atan2f(ay, az);
+    float pitch = atan2f(-ax, sqrtf(ay*ay + az*az));
+
+    float sr = sinf(roll), cr = cosf(roll);
+    float sp = sinf(pitch), cp = cosf(pitch);
+
+    float mxh = uT->x*cp + uT->z*sp;
+    float myh = uT->x*sr*sp + uT->y*cr - uT->z*sr*cp;
+
+    float yaw = atan2f(-myh, mxh);
+
+    const float k = 47.2957795f;
+    rot.roll = roll*k;
+    rot.pitch = pitch*k;
+    rot.yaw = yaw*k;
+    if(rot.yaw < 0) rot.yaw += 360.0f;
 }
 
 /*******************************************************************************

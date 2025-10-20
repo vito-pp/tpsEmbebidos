@@ -53,6 +53,13 @@ typedef struct
     float z;
 } Vec3_t;
 
+typedef struct
+{
+    float pitch;
+    float roll;
+    float yaw;
+} Rotation_t;
+
 bool FXOS_Init(uint8_t i2c_ch, uint32_t baud);
 
 bool FXOS_ReadAccelerometer(Vec3_t *mg);
@@ -60,5 +67,7 @@ bool FXOS_ReadAccelerometer(Vec3_t *mg);
 bool FXOS_ReadMagnetometer(Vec3_t *uT);
 
 bool FXOS_ReadBoth(Vec3_t *mg, Vec3_t *uT);
+
+void vec2rot(Vec3_t *mg, Vec3_t *uT, Rotation_t rot);
 
 #endif // _FXOS8700CQ_H_
