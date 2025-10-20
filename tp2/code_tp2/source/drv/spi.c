@@ -1,17 +1,36 @@
-/***************************************************************************//**
-  @file     SPI.c
-
-  @brief    SPI driver
-  @author   Grupo 5
- ******************************************************************************/
-
 /*******************************************************************************
  * INCLUDE HEADER FILES
  ******************************************************************************/
 #include "hardware.h"
 #include "spi.h"
 #include "gpio.h"
+#include "../../SDK/CMSIS/MK64F12.h"
 
+typedef enum
+{
+	PORT_eDisabled				= 0x00,
+	PORT_eDMARising				= 0x01,
+	PORT_eDMAFalling			= 0x02,
+	PORT_eDMAEither				= 0x03,
+	PORT_eInterruptDisasserted	= 0x08,
+	PORT_eInterruptRising		= 0x09,
+	PORT_eInterruptFalling		= 0x0A,
+	PORT_eInterruptEither		= 0x0B,
+	PORT_eInterruptAsserted		= 0x0C,
+} PORTEvent_t;
+
+typedef enum
+{
+	PORT_mAnalog,
+	PORT_mGPIO,
+	PORT_mAlt2,
+	PORT_mAlt3,
+	PORT_mAlt4,
+	PORT_mAlt5,
+	PORT_mAlt6,
+	PORT_mAlt7,
+
+} PORTMux_t;
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -165,9 +184,9 @@ void SPI_Init (void)
 
 uint8_t SPI_Get_Status(void)
 {
-	gpioWrite(CAN_TP_PIN,HIGH);
+	// gpioWrite(CAN_TP_PIN,HIGH);
 	return(get_Queue_Status(1));
-	gpioWrite(CAN_TP_PIN,LOW);
+	// gpioWrite(CAN_TP_PIN,LOW);
 }
 
 /**
@@ -178,9 +197,9 @@ uint8_t SPI_Get_Status(void)
 
 uint8_t SPI_Get_Data(void)
 {
-	gpioWrite(CAN_TP_PIN,HIGH);
+	// gpioWrite(CAN_TP_PIN,HIGH);
 	return(pull_Queue_Element(1).data);
-	gpioWrite(CAN_TP_PIN,LOW);
+	// gpioWrite(CAN_TP_PIN,LOW);
 }
 
 /**
@@ -191,13 +210,13 @@ uint8_t SPI_Get_Data(void)
 
 void SPI_Get_DataBytes(uint8_t *data, uint32_t num_of_bytes)
 {
-	gpioWrite(CAN_TP_PIN,HIGH);
+	// gpioWrite(CAN_TP_PIN,HIGH);
 	uint32_t i;
 	for(i = 0; i < num_of_bytes; i++)
 	{
 		data[i] = pull_Queue_Element(1).data;
 	}
-	gpioWrite(CAN_TP_PIN,LOW);
+	// gpioWrite(CAN_TP_PIN,LOW);
 }
 
 /**
@@ -206,7 +225,7 @@ void SPI_Get_DataBytes(uint8_t *data, uint32_t num_of_bytes)
  */
 void SPI_SendByte(uint8_t byte)
 {
-	gpioWrite(CAN_TP_PIN,HIGH);
+	// gpioWrite(CAN_TP_PIN,HIGH);
 	buffer_element_t event = {byte, 1};
 	push_Queue_Element(0, event);
 
@@ -226,7 +245,7 @@ void SPI_SendByte(uint8_t byte)
 	SPI0->RSER |= SPI_RSER_TCF_RE_MASK;
 
 	SPI0 -> PUSHR = data_out;
-	gpioWrite(CAN_TP_PIN,LOW);
+	// gpioWrite(CAN_TP_PIN,LOW);
 
 }
 
@@ -237,7 +256,7 @@ void SPI_SendByte(uint8_t byte)
 
 void SPI_SendMsg(uint8_t* msg)
 {
-	gpioWrite(CAN_TP_PIN,HIGH);
+	// gpioWrite(CAN_TP_PIN,HIGH);
 	uint32_t i = 0;
 	while (msg[i]  != '\0')
 	{
@@ -267,7 +286,7 @@ void SPI_SendMsg(uint8_t* msg)
 	SPI0->RSER |= SPI_RSER_TCF_RE_MASK;
 
 	SPI0 -> PUSHR = data_out;
-	gpioWrite(CAN_TP_PIN,LOW);
+	// gpioWrite(CAN_TP_PIN,LOW);
 }
 
 /**
@@ -280,7 +299,7 @@ void SPI_SendMsg(uint8_t* msg)
 
 void SPI_SendData(uint8_t* bytes, uint32_t num_of_bytes, void (*callback)(void))
 {
-	gpioWrite(CAN_TP_PIN,HIGH);
+	// gpioWrite(CAN_TP_PIN,HIGH);
 	externalCB = callback;	// saves Callback to be used if necessary
 
 	flush_Queue(1);
@@ -312,7 +331,7 @@ void SPI_SendData(uint8_t* bytes, uint32_t num_of_bytes, void (*callback)(void))
 	SPI0->RSER |= SPI_RSER_TCF_RE_MASK;
 
 	SPI0 -> PUSHR = data_out;
-	gpioWrite(CAN_TP_PIN,LOW);
+	// gpioWrite(CAN_TP_PIN,LOW);
 
 }
 
@@ -322,9 +341,9 @@ void SPI_SendData(uint8_t* bytes, uint32_t num_of_bytes, void (*callback)(void))
 
 uint8_t SPI_Transmission_In_Process()
 {
-	gpioWrite(CAN_TP_PIN,HIGH);
+	// gpioWrite(CAN_TP_PIN,HIGH);
 	return !transfer_complete;	// if EOQF==1; transmission is completed
-	gpioWrite(CAN_TP_PIN,LOW);
+	// gpioWrite(CAN_TP_PIN,LOW);
 }
 
 /**
@@ -333,9 +352,9 @@ uint8_t SPI_Transmission_In_Process()
 
 uint8_t SPI_Read_Status()
 {
-	gpioWrite(CAN_TP_PIN,HIGH);
+	// gpioWrite(CAN_TP_PIN,HIGH);
 	return !(SPI0 -> SR & SPI_SR_RXCTR_MASK) && get_Queue_Status(1) && !SPI_Transmission_In_Process();	// if EOQF==1; transmission is completed
-	gpioWrite(CAN_TP_PIN,LOW);
+	// gpioWrite(CAN_TP_PIN,LOW);
 }
 
 
@@ -349,7 +368,7 @@ uint8_t SPI_Read_Status()
  */
 __ISR__ SPI0_IRQHandler(void)
 {
-	gpioWrite(CAN_TP_PIN,HIGH);
+	// gpioWrite(CAN_TP_PIN,HIGH);
 	uint32_t tmp;
 	tmp = SPI0 -> SR;// Dummy read status register
 
@@ -388,7 +407,7 @@ __ISR__ SPI0_IRQHandler(void)
 			}
 		}
 	}
-	gpioWrite(CAN_TP_PIN,HIGH);
+	// gpioWrite(CAN_TP_PIN,HIGH);
 
 }
 

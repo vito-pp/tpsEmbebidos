@@ -1,19 +1,11 @@
-/***************************************************************************//**
-  @file     CAN_SPI.c
-
-  @brief    CAN_sPI driver
-  @author   Grupo 5
- ******************************************************************************/
-
 /*******************************************************************************
  * INCLUDE HEADER FILES
  ******************************************************************************/
+
 #include "hardware.h"
-#include "CAN_SPI.h"
-#include "SPI.h"
+#include "can.h"
+#include "spi.h"
 #include "gpio.h"
-
-
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -275,7 +267,6 @@ void CAN_SPI_Init (void)
 	data[3] = 0b00000000; //Loopback 0b01000000, NORMAL = 0b00000000
 	SPI_SendData(data, 4, 0);
 	while(SPI_Transmission_In_Process());
-
 }
 
 
@@ -332,7 +323,7 @@ uint8_t CAN_SPI_Attempt_to_read(void)
 
 void CAN_SPI_ReceiveInfo(void)
 {
-	gpioWrite(CAN_TP_PIN,HIGH);
+	// gpioWrite(CAN_TP_PIN,HIGH);
 	static uint8_t receiveState = 0;
 	static uint8_t aux[16];
 	static uint8_t intStatus = 0;
@@ -409,7 +400,7 @@ void CAN_SPI_ReceiveInfo(void)
 
 
 	}
-	gpioWrite(CAN_TP_PIN,LOW);
+	// gpioWrite(CAN_TP_PIN,LOW);
 }
 
 
@@ -421,7 +412,7 @@ void CAN_SPI_ReceiveInfo(void)
 
 void CAN_SPI_SendInfo(RXB_RAWDATA_t * rawdata)
 {
-	gpioWrite(CAN_TP_PIN,HIGH);
+	// gpioWrite(CAN_TP_PIN,HIGH);
 	// Initial Send Info state
 	static uint8_t sendState = 0;
 	static uint8_t aux[16];
@@ -486,7 +477,7 @@ void CAN_SPI_SendInfo(RXB_RAWDATA_t * rawdata)
 
 
 	}
-	gpioWrite(CAN_TP_PIN,LOW);
+	// gpioWrite(CAN_TP_PIN,LOW);
 }
 
 
@@ -642,11 +633,11 @@ static void checkDoubleBuffers(void)
 }
 
 
-__ISR__ PORTC_IRQHandler(void)
-{
-	PORTC->PCR[INT_PIN] |= PORT_PCR_ISF_MASK;
-	CAN_SPI_ReceiveInfo();
-}
+// __ISR__ PORTC_IRQHandler(void)
+// {
+// 	PORTC->PCR[INT_PIN] |= PORT_PCR_ISF_MASK;
+// 	CAN_SPI_ReceiveInfo();
+// }
 
 
 
