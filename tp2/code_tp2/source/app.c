@@ -46,18 +46,29 @@ void App_Run (void)
 {
 
 
+	SPI0_pushTxFIFO();
 	if(SPI0_isTxQueueEmpty())
 	{
-		uint8_t data[3] = {255, 8, 130};
-
+		int ku = 0;
+		uint8_t data1[] = {0xFF, 0x00, 0x0F, 0x0F, 0xF0, 0xF0, 0b10101010,  0b10101010};
+		//SPI0_sendNBytes(data1, 7);
+		SPI0_sendNBytes(data1, 8);
+		SPI0_pushTxFIFO();
 	}
+	//{
+
+		//while(!SPI0_isTxQueueEmpty());
+
+
+
+	//}
 
 	static uint16_t rx_buffer[30];
 
 	uint8_t read[16];
-	//static int i = 0;
-	//uint16_t aux;
-	/*for(;;)
+	static int i = 0;
+	uint16_t aux;
+	for(;;)
 	{
 		if( (aux = SPI0_PopRxFIFO() ) != 0xFFFF)
 		{
@@ -68,7 +79,7 @@ void App_Run (void)
 		{
 			break;
 		}
-	}*/
+	}
 }
 
 /*******************************************************************************

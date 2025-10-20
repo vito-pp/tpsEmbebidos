@@ -31,15 +31,16 @@ void sclkIRQ(void);
 void sclkIRQ(void)
 {
 	static int cont = 0;
+	//cont llega hasta 12
 
-	if(cont == 31)
+	if(cont == (31))
 	{
 		SPI0_FlushRX();
 		SPI0_pushTxFIFO();
 	}
 
 
-	cont = (cont + 1 )% 32; //size of 4 bytes tx
+	cont = (cont + 1 ) & 0b11111; //size of 4 bytes tx
 
 
 }
@@ -74,19 +75,19 @@ void SPI0_pushTxFIFO(void)
         if(tx_buffer[i] != 0xFFFFFFFF)
         {
        	    spi_base_adress[0]->PUSHR = tx_buffer[i];
-
+       	    tx_buffer[i] = 0xFFFFFFFF;
+       	    i = (i + 1) % TX_BUFFER_SIZE;
+       	    counter++;
        	    while(!SPI0_isTxComplete());
 
-			tx_buffer[i] = 0xFFFFFFFF;
-      	    i = (i + 1) % TX_BUFFER_SIZE;
-      	    counter++;
+
         }
         else
         {
         	break;
         }
     }
-    while((aux & SPI_PUSHR_CONT_MASK) && counter <= 4); //Checks if last Tx is the EOQ message.
+    while((aux & SPI_PUSHR_CONT_MASK) && counter < 4); //Checks if last Tx is the EOQ message.
     										// no more than 4 consecutives push
 }
 
@@ -118,8 +119,8 @@ void SPI0Master_Init(void)
     bool cont_scke = 0;
     bool rooe = 0;
     bool pcsis = 1;
-    bool mdis = 1;
-    bool halt = 1;
+    bool mdis = 0;
+    bool halt = 0;
 
     //enables clock gating
     SIM->SCGC6 |= SIM_SCGC6_SPI0_MASK;
@@ -141,18 +142,17 @@ void SPI0Master_Init(void)
 
     //Puede que falte habilitar mdis
     //MCR CONFIGURATION
-    spi_x->MCR |= SPI_MCR_MSTR(1) | SPI_MCR_CONT_SCKE(cont_scke &&1) |
+    spi_x->MCR = SPI_MCR_MSTR(1) | SPI_MCR_CONT_SCKE(cont_scke &&1) |
                     SPI_MCR_ROOE(rooe &&1) | SPI_MCR_PCSIS(pcsis &&1) |
                     SPI_MCR_PCSIS(pcsis &&1) | SPI_MCR_CLR_RXF(1) |
-                    SPI_MCR_CLR_TXF(1);
-    spi_x->MCR &= ~(SPI_MCR_MDIS(mdis) | SPI_MCR_HALT(halt));
+                    SPI_MCR_CLR_TXF(1) | SPI_MCR_MDIS(mdis) | SPI_MCR_HALT(halt);
 
     //CTAR0 CONFIGURATION
     bool cpol = 0;
     uint8_t cpha = 0;
     uint8_t lsfe = 1;
     uint8_t fmsz = 7;
-    uint16_t br= 1;
+    uint16_t br= 40;
 
     spi_x->CTAR[0] |= SPI_CTAR_FMSZ(fmsz &&1);
     spi_x->CTAR[0] |= SPI_CTAR_CPOL(cpol &&1);
@@ -160,12 +160,13 @@ void SPI0Master_Init(void)
     spi_x->CTAR[0] |= SPI_CTAR_LSBFE(lsfe &&1);
 
 
-    //SCK baud rate = (fP /PBR) x [(1+DBR)/BR]
+    //SCK baud rate = (fP /PBR) x [(1+DBR)/BR)]
     switch(br)
     {
-    	//PBR = 5
-        case 5: spi_x->CTAR[0] |= SPI_CTAR_PBR(0b10) | SPI_CTAR_BR(16); break;
-        case 1: spi_x->CTAR[0] |= SPI_CTAR_PBR(5) | SPI_CTAR_BR(4); break;
+    	case 9: spi_x->CTAR[0] |= SPI_CTAR_PBR(0b10) | SPI_CTAR_BR(0b1010); break;
+        case 20: spi_x->CTAR[0] |= SPI_CTAR_PBR(0b10) | SPI_CTAR_BR(0b1001); break;
+        case 40: spi_x->CTAR[0] |= SPI_CTAR_PBR(0b10) | SPI_CTAR_BR(0b1000); break;
+        case 80: spi_x->CTAR[0] |= SPI_CTAR_PBR(0b10) | SPI_CTAR_BR(0b110); break;
         default: break;
     }
     
