@@ -1,6 +1,6 @@
 /***************************************************************************//**
   @file     App.c
-  @brief    Test simple: enviar el mismo mensaje continuamente por UART0
+  @brief    main loop and init
 *******************************************************************************/
 
 /*******************************************************************************
@@ -16,10 +16,10 @@
 #include "drv/SysTick.h"
 #include "drv/i2c.h"
 #include "drv/FXOS8700CQ.h"
-
-#include <stdbool.h>
 #include "drv/UART_strings.h"
 #include "drv/UART.h"
+
+#include <stdbool.h>
 
 /*******************************************************************************
  * FILE SCOPE VARIABLES
