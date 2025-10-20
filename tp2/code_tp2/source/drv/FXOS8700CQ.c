@@ -162,11 +162,11 @@ void vec2rot(Vec3_t *mg, Vec3_t *uT, Rotation_t *rot)
     float a_norm = sqrtf(ax*ax + ay*ay + az*az);
     if (a_norm == 0) return;
 
-    float roll = atan2f(ay, az);
-    float pitch = atan2f(-ax, sqrtf(ay*ay + az*az));
+    float pitch = atan2f(ay, az);
+    float roll = atan2f(-ax, sqrtf(ay*ay + az*az));
 
-    float sr = sinf(roll), cr = cosf(roll);
-    float sp = sinf(pitch), cp = cosf(pitch);
+    float sr = sinf(pitch), cr = cosf(pitch);
+    float sp = sinf(roll), cp = cosf(roll);
 
     float mxh = uT->x*cp + uT->z*sp;
     float myh = uT->x*sr*sp + uT->y*cr - uT->z*sr*cp;
@@ -177,7 +177,7 @@ void vec2rot(Vec3_t *mg, Vec3_t *uT, Rotation_t *rot)
     rot->roll = roll*k;
     rot->pitch = pitch*k;
     rot->yaw = yaw*k;
-    if(rot->yaw < 0) rot->yaw += 360.0f;
+//    if(rot->yaw < 0) rot->yaw += 360.0f;
 }
 
 /*******************************************************************************
