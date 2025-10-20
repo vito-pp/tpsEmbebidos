@@ -1,11 +1,11 @@
 /***************************************************************************//**
-  @file     SPI.h
-  @brief    SPI driver
+  @file     CAN_SPI.h
+  @brief    CAN_SPI driver
   @author   Grupo 5
  ******************************************************************************/
 
-#ifndef SPI_H_
-#define SPI_H_
+#ifndef CAN_SPI_H_
+#define CAN_SPI_H_
 
 /*******************************************************************************
  * INCLUDE HEADER FILES
@@ -14,11 +14,17 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
+#define BUFFER_SIZE2	8
 
+typedef struct RXB_RAWDATA
+{
+    uint16_t SID;
+    uint8_t DLC;
+    uint8_t Dn[BUFFER_SIZE2];
+}RXB_RAWDATA_t;
 
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
@@ -36,65 +42,32 @@
  * @brief
  * @return
  */
-void SPI_Init (void);
+void CAN_SPI_Init (void);
 
 /**
  * @brief
  * @return
  */
-uint8_t SPI_Get_Status(void);
+uint8_t CAN_SPI_Is_Read_Ready(void);
 
 /**
  * @brief
  * @return
  */
-uint8_t SPI_Get_Data(void);
+RXB_RAWDATA_t CAN_SPI_Get_Data(void);
 
 /**
  * @brief
- * @param
  * @return
  */
+void CAN_SPI_SendInfo(RXB_RAWDATA_t * rawdata);
 
-void SPI_Get_DataBytes(uint8_t *data, uint32_t num_of_bytes);
+uint8_t CAN_SPI_Attempt_to_read(void);
 
-/**
- * @brief	Starts the Transmission of the data (8-bits words)
- * @param	bytes	Array of data (uint8_t*)
- * @param	num_of_bytes	Number of bytes of the array
- * @param 	callback		Function (NULL if not wanted) to be called
- * 							everytime a transmission is completed
- */
+uint8_t CAN_SPI_Is_Busy(void);
 
-
-void SPI_SendData(uint8_t* bytes, uint32_t num_of_bytes, void (*callback)(void));
-
-
-/**
- * @brief	Starts the Transmission of the string (8-bits words). The '\0' is not transmitted
- * @param	msg	Array of data (string)
- */
-
-void SPI_SendMsg(uint8_t* msg);
-
-/**
- * @brief	Starts the Transmission of the only byte (8-bits word).
- * @param	byte	Data byte to transmit.
- */
-void SPI_SendByte(uint8_t byte);
-
-/**
- * @return	Transmission in process (0 No tranmission; 1 in process)
- */
-uint8_t SPI_Transmission_In_Process();
-
-/**
- * @return	Data_ready_to_read (0 Not ready; 1 ready)
- */
-
-uint8_t SPI_Read_Status(void);
 
 /*******************************************************************************
  ******************************************************************************/
 
-#endif /* SPI_H_ */
+#endif /* CAN_SPI_H_ */
