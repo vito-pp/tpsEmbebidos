@@ -1,38 +1,9 @@
 #include "hardware.h"
 #include "UART.h"
 
-#define UART_HAL_DEFAULT_BAUDRATE 9600
 
-#define UART0_TX_PIN 	17   //PTB17
-#define UART0_RX_PIN 	16   //PTB16
 
-typedef enum
-{
-	PORT_mAnalog,
-	PORT_mGPIO,
-	PORT_mAlt2,
-	PORT_mAlt3,
-	PORT_mAlt4,
-	PORT_mAlt5,
-	PORT_mAlt6,
-	PORT_mAlt7,
-
-} PORTMux_t;
-
-typedef enum
-{
-	PORT_eDisabled				= 0x00,
-	PORT_eDMARising				= 0x01,
-	PORT_eDMAFalling			= 0x02,
-	PORT_eDMAEither				= 0x03,
-	PORT_eInterruptDisasserted	= 0x08,
-	PORT_eInterruptRising		= 0x09,
-	PORT_eInterruptFalling		= 0x0A,
-	PORT_eInterruptEither		= 0x0B,
-	PORT_eInterruptAsserted		= 0x0C,
-} PORTEvent_t;
-
-void UART_Init (void)
+void UART_Init (char parity)
 {
 
 // Note: 5.6 Clock Gating page 192
@@ -53,10 +24,6 @@ void UART_Init (void)
 		NVIC_EnableIRQ(UART4_RX_TX_IRQn);
 		NVIC_EnableIRQ(UART5_RX_TX_IRQn);
 
-		//UART0 Set UART Speed
-
-		UART_SetBaudRate(UART0, UART_HAL_DEFAULT_BAUDRATE);
-
 		//Configure UART0 TX and RX PINS
 
 		PORTB->PCR[UART0_TX_PIN]=0x0; //Clear all bits
@@ -68,15 +35,31 @@ void UART_Init (void)
 		PORTB->PCR[UART0_RX_PIN]|=PORT_PCR_IRQC(PORT_eDisabled); //Disable interrupts
 
 
-	//UART0 Baudrate Setup
+	//UART0 Baudrate Setup + Parity Setup (8o1) (8 bits, odd parity, 1 stop bit)
 
-		UART_SetBaudRate (UART0, UART_HAL_DEFAULT_BAUDRATE);
+		UART_SetBaudRate(UART0, UART_HAL_DEFAULT_BAUDRATE);
+		UART_SetParity(UART0, parity);
 
 	//Enable UART0 Xmiter and Rcvr
 
 	UART0->C2=UART_C2_TE_MASK | UART_C2_RE_MASK;
 
 }
+
+void UART_SetParity(UART_Type *uart, uart_parity_t parity) {
+    /* poner formato 9‑bit si se usa paridad */
+    if (parity == UART_PARITY_NONE) {
+        uart->C1 &= ~(UART_C1_M_MASK | UART_C1_PE_MASK | UART_C1_PT_MASK); // 8N
+    } else {
+        uart->C1 |= UART_C1_M_MASK;  // M=1 → 9 bits (8 datos + paridad)
+        uart->C1 &= ~(UART_C1_PE_MASK | UART_C1_PT_MASK);
+        uart->C1 |= UART_C1_PE_MASK;                 // PE=1
+        if (parity == UART_PARITY_ODD) uart->C1 |= UART_C1_PT_MASK; // PT=1 para impar
+    }
+    uart->BDH &= ~UART_BDH_SBNS_MASK; // 1 stop
+}
+
+
 
 void UART_SetBaudRate (UART_Type *uart, uint32_t baudrate)
 {
@@ -106,11 +89,16 @@ void UART_Send_Data(unsigned char txdata)
 	}
 }
 
-unsigned char UART_Recieve_Data()
+unsigned char UART_Recieve_Data(void)
 {
-	if(((UART0->S1) & UART_S1_RDRF_MASK) != 0){
-		return UART0->D;
-	} else {
-		return 0; // No se recibio data
-	}
+    uint8_t s1 = UART0->S1;
+    if (s1 & UART_S1_RDRF_MASK) {
+        unsigned char d = UART0->D;            // leer SIEMPRE para limpiar flags
+        // if (s1 & UART_S1_PF_MASK) {
+        //     return 0;                    // descartar el byte con paridad mala
+        // }
+        return d;                        // byte válido
+    }
+    return 0;                            // no hay dato disponible
 }
+
