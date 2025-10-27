@@ -2,8 +2,7 @@
 #include "sinLutQ15.h"   // SINE_Q15[LUT_SIZE], LUT_BITS/LUT_SIZE
 
 #define NCO_PHASE_FRAC_BITS   (NCO_PHASE_BITS - LUT_BITS)
-#define NCO_PHASE_FRAC_MASK   ((NCO_PHASE_FRAC_BITS >= 32) ? 0xFFFFFFFFu : ((1u << NCO_PHASE_FRAC_BITS) - 1u))
-
+#define NCO_PHASE_FRAC_MASK   ((NCO_PHASE_FRAC_BITS >= NCO_PHASE_BOT) ? 0xFFFFFFFFu : ((1u << NCO_PHASE_FRAC_BITS) - 1u))
 
 void NCO_InitFixed(NCO_Handle* nco, uint32_t K_mark, uint32_t K_space, bool K_init_is_mark)
 {
@@ -29,16 +28,17 @@ int16_t NCO_TickQ15(NCO_Handle* nco)
     return SINE_Q15[idx];
 #endif
 }
+// Innecesario si utilizamos un DAC de 16 bits
+// uint16_t NCO_Q15ToDAC12(int16_t q15, uint16_t dac_mid, uint16_t dac_amp)
+// {
+//     int32_t v   = ((int32_t)q15 * (int32_t)dac_amp) / 32767; // [-dac_amp..+dac_amp]
+//     int32_t out = (int32_t)dac_mid + v;
+//     if (out < 0) out = 0;
+//     if (out > 4095) out = 4095;
+//     return (uint16_t)out;
+// }
 
-uint16_t NCO_Q15ToDAC12(int16_t q15, uint16_t dac_mid, uint16_t dac_amp)
-{
-    int32_t v   = ((int32_t)q15 * (int32_t)dac_amp) / 32767; // [-dac_amp..+dac_amp]
-    int32_t out = (int32_t)dac_mid + v;
-    if (out < 0) out = 0;
-    if (out > 4095) out = 4095;
-    return (uint16_t)out;
-}
-
+// Version 2
 uint16_t NCO_Q15ToPWMDutyMOD(int16_t q15, uint16_t mod)
 {
     uint32_t u = (uint32_t)((int32_t)q15 + 32768);                  // [0..65535]

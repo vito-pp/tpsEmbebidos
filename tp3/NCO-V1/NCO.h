@@ -59,8 +59,12 @@ static inline uint16_t NCO_TickPWMDutyMOD(NCO_Handle* nco, uint16_t mod) {
 /* -------------- FSK -------------- */
 
 // Switch tones on bit boundary; preserves phase continuity.
-static inline void NCO_FskBit(NCO_Handle* nco, uint8_t bit /*1=MARK, 0=SPACE*/) {
-    nco->K = bit ? nco->K_mark : nco->K_space;
+static inline void NCO_FskBit(NCO_Handle* nco, bool bit /*1=MARK, 0=SPACE*/) {
+    if (bit){
+        nco->K = nco->K_mark;
+    } else {
+        nco->K = nco->K_space;
+    }
 }
 
 #ifdef __cplusplus
