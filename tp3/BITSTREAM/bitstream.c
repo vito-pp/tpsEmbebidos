@@ -1,7 +1,7 @@
 #include "bitstream.h"
 
 // Formatea un byte de datos en un bitstream con start, parity y stop bits.
-uint16_t format_to_uart(uint8_t data){
+uint16_t data_to_uart(uint8_t data){
     // use existing parity_bit(data) function (returns bool)
     bool p = parity_bit(data);
     // pack: bit0 = start(0), bits1..8 = data (LSB-first), bit9 = parity, bit10 = stop(1)
@@ -38,4 +38,17 @@ void format_bitstream(uint8_t data, bool out[11]){
     for (int i = 0; i < 11; ++i){
         out[i] = (frame >> i) & 1;
     }
+}
+
+// Funcion que deforma un arreglo de 11 bits booleanos en un byte de datos.
+// Devuelve dicho byte de datos.
+uint8_t deformat_bitstream(uint8_t data, bool in[11]){
+    uint8_t result = 0;
+    // Leer bits de datos (descartar start, parity y stop)
+    for (int i = 0; i < 8; ++i){
+        if (in[i + 1]){ // Descartar start bit
+            result |= (1 << i);
+        }
+    }
+    return result;
 }
