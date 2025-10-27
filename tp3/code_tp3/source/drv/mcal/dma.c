@@ -1,6 +1,6 @@
 #include "dma.h"
-#include "../../SDK/CMSIS/MK64F12.h"
-#include "../../SDK/startup/hardware.h"
+#include "MK64F12.h"
+#include "hardware.h"
 
 static bool initialized = false;
 
