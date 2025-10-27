@@ -4,6 +4,7 @@
 #define NCO_PHASE_FRAC_BITS   (NCO_PHASE_BITS - LUT_BITS)
 #define NCO_PHASE_FRAC_MASK   ((NCO_PHASE_FRAC_BITS >= 32) ? 0xFFFFFFFFu : ((1u << NCO_PHASE_FRAC_BITS) - 1u))
 
+
 void NCO_InitFixed(NCO_Handle* nco, uint32_t K_mark, uint32_t K_space, bool K_init_is_mark)
 {
     nco->phase  = 0u;
@@ -44,4 +45,9 @@ uint16_t NCO_Q15ToPWMDutyMOD(int16_t q15, uint16_t mod)
     uint32_t duty = ((uint64_t)u * (uint64_t)mod + 32767u) / 65535u; // round
     if (duty > mod) duty = mod;
     return (uint16_t)duty;
+}
+
+// Se llama una vez al inicio del programa
+void NCO_main_initialization(NCO_Handle* nco){
+    NCO_InitFixed(nco, K_MARK, K_SPACE, true);
 }
