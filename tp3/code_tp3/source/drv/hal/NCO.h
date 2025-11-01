@@ -1,4 +1,6 @@
-#pragma once
+#ifndef _NCO_H_
+#define _NCO_H_
+
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -15,10 +17,6 @@
 
 // If you want linear interpolation between LUT points, enable this.
 // #define NCO_ENABLE_LERP
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 typedef struct {
     uint32_t phase;     // 32-bit phase accumulator
@@ -67,6 +65,4 @@ static inline void NCO_FskBit(NCO_Handle* nco, bool bit /*1=MARK, 0=SPACE*/) {
     }
 }
 
-#ifdef __cplusplus
-}
-#endif
+#endif // _NCO_H_

@@ -4,6 +4,7 @@
  *
  *  - 4 independent channels (PIT0 … PIT3)
  *  - 32-bit down-counter, bus-clock source (@ 50 MHz on FRDM K64F)
+ *  - Frequency range: 
  *  - One-shot or periodic mode
  *  - Optional DMA request on timeout
  *  - Callback per channel (major interrupt)
@@ -16,19 +17,22 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-/*--------------------------------------------------------------------*/
-/*  DEFINES
-/*--------------------------------------------------------------------*/
+/*******************************************************************************
+ * DEFINES
+ ******************************************************************************/
 
-#define PIT_TICKS_FROM_US(us)   ((uint32_t)((((SystemCoreClock/1000000UL)*(us))\
-                                +999UL)/1000UL))
-#define PIT_TICKS_FROM_MS(ms)   ((uint32_t)((((SystemCoreClock/1000UL)*(ms))\
-                                +999UL)/1000UL))
+// System Bus Clock @ 50 MHz
+#ifndef SYS_BUS_CLK
+#define SYS_BUS_CLK (50000000UL)
+#endif
+
+#define PIT_TICKS_FROM_US(us) ((uint32_t)((((SYS_BUS_CLK/1000000UL)*(us)) - 1)))
+#define PIT_TICKS_FROM_MS(ms) ((uint32_t)((((SYS_BUS_CLK/1000UL)*(ms)) - 1)))
 #define PIT_CHANNELS 4
 
-/*--------------------------------------------------------------------*/
-/*  Public types                                                     
-/*--------------------------------------------------------------------*/
+/*******************************************************************************
+ * PUBLIC TYPES
+ ******************************************************************************/
 
 /* PIT channel identifier */
 typedef enum
@@ -54,9 +58,9 @@ typedef struct
     void      *user;        // cookie passed to callback                 
 } pit_cfg_t;
 
-/*--------------------------------------------------------------------*/
-/*  Public API                                                      
-/*--------------------------------------------------------------------*/
+/*******************************************************************************
+ * PUBLIC API
+ ******************************************************************************/
 
 /**
  * @brief Global PIT initialisation (clocks + NVIC)
@@ -65,13 +69,13 @@ void PIT_Init(void);
 
 /**
  * @brief Configure a PIT channel
- * @param cfg  Pointer to filled configuration structure
+ * @param cfg Pointer to filled configuration structure
  * @return true on success, false on error
  */
 bool PIT_Config(const pit_cfg_t *cfg);
 
 /**
- * @brief (Re)start a channel – useful for one-shot mode
+ * @brief (Re)start a channel
  * @param ch  Channel to start
  * @return true on success, false on error
  */
@@ -99,5 +103,4 @@ bool PIT_SetLoad(pit_ch_e ch, uint32_t new_load);
  */
 uint32_t PIT_GetCount(pit_ch_e ch);
 
-/*======================================================================*/
-#endif /* _PIT_H_ */
+#endif // _PIT_H_ 

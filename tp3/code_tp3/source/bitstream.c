@@ -33,12 +33,12 @@ bool parity_bit(const uint8_t data){
 //-------------------------------------------------------
 // Funcion para modificar a formato bool[11]. 
 // Modifica el arreglo original introducido en la funcion.
-void format_bitstream(uint8_t data, bool out[11]){
-    uint16_t frame = format_to_uart(data);
-    for (int i = 0; i < 11; ++i){
-        out[i] = (frame >> i) & 1;
-    }
-}
+//void format_bitstream(uint8_t data, bool out[11]){
+//    uint16_t frame = format_to_uart(data);
+//    for (int i = 0; i < 11; ++i){
+//        out[i] = (frame >> i) & 1;
+//    }
+//}
 
 // Funcion que deforma un arreglo de 11 bits booleanos en un byte de datos.
 // Devuelve dicho byte de datos.

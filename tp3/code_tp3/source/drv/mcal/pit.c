@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 #include "MK64F12.h"
+#include "hardware.h"
 #include "pit.h"
 
 /*======================================================================
@@ -126,7 +127,7 @@ static void pit_isr_handler(uint8_t ch)
     }
 }
 
-void PIT0_IRQHandler(void) { pit_isr_handler(0); }
-void PIT1_IRQHandler(void) { pit_isr_handler(1); }
-void PIT2_IRQHandler(void) { pit_isr_handler(2); }
-void PIT3_IRQHandler(void) { pit_isr_handler(3); }
+__ISR__ PIT0_IRQHandler(void) { pit_isr_handler(0); }
+__ISR__ PIT1_IRQHandler(void) { pit_isr_handler(1); }
+__ISR__ PIT2_IRQHandler(void) { pit_isr_handler(2); }
+__ISR__ PIT3_IRQHandler(void) { pit_isr_handler(3); }
