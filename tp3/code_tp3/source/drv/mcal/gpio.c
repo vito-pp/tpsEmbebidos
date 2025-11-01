@@ -97,7 +97,7 @@ bool gpioIRQ (pin_t pin, irq_mode_t irqMode, pinIrqFun_t irqFun)
   return true;
 }
 
-__ISR__ PORTA_IRQHandler(void)
+void PORTA_IRQHandler(void)
 {
     for (int i = 0; i < PINS_PER_PORT; i++)
     {
@@ -110,7 +110,7 @@ __ISR__ PORTA_IRQHandler(void)
     }
 }
 
-__ISR__ PORTB_IRQHandler(void)
+void PORTB_IRQHandler(void)
 {
     for (int i = 0; i < PINS_PER_PORT; i++)
     {
@@ -123,7 +123,7 @@ __ISR__ PORTB_IRQHandler(void)
     }
 }
 
-__ISR__ PORTC_IRQHandler(void)
+void PORTC_IRQHandler(void)
 {
     for (int i = 0; i < PINS_PER_PORT; i++)
     {
@@ -136,7 +136,7 @@ __ISR__ PORTC_IRQHandler(void)
     }
 }
 
-__ISR__ PORTD_IRQHandler(void)
+void PORTD_IRQHandler(void)
 {
     for (int i = 0; i < PINS_PER_PORT; i++)
     {
@@ -149,7 +149,7 @@ __ISR__ PORTD_IRQHandler(void)
     }
 }
 
-__ISR__ PORTE_IRQHandler(void)
+void PORTE_IRQHandler(void)
 {
     for (int i = 0; i < PINS_PER_PORT; i++)
     {

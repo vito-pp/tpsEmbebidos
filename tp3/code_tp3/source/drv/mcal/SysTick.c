@@ -31,7 +31,7 @@ bool SysTick_Init (void (*funcallback)(void), uint32_t count)
     return true;
 }
 
-__ISR__ SysTick_Handler (void)
+void SysTick_Handler (void)
 {
     cb();
 }

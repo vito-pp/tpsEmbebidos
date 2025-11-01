@@ -59,7 +59,7 @@ void App_Init (void)
     pit_cfg_t cfg =
     {
         .ch = PIT_CH0,
-        .load_val = PIT_TICKS_FROM_MS(10),
+        .load_val = PIT_TICKS_FROM_MS(1000),
         .periodic = true,
         .int_en = true,
         .dma_req = false,
@@ -96,5 +96,5 @@ static void __error_handler__(void)
 static void pit_cb(void *cb_param)
 {
     (void *)cb_param;
-    gpioWrite(PIN_LED_GREEN, LED_ACTIVE);
+    gpioToggle(PIN_LED_GREEN);
 }

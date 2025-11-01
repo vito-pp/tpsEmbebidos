@@ -44,21 +44,30 @@ int DMA_Config(const dma_cfg_t *cfg)
     {
         return -1;
     }
-    // Disarm b4 configuring
+    // Disarm and clear pending IRQs before configuring
     DMA0->CERQ = DMA_CERQ_CERQ(cfg->ch);
+	NVIC_ClearPendingIRQ(DMA0_IRQn + ch);
+	if (cfg->int_major) 
+    {
+        NVIC_EnableIRQ(DMA0_IRQn + ch);
+    }
+    else
+    {
+        NVIC_DisableIRQ(DMA0_IRQn + ch);
+    }
 
     // Remember config
     dma_ch_states[ch].on_major_cb = cfg->on_major;
     dma_ch_states[ch].user_param = cfg->user;
 
-	// Clear all the pending events
-	NVIC_ClearPendingIRQ(DMA0_IRQn + ch);
-	// Enable the DMA interrupts
-	NVIC_EnableIRQ(DMA0_IRQn + ch);
-
-    // Enable the eDMA channel 0 and set the PORTC as the DMA request source
+    // Enable the eDMA channel and set the DMA request source
+    DMAMUX->CHCFG[ch] = 0;
 	DMAMUX->CHCFG[ch] |= DMAMUX_CHCFG_ENBL_MASK 
                         |DMAMUX_CHCFG_SOURCE((uint8_t)cfg->request_src);
+    if (cfg->trig_mode) // If trigger mode enabled
+    {
+        DMAMUX->CHCFG[ch] |= DMAMUX_CHCFG_TRIG_MASK;
+    }
 
     // -------------- TCD setup ----------------------
     DMA0->TCD[ch].SADDR= (uint32_t)(cfg->saddr);
@@ -141,25 +150,25 @@ static void DMA_IRQHandler(uint8_t ch)
 	}
 }
 
-__ISR__ DMA0_IRQHandler(void){ DMA_IRQHandler(0); }
-__ISR__ DMA1_IRQHandler(void){ DMA_IRQHandler(1); }
-__ISR__ DMA2_IRQHandler(void){ DMA_IRQHandler(2); }
-__ISR__ DMA3_IRQHandler(void){ DMA_IRQHandler(3); }
-__ISR__ DMA4_IRQHandler(void){ DMA_IRQHandler(4); }
-__ISR__ DMA5_IRQHandler(void){ DMA_IRQHandler(5); }
-__ISR__ DMA6_IRQHandler(void){ DMA_IRQHandler(6); }
-__ISR__ DMA7_IRQHandler(void){ DMA_IRQHandler(7); }
-__ISR__ DMA8_IRQHandler(void){ DMA_IRQHandler(8); }
-__ISR__ DMA9_IRQHandler(void){ DMA_IRQHandler(9); }
-__ISR__ DMA10_IRQHandler(void){ DMA_IRQHandler(10); }
-__ISR__ DMA11_IRQHandler(void){ DMA_IRQHandler(11); }
-__ISR__ DMA12_IRQHandler(void){ DMA_IRQHandler(12); }
-__ISR__ DMA13_IRQHandler(void){ DMA_IRQHandler(13); }
-__ISR__ DMA14_IRQHandler(void){ DMA_IRQHandler(14); }
-__ISR__ DMA15_IRQHandler(void){ DMA_IRQHandler(15); }
+void DMA0_IRQHandler(void){ DMA_IRQHandler(0); }
+void DMA1_IRQHandler(void){ DMA_IRQHandler(1); }
+void DMA2_IRQHandler(void){ DMA_IRQHandler(2); }
+void DMA3_IRQHandler(void){ DMA_IRQHandler(3); }
+void DMA4_IRQHandler(void){ DMA_IRQHandler(4); }
+void DMA5_IRQHandler(void){ DMA_IRQHandler(5); }
+void DMA6_IRQHandler(void){ DMA_IRQHandler(6); }
+void DMA7_IRQHandler(void){ DMA_IRQHandler(7); }
+void DMA8_IRQHandler(void){ DMA_IRQHandler(8); }
+void DMA9_IRQHandler(void){ DMA_IRQHandler(9); }
+void DMA10_IRQHandler(void){ DMA_IRQHandler(10); }
+void DMA11_IRQHandler(void){ DMA_IRQHandler(11); }
+void DMA12_IRQHandler(void){ DMA_IRQHandler(12); }
+void DMA13_IRQHandler(void){ DMA_IRQHandler(13); }
+void DMA14_IRQHandler(void){ DMA_IRQHandler(14); }
+void DMA15_IRQHandler(void){ DMA_IRQHandler(15); }
 
 // ToDo implement a error handler
-// __ISR__ DMA_Error_IRQHandler(void)
+// void DMA_Error_IRQHandler(void)
 // {
 // 	/* Clear the error interrupt flag.*/
 // 	DMA0->CERR |= 0;

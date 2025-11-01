@@ -86,6 +86,7 @@ typedef struct
 {
     uint8_t ch;             // DMA channel 0..15
     dma_req_e request_src;  // request source
+    bool trig_mode;         // true->trigger mode, false->normal mode
     void *saddr;            // source addr
     void *daddr;            // destination addr
     uint8_t elem_size;      // 1, 2, or 4 bytes
