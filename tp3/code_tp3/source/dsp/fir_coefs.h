@@ -14,13 +14,14 @@
  */
 
 /* General type conversion for MATLAB generated C-code  */
-#include "tmwtypes.h"
+//#include "tmwtypes.h"
 /* 
  * Expected path to tmwtypes.h 
  * /home/vito/MATLAB/R2025b/extern/include/tmwtypes.h 
  */
-const int BL = 17;
-const real64_T B[17] = {
+#define N 17
+const double h[N] = 
+{
   -0.002280993419638, -0.01814570140142, -0.03667344052183, -0.04480073772215,
    -0.01909963512648,  0.05096139974481,   0.1499422613724,   0.2382839426657,
      0.2737634095179,   0.2382839426657,   0.1499422613724,  0.05096139974481,
