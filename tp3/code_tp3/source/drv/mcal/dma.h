@@ -1,10 +1,22 @@
 #ifndef _DMA_H_
 #define _DMA_H_
 
+/*******************************************************************************
+ * INCLUDES
+ ******************************************************************************/
+
 #include <stdint.h>
 #include <stdbool.h>
 
+/*******************************************************************************
+ * DEFINES
+ ******************************************************************************/
+
 #define DMA_NUM_CH 16
+
+/*******************************************************************************
+ * PUBLIC TYPES
+ ******************************************************************************/
 
 typedef enum
 {
@@ -101,9 +113,54 @@ typedef struct
     void *user;             // user cookie for both callbacks
 } dma_cfg_t;
 
-int DMA_Init(void);                     // clocks, NVIC
-int DMA_Config(const dma_cfg_t *cfg);   // write TCD + DMAMUX
-int DMA_Start(uint8_t ch);              // set ERQ (arm)
-int DMA_Stop(uint8_t ch);               // clear ERQ (disarm)
+/*******************************************************************************
+ * PUBLIC API
+ ******************************************************************************/
+
+/**
+ * @brief Initialize the eDMA/DMAMUX driver (once).
+ *
+ * Enables module clocks, configures global eDMA settings, and hooks NVIC ISRs
+ * for all DMA channel IRQs used by the HAL.
+ *
+ * @retval 0  Success.
+ * @retval <0 Error (already initialized or clock/NVIC issue).
+ */
+int DMA_Init(void);                     
+
+/**
+ * @brief Configure one DMA channel (TCD + DMAMUX) from a @ref dma_cfg_t.
+ *
+ * Programs the TCD fields (SADDR/DADDR/NBYTES/SOFF/DOFF/CITER/BITER/SLAST/
+ * DLAST)
+ * and the DMAMUX channel source/trigger mode.
+ *
+ * @param[in] cfg  Pointer to the channel configuration.
+ *
+ * @retval 0   Success.
+ * @retval <0  Error (invalid channel, bad sizes/alignments, or null pointer).
+ */
+int DMA_Config(const dma_cfg_t *cfg); 
+
+/**
+ * @brief Enable request (ERQ) for a configured channel (arm it).
+ *
+ * @param ch  DMA channel index [0..15].
+ * @retval 0   Success.
+ * @retval <0  Error (invalid channel or not configured).
+ */
+int DMA_Start(uint8_t ch);
+
+
+/**
+ * @brief Disable request (ERQ) for a channel (disarm it).
+ *
+ * Does not clear the TCD. You can @ref DMA_Start it again later.
+ *
+ * @param ch  DMA channel index [0..15].
+ * @retval 0   Success.
+ * @retval <0  Error (invalid channel).
+ */
+int DMA_Stop(uint8_t ch);
 
 #endif
