@@ -1,0 +1,50 @@
+# --- Project ---
+PROJECT_NAME           = "TP3 for Embedded Systems"
+PROJECT_BRIEF          = "FSK Modem: v1 and v2"
+OUTPUT_DIRECTORY       = docs
+OPTIMIZE_OUTPUT_FOR_C  = YES
+JAVADOC_AUTOBRIEF      = YES
+TAB_SIZE               = 4
+
+# --- Inputs (your layout) ---
+INPUT                  = source SDK/CMSIS
+RECURSIVE              = YES
+FILE_PATTERNS          = *.h *.c *.hpp *.hh *.md *.dox
+EXCLUDE                = Debug
+EXCLUDE_PATTERNS       = */Debug/* *.launch
+EXCLUDE_SYMLINKS       = YES
+
+# If you don't want CMSIS in the docs, comment SDK/CMSIS above or add:
+# EXCLUDE += SDK
+
+# --- Preprocessing (handles macros/includes) ---
+ENABLE_PREPROCESSING   = YES
+MACRO_EXPANSION        = YES
+SEARCH_INCLUDES        = YES
+INCLUDE_PATH           = SDK/CMSIS
+# Add project-wide defines here, if needed:
+# PREDEFINED             = FSL_FEATURE_SOC_EDMA_COUNT=1
+
+# --- What to extract / how to handle missing docs ---
+EXTRACT_ALL            = YES          # Show even if not documented
+EXTRACT_PRIVATE        = NO
+EXTRACT_STATIC         = YES
+HIDE_UNDOC_MEMBERS     = NO
+HIDE_UNDOC_CLASSES     = NO
+WARN_IF_UNDOCUMENTED   = YES
+WARN_LOGFILE           = docs/doxygen-warnings.log
+
+# --- Diagrams (Graphviz) ---
+HAVE_DOT               = YES
+DOT_IMAGE_FORMAT       = svg
+CALL_GRAPH             = YES
+CALLER_GRAPH           = YES
+
+# --- Output ---
+GENERATE_HTML          = YES
+HTML_OUTPUT            = html
+GENERATE_LATEX         = YES
+GENERATE_TREEVIEW      = YES
+USE_MDFILE_AS_MAINPAGE = README.md     # if you have one
+MARKDOWN_SUPPORT       = YES
+
