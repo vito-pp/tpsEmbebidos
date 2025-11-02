@@ -77,12 +77,12 @@ int DMA_Config(const dma_cfg_t *cfg)
 	DMA0->TCD[ch].SOFF =cfg->soff;
 	DMA0->TCD[ch].DOFF =cfg->doff;
 
-	/* Set source and destination data transfer size is 1 byte. */
-	DMA0->TCD[ch].ATTR = DMA_ATTR_SSIZE(size2code(cfg->elem_size)) 
-                        |DMA_ATTR_DSIZE(size2code(cfg->elem_size));
+	/* Set source and destination data transfer size in byte. */
+	DMA0->TCD[ch].ATTR = DMA_ATTR_SSIZE(size2code(cfg->nbytes)) 
+                        |DMA_ATTR_DSIZE(size2code(cfg->nbytes));
 
 	/*Number of bytes to be transfered in each service request of the channel.*/
-	DMA0->TCD[ch].NBYTES_MLNO= cfg->elem_size;
+	DMA0->TCD[ch].NBYTES_MLNO= cfg->nbytes;
 
 	/* Current major iteration count. */
 	DMA0->TCD[ch].CITER_ELINKNO = DMA_CITER_ELINKNO_CITER(cfg->major_count);

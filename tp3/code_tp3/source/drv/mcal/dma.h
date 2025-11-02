@@ -89,8 +89,8 @@ typedef struct
     bool trig_mode;         // true->trigger mode, false->normal mode
     void *saddr;            // source addr
     void *daddr;            // destination addr
-    uint8_t elem_size;      // 1, 2, or 4 bytes
-    int16_t soff, doff;     // source and destination offset
+    uint8_t nbytes;         // 1, 2, or 4 bytes
+    int16_t soff, doff;     // source and destination offset in bytes
     uint16_t major_count;   // elements per major loop
     int32_t slast;          // pointer adjust @major end (source)
     int32_t dlast;          // pointer adjust @major end (dest)

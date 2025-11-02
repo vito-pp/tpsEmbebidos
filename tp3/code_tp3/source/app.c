@@ -24,6 +24,8 @@
  * FILE SCOPE VARIABLES
  ******************************************************************************/
 
+static const uint32_t led_mask_toggle  = (1 << 21);
+
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
@@ -46,27 +48,48 @@ static void pit_cb(void * cb_param);
 /* Función que se llama 1 vez, al comienzo del programa */
 void App_Init (void)
 {
-    // error handler init
+    // for dma to write
     gpioMode(PIN_LED_RED, OUTPUT);
-    gpioWrite(PIN_LED_RED, !LED_ACTIVE);
-
-    // PIT cb
     gpioMode(PIN_LED_GREEN, OUTPUT);
+    gpioMode(PIN_LED_BLUE, OUTPUT);
+    gpioWrite(PIN_LED_RED, !LED_ACTIVE);
     gpioWrite(PIN_LED_GREEN, !LED_ACTIVE);
+    gpioWrite(PIN_LED_BLUE, !LED_ACTIVE);
+
+    // DMA init
+    DMA_Init();
+    dma_cfg_t dma_cfg =
+    {
+        .ch = 0,
+        .request_src = DMA_REQ_ALWAYS63,
+        .trig_mode = true,
+        .saddr = (void *)&led_mask_toggle,
+        .daddr = (void *)&(PTB->PTOR),
+        .nbytes = 4,
+        .soff = 0, .doff = 0,
+        .major_count = 1,
+        .slast = 0,
+        .dlast = 0,
+        .int_major = false,
+        .on_major = NULL,
+        .user = NULL
+    };
+    DMA_Config(&dma_cfg);
+    DMA_Start(0);
 
     // PIT init
     PIT_Init();
-    pit_cfg_t cfg =
+    pit_cfg_t pit_cfg =
     {
         .ch = PIT_CH0,
         .load_val = PIT_TICKS_FROM_MS(1000),
         .periodic = true,
-        .int_en = true,
-        .dma_req = false,
-        .callback = pit_cb,
+        .int_en = false,
+        .dma_req = true,
+        .callback = NULL,
         .user = NULL
     };
-    PIT_Config(&cfg);
+    PIT_Config(&pit_cfg);
     PIT_Start(PIT_CH0);
 }
 
