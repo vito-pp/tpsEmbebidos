@@ -18,6 +18,7 @@
 #include "drv/mcal/UART_strings.h"
 #include "drv/mcal/UART.h"
 #include "drv/mcal/dma.h"
+#include "drv/mcal/FTM.h"
 
 /*******************************************************************************
  * FILE SCOPE VARIABLES
@@ -38,14 +39,13 @@ static void delayLoop(uint32_t veces);
 /* Función que se llama 1 vez, al comienzo del programa */
 void App_Init (void)
 {
-    gpioMode(PIN_LED_RED, OUTPUT);
-    gpioWrite(PIN_LED_RED, !LED_ACTIVE);
+    FTM_Init();
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run (void)
 {
-
+	PWM_setDuty(90);
 }
 
 /*******************************************************************************
