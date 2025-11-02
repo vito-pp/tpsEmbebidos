@@ -63,7 +63,7 @@ typedef struct
  ******************************************************************************/
 
 /**
- * @brief Global PIT initialisation (clocks + NVIC)
+ * @brief Global PIT initialization (clocks + NVIC)
  */
 void PIT_Init(void);
 
