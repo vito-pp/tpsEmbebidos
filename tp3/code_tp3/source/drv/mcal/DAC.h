@@ -3,6 +3,7 @@
 #define DAC_H_
 
 #include "hardware.h"
+#include "MK64F12.h"
 
 typedef DAC_Type *DAC_t;
 typedef uint16_t DACData_t;

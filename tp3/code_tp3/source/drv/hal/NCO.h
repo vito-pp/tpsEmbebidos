@@ -36,7 +36,7 @@ void     NCO_InitFixed(NCO_Handle* nco, uint32_t K_mark, uint32_t K_space, bool 
 static inline void NCO_SetTuningWord(NCO_Handle* nco, uint32_t K) { nco->K = K; }
 
 // Advance 1 sample and return Q15 from LUT (uses external SINE_Q15).
-int16_t  NCO_TickQ15(NCO_Handle* nco);
+int16_t NCO_TickQ15(NCO_Handle* nco);
 
 /* -------- Conversions -------- */
 
