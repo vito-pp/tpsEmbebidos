@@ -19,6 +19,8 @@
 #include "drv/mcal/UART.h"
 #include "drv/mcal/dma.h"
 #include "drv/mcal/FTM.h"
+#include "drv/mcal/CMP.h"
+
 
 /*******************************************************************************
  * FILE SCOPE VARIABLES
@@ -39,13 +41,14 @@ static void delayLoop(uint32_t veces);
 /* Función que se llama 1 vez, al comienzo del programa */
 void App_Init (void)
 {
-    FTM_Init();
+    //FTM_Init();
+	CMP_Init();
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run (void)
 {
-	PWM_setDuty(90);
+	//PWM_setDuty(90);
 }
 
 /*******************************************************************************
