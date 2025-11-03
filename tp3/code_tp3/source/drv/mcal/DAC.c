@@ -1,3 +1,8 @@
+/**
+ * @file    DAC.c
+ * @brief   Driver mínimo de DAC para Kinetis (DAC0/DAC1): init y escritura de dato.
+ * @note    Habilita clock y configura referencia/trigger por software.
+ */
 
 #include "DAC.h"
 
