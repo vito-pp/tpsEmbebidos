@@ -9,6 +9,7 @@ Release/
 *.su
 *.launch
 *.xml
+*.so
 
 # IDE settings 
 .vscode/
