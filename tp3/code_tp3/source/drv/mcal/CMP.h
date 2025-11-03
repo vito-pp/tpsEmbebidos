@@ -1,0 +1,1 @@
+void CMP_Init(void);
