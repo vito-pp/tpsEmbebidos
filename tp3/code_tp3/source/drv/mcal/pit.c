@@ -23,7 +23,7 @@ void PIT_Init(void)
     SIM->SCGC6 |= SIM_SCGC6_PIT_MASK;
 
     /* 2. Enable timers, freeze in debug if desired */
-    PIT->MCR = 1;  // MDIS=0 (enable), FRZ=0 (run in debug)
+    PIT->MCR = PIT_MCR_FRZ_MASK;  // MDIS=0 (enable), FRZ=1 (freeze in debug)
 
     /* 3. Enable IRQs in NVIC */
     NVIC_EnableIRQ(PIT0_IRQn);
