@@ -64,6 +64,8 @@ void uint16_to_bin(uint16_t value, char *out, size_t out_len){
  static uint16_t lut_value;
  static size_t cnt;
 
+
+
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
@@ -89,10 +91,30 @@ void App_Init (void)
     gpioMode(PIN_LED_RED, OUTPUT);
     gpioWrite(PIN_LED_RED, !LED_ACTIVE);
 
+    PIT_Init();
+
+    // === PRIORIDADES DE INTERRUPCIÓN ===
+    // NVIC_SetPriority(PIT1_IRQn, 0);  // Máxima prioridad (0)
+    // NVIC_SetPriority(PIT0_IRQn, 1);  // Menor prioridad
+
     // PIT init
-    pit_cfg_t pit_cfg_bit =
+
+    pit_cfg_t pit_cfg_lut =
     {
         .ch = 0,
+        .load_val = PIT_TICKS_FROM_US(2000),
+        .periodic = true,
+        .int_en = true,
+        .dma_req = false,
+        .callback = NCO_ISRLut,
+        .user = NULL
+    };
+
+    PIT_Config(&pit_cfg_lut);
+
+    pit_cfg_t pit_cfg_bit =
+    {
+        .ch = 1,
         .load_val = PIT_TICKS_FROM_US(833),
         .periodic = true,
         .int_en = true,
@@ -100,21 +122,10 @@ void App_Init (void)
         .callback = NCO_ISRBit,
         .user = NULL
     };
-    PIT_Config(&pit_cfg_bit);
-    PIT_Start(0);
 
-    pit_cfg_t pit_cfg_lut =
-    {
-        .ch = 1,
-        .load_val = PIT_TICKS_FROM_US((uint32_t)(1e6 / FS)),
-        .periodic = true,
-        .int_en = true,
-        .dma_req = false,
-        .callback = NCO_ISRLut,
-        .user = NULL
-    };
-    PIT_Config(&pit_cfg_lut);
-    PIT_Start(1);
+    PIT_Config(&pit_cfg_bit);
+
+
 
     NCO_InitFixed(&nco_handle, K_MARK, K_SPACE, true);
     

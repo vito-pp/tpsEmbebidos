@@ -1,5 +1,5 @@
 #include "NCO.h"
-#include "SinLutQ15.h"   // SINE_Q15[LUT_SIZE], LUT_BITS/LUT_SIZE
+#include "sinLutQ15.h"   // SINE_Q15[LUT_SIZE], LUT_BITS/LUT_SIZE
 
 #define NCO_PHASE_FRAC_BITS   (NCO_PHASE_BITS - LUT_BITS)
 #define NCO_PHASE_FRAC_MASK   ((NCO_PHASE_FRAC_BITS >= NCO_PHASE_BOT) ? 0xFFFFFFFFu : ((1u << NCO_PHASE_FRAC_BITS) - 1u))
@@ -51,3 +51,4 @@ uint16_t NCO_Q15ToPWMDutyMOD(int16_t q15, uint16_t mod)
 void NCO_main_initialization(NCO_Handle* nco){
     NCO_InitFixed(nco, K_MARK, K_SPACE, true);
 }
+
