@@ -19,11 +19,11 @@
 /*--------------------------------------------------------------------*/
 /*  DEFINES
 /*--------------------------------------------------------------------*/
-
-#define PIT_TICKS_FROM_US(us)   ((uint32_t)((((SystemCoreClock/1000000UL)*(us))\
-                                +999UL)/1000UL))
-#define PIT_TICKS_FROM_MS(ms)   ((uint32_t)((((SystemCoreClock/1000UL)*(ms))\
-                                +999UL)/1000UL))
+#ifndef SYS_BUS_CLK
+#define SYS_BUS_CLK (50000000UL)
+#endif
+#define PIT_TICKS_FROM_US(us) ((uint32_t)((((SYS_BUS_CLK/1000000UL)*(us)) - 1)))
+#define PIT_TICKS_FROM_MS(ms) ((uint32_t)((((SYS_BUS_CLK/1000UL)*(ms)) - 1)))
 #define PIT_CHANNELS 4
 
 /*--------------------------------------------------------------------*/

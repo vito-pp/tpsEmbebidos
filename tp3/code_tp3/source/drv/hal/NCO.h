@@ -7,7 +7,7 @@
 #define NCO_PHASE_BITS (32u)
 #endif
 
-#define FS      (48000u)  // frecuencia de muestreo
+#define FS      (50000u)  // frecuencia de muestreo
 
 #define TW32_ROUND(f, FS) ( (uint32_t)((((uint64_t)(f) << 32) + ((FS)/2)) / (uint64_t)(FS)) )
 #define K_MARK  TW32_ROUND(1200u,  FS)

@@ -63,6 +63,8 @@ void uint16_to_bin(uint16_t value, char *out, size_t out_len){
  static bool bitstream[11]; // 11?
  static uint16_t lut_value;
  static size_t cnt;
+ static bool initiate_send = false;
+ static bool sending_data = false;
 
 
 
@@ -102,7 +104,7 @@ void App_Init (void)
     pit_cfg_t pit_cfg_lut =
     {
         .ch = 0,
-        .load_val = PIT_TICKS_FROM_US(2000),
+        .load_val = PIT_TICKS_FROM_US(20),
         .periodic = true,
         .int_en = true,
         .dma_req = false,
@@ -153,24 +155,29 @@ void App_Run (void)
 
     if (n > 0)
     {
-        // char bits[17];
-        // uint16_t frame = data_to_uart(rx_line[0]);
-        // uint16_to_bin(frame, bits, sizeof(bits));
-        // UART_SendString("Dato Recibido: ");
-        // UART_SendString(rx_line);
-        // UART_SendString("\r\n");
-        // UART_SendString("Informacion enviada al NCO: ");
-        // UART_SendString(bits);
-        // UART_SendString("\r\n");
+        char bits[17];
+        uint16_t frame = data_to_uart(rx_line[0]);
+        uint16_to_bin(frame, bits, sizeof(bits));
+        UART_SendString("Dato Recibido: ");
+        UART_SendString(rx_line);
+        UART_SendString("\r\n");
+        UART_SendString("Informacion enviada al NCO: ");
+        UART_SendString(bits);
+        UART_SendString("\r\n");
         cnt = 0;
         format_bitstream(rx_line[0], bitstream);
+        initiate_send = true;
+        sending_data = true;
     }
     else // no data recieved
     {
-        for (int i = 0; i < 11; i++)
-        {
-            bitstream[i] = true;
-        }
+    	if (!sending_data){
+            for (int i = 0; i < 11; i++)
+            {
+                bitstream[i] = true;
+            }
+    	}
+
     }
 }
 
@@ -182,16 +189,22 @@ void App_Run (void)
 
 static void NCO_ISRBit(void *user)
 {
+    if (initiate_send){
+    	cnt = 0;
+		initiate_send = false;
+	}
     NCO_FskBit(&nco_handle, bitstream[cnt]);
     cnt++;
     if(cnt == 11)
     {
+    	sending_data = false;
         cnt = 0;
     }
 }
 
 static void NCO_ISRLut(void* user)
 {
+
     lut_value = NCO_TickQ15(&nco_handle);
     DAC_SetData(DAC0, lut_value);
 }
