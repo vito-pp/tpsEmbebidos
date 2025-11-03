@@ -91,6 +91,9 @@ void App_Init (void)
     };
     PIT_Config(&pit_cfg);
     PIT_Start(PIT_CH0);
+
+    // FPU enable
+    SCB->CPACR |= (0xF << 20);
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
