@@ -126,7 +126,18 @@ static void pit_isr_handler(uint8_t ch)
     }
 }
 
-void PIT0_IRQHandler(void) { pit_isr_handler(0); }
-void PIT1_IRQHandler(void) { pit_isr_handler(1); }
-void PIT2_IRQHandler(void) { pit_isr_handler(2); }
-void PIT3_IRQHandler(void) { pit_isr_handler(3); }
+void PIT0_IRQHandler(void) 
+{
+    int i;
+    for (i = 0; i < PIT_CHANNELS; i++)
+    {
+        if (PIT->CHANNEL[i].TFLG == PIT_TFLG_TIF_MASK)
+        {
+            pit_isr_handler(i);
+        }
+    }  
+}
+// no existen en el Kinetis :^(
+// void PIT1_IRQHandler(void) { pit_isr_handler(1); }
+// void PIT2_IRQHandler(void) { pit_isr_handler(2); }
+// void PIT3_IRQHandler(void) { pit_isr_handler(3); }
