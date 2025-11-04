@@ -48,7 +48,7 @@ void App_Init (void)
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run (void)
 {
-	//PWM_setDuty(90);
+	PWM_setDuty(50);
 }
 
 /*******************************************************************************

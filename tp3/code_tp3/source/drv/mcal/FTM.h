@@ -57,6 +57,9 @@ typedef enum
 #define FTM_CH_7 7
 
 
+double IC_getFrequency(void);
+uint8_t IC_getCounter(void);
+void IC_resetCounter(void);
 
 void PWM_setDuty(char);
 void IC_Init (void);
