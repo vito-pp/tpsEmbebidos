@@ -10,4 +10,6 @@ bool *retrieveBitstream(void);
 
 float demodFSK(uint16_t adc_value);
 
+void bitstreamReconstruction(float fir_output);
+
 #endif // _DEMOD_FSK_

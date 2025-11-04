@@ -24,9 +24,8 @@ static uint8_t bit_cnt;
 //float demodFSK(uint16_t adc_value);
 
 // to be called after each ADC EOC. has to be faster than 1 / FS_ADC
-void bitstreamReconstruction(float fir_output_lol)
+void bitstreamReconstruction(float fir_output)
 {
-    float fir_output = -fir_output_lol;
     static bool bit_democracy[3]; // oversampled bits
     static uint8_t j = 0; // bit_democracy index
 
@@ -35,7 +34,7 @@ void bitstreamReconstruction(float fir_output_lol)
 
     if (idle)
     {
-        if (fir_output < 0) // bit start detected
+        if (fir_output > 0) // bit start detected
         {
             idle = false;
             samples_per_bit_cnt = 1;
@@ -49,7 +48,7 @@ void bitstreamReconstruction(float fir_output_lol)
         if ((samples_per_bit_cnt >= (HALF_SAMPLES_BIT) - 1) && 
             (samples_per_bit_cnt <= (HALF_SAMPLES_BIT) + 1)) 
         {
-            bit_democracy[j] = (fir_output > 0);
+            bit_democracy[j] = (fir_output < 0);
             j++;
         }
         else if (samples_per_bit_cnt == SAMPLES_PER_BIT)
