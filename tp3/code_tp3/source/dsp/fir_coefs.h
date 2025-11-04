@@ -13,6 +13,8 @@
  * Stable            : Yes
  * Linear Phase      : Yes (Type 1)
  */
+#ifndef _FIR_COEFS_
+#define _FIR_COEFS_
 
 #define FS_ADC 12000
 #define N 26
@@ -25,3 +27,5 @@ const float h[N] =
    -0.01547866594,  0.00103278039, 0.007552863564, 0.006668464281,  0.00335702789,
   0.0009219922358
 };
+
+#endif // _FIR_COEFS_

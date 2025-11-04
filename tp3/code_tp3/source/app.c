@@ -21,6 +21,14 @@
 #include "drv/mcal/pit.h"
 
 /*******************************************************************************
+ * DEFINES
+ ******************************************************************************/
+
+#define TX 1
+#define RX 0 
+#define MODEM_MODE RX
+
+/*******************************************************************************
  * FILE SCOPE VARIABLES
  ******************************************************************************/
 
@@ -92,8 +100,10 @@ void App_Init (void)
     PIT_Config(&pit_cfg);
     PIT_Start(PIT_CH0);
 
+#if MODEM_MODE == RX 
     // FPU enable
     SCB->CPACR |= (0xF << 20);
+#endif
 }
 
 /* Función que se llama constantemente en un ciclo infinito */

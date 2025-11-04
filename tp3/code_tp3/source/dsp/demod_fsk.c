@@ -1,36 +1,106 @@
 #include "demod_fsk.h"
 #include "fir_coefs.h"
-#include "ADC.h"
-#include "fir_coefs.h"
+//#include "../drv/mcal/ADC.h"
 
-#define TBAUD (1/1200)
-#define DELAY 5            /* optimal delay is 446us. so DELAY = 446us * FS */
-#define BITS_PER_SAMPLE 10 /*FS_DAC / baud*/
-#define FSK_THRESHOLD (1 << 11)
-#define WAITING_SAMPLES_INIT TBAUD * FS_ADC
+#define DELAY 5    /* optimal delay is 446us. so DELAY = 446us * FS */
+#define SAMPLES_PER_BIT 10    /* FS_DAC / baud */
+#define ADC_MAX_VAL (1 << 12) /* ADC bits */
+#define UART_LEN 11
+#define SCALE 2048.0f
 
-static uint16_t x[DELAY + 1]; // the FSK signal read form the ADC
-static uint8_t curr;          // current index of delay array
-static float m[N];            // product of FSK signal and FSK delayed signal
-static uint8_t i;             // fir index
+static uint16_t adc_val;
 
-static float last_filter_value;
-static int waiting_samples = 0;
-// estados
-
-static bool reciving_data = false;
-static bool starting_bit = false;
-static int contador_bits = 0;
+// i dont want them calculated at runtime
+static const uint8_t HALF_SAMPLES_BIT = SAMPLES_PER_BIT >> 1;
+static const uint16_t ADC_DC_VAL = ADC_MAX_VAL >> 1;
 
 static bool idle = true;
+static bool data_ready;
+static uint8_t samples_per_bit_cnt;
 
+static bool bits_recovered[UART_LEN];
+static uint8_t bit_cnt;
+
+//float demodFSK(uint16_t adc_value);
+
+// to be called after each ADC EOC. has to be faster than 1 / FS_ADC
+void bitstreamReconstruction(float fir_output_lol)
+{
+    float fir_output = -fir_output_lol;
+    static bool bit_democracy[3]; // oversampled bits
+    static uint8_t j = 0; // bit_democracy index
+
+    //uint16_t adc_val = ADC_getData(ADC0); // if not using DMA
+    // float fir_output = demodFSK(adc_val);
+
+    if (idle)
+    {
+        if (fir_output < 0) // bit start detected
+        {
+            idle = false;
+            samples_per_bit_cnt = 1;
+            bit_cnt = 0;
+        }
+    }
+    else // recieving data
+    {
+        samples_per_bit_cnt++;
+        // oversampling = 3
+        if ((samples_per_bit_cnt >= (HALF_SAMPLES_BIT) - 1) && 
+            (samples_per_bit_cnt <= (HALF_SAMPLES_BIT) + 1)) 
+        {
+            bit_democracy[j] = (fir_output > 0);
+            j++;
+        }
+        else if (samples_per_bit_cnt == SAMPLES_PER_BIT)
+        {
+            // we read all samples per bit: now bit election, majority wins
+            if (bit_democracy[0] + bit_democracy[1] + bit_democracy[2] >= 2)
+            {
+                bits_recovered[bit_cnt] = 1;
+            }
+            else 
+            {
+                bits_recovered[bit_cnt] = 0;
+            }
+            bit_cnt++;
+            samples_per_bit_cnt = 0;
+            j = 0;
+        }
+        else; // ignore samples
+
+        if (bit_cnt == UART_LEN) // full UART frame has been read
+        {
+            idle = true;
+            data_ready = true;
+        }
+    }
+}
+
+bool isDataReady(void)
+{
+    return data_ready;
+}
+
+bool *retrieveBitstream(void)
+{
+    data_ready = false;
+    return bits_recovered;
+}
+
+// remember to enable FPU in main
 float demodFSK(uint16_t adc_value)
 {
+    static float x[DELAY + 1] = {0}; // the FSK signal read form the ADC
+    static float m[N] = {0};            // product of FSK and FSK delayed 
+    static uint8_t curr = 0;    // current index of delay array
+    static uint8_t i = 0;       // fir index
+
     // get value form ADC
-    x[curr] = adc_value;
+    x[curr] = ((float)adc_value - ADC_DC_VAL); // substract DC value
 
     // get the product of the fsk and delayed fsk
-    m[i] = (float)x[curr] * (float)x[(curr + 1) % (DELAY + 1)];
+    m[i] = x[curr] * x[(curr + 1) % (DELAY + 1)];
     curr = (curr + 1) % (DELAY + 1);
 
     // calculate FIR
@@ -43,57 +113,7 @@ float demodFSK(uint16_t adc_value)
             r = N - 1;
     }
 
-    uint8_t i_old = i;
     i = (i + 1) % N;
 
-    // return m[i_old];
     return d;
-    // return 1;
-}
-
-bool bitDiscrimination(float fir_output)
-{
-    if (idle)
-    {
-        if (fir_output < (1 << 11)) // threshold
-        {
-            idle = false;
-            return false; // bit start detected
-        }
-        else
-            return true;
-    }
-
-    else
-    {
-    }
-}
-// Funcion a llamar a frecuencia Fs_ADC
-// Falta calcular FS necesario para que TiemboBaud*Fs = 10
-// O modificar la funcion para no usar 10 tipo magic value.
-void get_filter_value(void)
-{
-    if (waiting_samples > 0)
-    {
-        uint16_t adc_value = ADC_getData(ADC0);
-        last_filter_value = demodFSK(adc_value);
-        if (!reciving_data && (last_filter_value < FSK_THRESHOLD))
-        {
-            starting_bit = true;
-            reciving_data = true;
-            waiting_samples = WAITING_SAMPLES_INIT;
-        }
-        if (starting_bit)
-        {
-            waiting_samples += 5;
-            starting_bit = false;
-        }
-
-        contador_bits += 1;
-        if (contador_bits == 11){
-            reciving_data = 0;
-            contador_bits = 0;
-        }
-    }
-    waiting_samples--;
 }
