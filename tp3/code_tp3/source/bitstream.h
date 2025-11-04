@@ -16,6 +16,9 @@ bool parity_bit(const uint8_t data);
 // Formatea un bitstream en un arreglo de 11 bits booleanos.
 void format_bitstream(uint8_t data, bool out[11]);
 
+// Deformatea un arreglo de 11 bits booleanos en un byte de datos. (Devuelve Char)
+char deformat_bitstream(bool in[11])
+
 // Deformatea un arreglo de 11 bits booleanos en un byte de datos.
 uint8_t deformat_bitstream(uint8_t data, bool in[11]);
 

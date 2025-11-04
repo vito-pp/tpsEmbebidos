@@ -60,12 +60,17 @@ void uint16_to_bin(uint16_t value, char *out, size_t out_len){
  static char rx_line[64];
 
  static NCO_Handle nco_handle;
- static bool bitstream[11]; // 11?
+
+ // Bitstream de datos enviados por el DAC
+ static bool sending_bitstream[11]; // 11?
+
+ // Bitstream de datos recibidos por el ADC
+static bool reciving_bitstream[11]; // 11?
+
  static uint16_t lut_value;
  static size_t cnt;
  static bool initiate_send = false;
  static bool sending_data = false;
-
 
 
 /*******************************************************************************
@@ -93,13 +98,8 @@ void App_Init (void)
     gpioMode(PIN_LED_RED, OUTPUT);
     gpioWrite(PIN_LED_RED, !LED_ACTIVE);
 
-    PIT_Init();
-
-    // === PRIORIDADES DE INTERRUPCIÓN ===
-    // NVIC_SetPriority(PIT1_IRQn, 0);  // Máxima prioridad (0)
-    // NVIC_SetPriority(PIT0_IRQn, 1);  // Menor prioridad
-
     // PIT init
+    PIT_Init();
 
     pit_cfg_t pit_cfg_lut =
     {
@@ -165,20 +165,36 @@ void App_Run (void)
         UART_SendString(bits);
         UART_SendString("\r\n");
         cnt = 0;
-        format_bitstream(rx_line[0], bitstream);
+        format_bitstream(rx_line[0], sending_bitstream);
         initiate_send = true;
         sending_data = true;
     }
+
     else // no data recieved
     {
     	if (!sending_data){
             for (int i = 0; i < 11; i++)
             {
-                bitstream[i] = true;
+                sending_bitstream[i] = true;
             }
     	}
-
     }
+
+    uint8_t received_data = 0; // placeholder
+    recived_data = deformat_bitstream(reciving_bitstream);
+
+    if (received_data != 0){
+        char bits[17];
+        uint16_t frame = data_to_uart(received_data);
+        uint16_to_bin(frame, bits, sizeof(bits));
+        UART_SendString("Dato Recibido del ADC: ");
+        UART_SendString(received_data);
+        UART_SendString("\r\n");
+        UART_SendString("Informacion recibida en bits: ");
+        UART_SendString(bits);
+        UART_SendString("\r\n");
+    }
+
 }
 
 /*******************************************************************************
@@ -193,7 +209,8 @@ static void NCO_ISRBit(void *user)
     	cnt = 0;
 		initiate_send = false;
 	}
-    NCO_FskBit(&nco_handle, bitstream[cnt]);
+
+    NCO_FskBit(&nco_handle, sending_bitstream[cnt]);
     cnt++;
     if(cnt == 11)
     {
