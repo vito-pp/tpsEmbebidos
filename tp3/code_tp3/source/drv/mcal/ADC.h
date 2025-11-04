@@ -3,6 +3,7 @@
 #define SOURCES_TEMPLATE_ADC_H_
 
 #include "hardware.h"
+#include "MK64F12.h"
 
 typedef enum
 {
