@@ -27,7 +27,7 @@ uint8_t IC_getCounter(void)
 {
 	return ic_counter;
 }
-void IC_resetCounter(void)
+void IC_clearCounter(void)
 {
 	ic_counter = 0;
 }

@@ -59,7 +59,7 @@ typedef enum
 
 double IC_getFrequency(void);
 uint8_t IC_getCounter(void);
-void IC_resetCounter(void);
+void IC_clearCounter(void);
 
 void PWM_setDuty(char);
 void IC_Init (void);
