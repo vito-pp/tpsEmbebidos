@@ -59,6 +59,7 @@ typedef enum
 
 
 void PWM_setDuty(char);
+void IC_Init (void);
 
 
 typedef FTM_Type *FTM_t;

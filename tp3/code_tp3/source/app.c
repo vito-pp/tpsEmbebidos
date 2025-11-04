@@ -41,8 +41,8 @@ static void delayLoop(uint32_t veces);
 /* Función que se llama 1 vez, al comienzo del programa */
 void App_Init (void)
 {
-    //FTM_Init();
 	CMP_Init();
+	FTM_Init();
 }
 
 /* Función que se llama constantemente en un ciclo infinito */

@@ -13,6 +13,68 @@ void PWM_ISR(void);
 uint16_t PWM_modulus = 10000-1;
 uint16_t PWM_duty    = 1000;//5000-1;
 
+void IC_ISR(void) ;
+
+__ISR__ FTM3_IRQHandler(void)
+{
+	IC_ISR();
+}
+
+void IC_ISR(void) //FTM3 CH5 PTC9 as IC
+{
+	static uint16_t med1,med2,med;
+	static uint8_t  state=0;
+
+	FTM_ClearInterruptFlag (FTM3, FTM_CH_5);
+
+
+	if(state==0)
+	{
+		med1=FTM_GetCounter (FTM3, FTM_CH_5); //
+		state=1;
+	}
+	else if(state==1)
+	{
+		med2=FTM_GetCounter (FTM3, FTM_CH_5);
+		med=med2-med1;
+		state=0;					// Set break point here and watch "med" value
+	}
+
+
+}
+
+
+void IC_Init(void) //FTM1 ch0 PTC9 as IC
+{
+	PCRstr UserPCR;
+
+
+	// PTC9 as IC (FTM3-CH5)
+	UserPCR.PCR=false;			// Default All false, Set only those needed
+
+	UserPCR.FIELD.DSE=true;
+	UserPCR.FIELD.MUX=PORT_mAlt3;
+	UserPCR.FIELD.IRQC=PORT_eDisabled;
+
+	PORTC->PCR[9]=UserPCR.PCR ;
+
+
+	/// BusClock=sysclk/2= 50MHz
+	/// Set prescaler = divx32 => Timer Clock = 32 x (1/BusClock)= 32x1/50MHz= 0.64 useg
+	/// =>Timer Clock x OC_Delta= 0.64 x 100=64 useg
+
+	
+	//--- medidor
+
+	FTM_SetPrescaler(FTM3, FTM_PSC_x32);	 				// Set Prescaler = divx32
+	FTM3->CNTIN=0x0000;				  		  				// Free running
+	FTM3->MOD=0xFFFF;
+	FTM_SetWorkingMode(FTM3,FTM_CH_5,FTM_mInputCapture);   // Select IC Function
+	FTM_SetInputCaptureEdge (FTM3, FTM_CH_5,FTM_eEither);  // Capture on both edges
+	FTM_SetInterruptMode (FTM3,FTM_CH_5, true);            // Enable interrupts
+	FTM_StartClock(FTM3);                                  // Select BusClk
+}
+
 __ISR__ FTM0_IRQHandler(void)
 {
 	FTM_ClearOverflowFlag (FTM0);
@@ -38,16 +100,19 @@ void PWM_setDuty(char duty)
 void FTM_Init (void)
 {
 	SIM->SCGC6 |= SIM_SCGC6_FTM0_MASK;
+	SIM->SCGC3 |= SIM_SCGC3_FTM3_MASK;
 
 	NVIC_EnableIRQ(FTM0_IRQn);
+	NVIC_EnableIRQ(FTM1_IRQn);
 
 
     // QUE ES?
 	FTM0->PWMLOAD = FTM_PWMLOAD_LDOK_MASK | 0x0F;
+	FTM3->PWMLOAD = FTM_PWMLOAD_LDOK_MASK | 0x0F;
 
 	PWM_Init();
+	IC_Init();
 }
-
 
 /// FTM PWM Example
 
