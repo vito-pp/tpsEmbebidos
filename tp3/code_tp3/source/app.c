@@ -20,12 +20,14 @@
 #include "drv/mcal/dma.h"
 #include "drv/mcal/FTM.h"
 #include "drv/mcal/CMP.h"
+#include "drv/mcal/pit.h"
+#include "drv/mcal/DECODE_V2.h"
 
 
 /*******************************************************************************
  * FILE SCOPE VARIABLES
  ******************************************************************************/
-
+bool bit_stream[11];
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
@@ -38,16 +40,33 @@ static void delayLoop(uint32_t veces);
  *******************************************************************************
  ******************************************************************************/
 
+static void ftm_cb(void* user);
 /* Función que se llama 1 vez, al comienzo del programa */
 void App_Init (void)
 {
 	CMP_Init();
 	FTM_Init();
+	PIT_Init();
+	/*pit_cfg_t pit_cfg =
+ 	 {
+		.ch = 0,
+		.load_val = PIT_TICKS_FROM_US(810),
+		.periodic = true,
+		.int_en = true,
+		.callback = ftm_cb,
+		.user = NULL
+ 	 };
+	PIT_Config(&pit_cfg);
+	PIT_Stop(0);*/
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run (void)
 {
+  if (bitStartDetected())
+  {
+   // PIT_Start(0);
+  }
 	PWM_setDuty(50);
 }
 
@@ -66,3 +85,19 @@ static void __error_handler__(void)
 {
     gpioWrite(PIN_LED_RED, LED_ACTIVE);
 }
+
+static void ftm_cb(void* user)
+{
+  static uint8_t cnt = 0;
+
+  bit_stream[cnt]  = processBit();
+  cnt++;
+  if (cnt == 11 || (bit_stream[cnt-1] == 2)) //bit[cnt-1 ]== 2 => error
+  { 
+    PIT_Stop(0);
+    cnt = 0;
+    clearReadingFlag();
+  }
+  
+}
+

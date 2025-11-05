@@ -40,7 +40,7 @@
 
 #define CMP0_OUT        PORTNUM2PIN(PC,5)
 #define CMP0_IN1        PORTNUM2PIN(PC,7)
-#define CMP0_IN2        PORTNUM2PIN(PC,8)
+//#define CMP0_IN2        PORTNUM2PIN(PC,8)
 
 /*******************************************************************************
  ******************************************************************************/

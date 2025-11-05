@@ -5,79 +5,42 @@
  *      Author: Facundo Juli
  */
 
-#include "DECODE_V2.h"
-#include "FTM.h"
+#include "drv/mcal/DECODE_V2.h"
+#include "drv/mcal/FTM.h"
 
 #define CONT_MAX 12 
-static int not_reading = 1;
+static int reading = 1;
 
-uint8_t processByte(void)
+void clearReadingFlag(void) //Should be called when reading finished
 {
-	static int cont = 0;
-	int freq;
-	static uint16_t data = 0;
-	static int reset = 1;
+	reading = 0;
+}
 
-	data = data << 1;
+//Returns 2 if error
+uint8_t processBit(void)
+{
+	uint8_t bit;
+	int freq = (int) IC_getFrequency();
 
-	freq = (int) IC_getFrequency();
-	
-	if(freq == 1200)
+	switch(freq)
 	{
-		data = data | 1;
-	}
-	else if(freq != 2200)
-	{
-		cont = 0;
-		data = 0;
-		not_reading = 1;
-		return 15; // ERROR invalid frequency
-	}
-	cont++;
-	if(cont == CONT_MAX) //All bits have been succesfully read
-	{
-		cont = 0;
-		data = 0;
-		not_reading = 1;
+	case 1200: bit = 1; break;
+	case 2200: bit = 0; break;
+	default: bit = 2; break; // ERROR
 	} 
-	
-	return cont;
+	return bit;
 }
 
-int activateTimer(void) 
+
+bool bitStartDetected(void)
 {
-	if(bitStartDetected() && not_reading)
+	//se detectó un bit start
+	//Trigger timer Tt < ~ 833 us  / (833us -  Tt)* Nbits < 833 us
+	// 833us(1-1/Nbits) < Tt < 833us
+	if((processBit() == 0) &&  !reading)
 	{
-		//se detectó un bit start
-		//Trigger timer Tt < ~ 833 us  / (833us -  Tt)* Nbits < 833 us
-		// 833us(1-1/Nbits) < Tt < 833us
-		not_reading = 0;
+		reading = 1;
 		return 1;
 	}
-	return 0;
-	/*
-	 * if(timer)
-	 * {
-	 * if(timer == 9 tics)
-	 * 		break
-	 * 		freq = IC_getFrequency();
-	 * if(freq > 2k)
-	 * 		bit = 0;
-	 * else if(fre1 < 2k)
-	 * 		bit = 1;
-	 * }
-	 */
-	
-}
-int bitStartDetected(void)
-{
-	int freq, bit_counter;
-
-	if((freq = IC_getFrequency()) == 2200) //Conviene detectar asi, asi se que mi Tinicial esta ok
-	{
-		
-		return 1;
-	}
-
 	return 0;
 }

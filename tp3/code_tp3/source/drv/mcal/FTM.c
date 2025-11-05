@@ -10,7 +10,7 @@
 void PWM_Init(void);
 void PWM_ISR(void);
 
-uint16_t PWM_modulus = 10000-1; // Freq = 50Meg/(32*10000) = sysclck /((pwm_modulus+1)*Prescale)
+uint16_t PWM_modulus = 1000-1; // Freq = 50Meg/(1*10000) = sysclck /((pwm_modulus+1)*Prescale)
 uint16_t PWM_duty    = 1000;//5000-1;
 
 static double ic_freq;
@@ -163,7 +163,7 @@ void PWM_Init (void)
         //FTM0_CH0 PC1
         PORTC->PCR[1]=UserPCR.PCR ;
 
-        FTM_SetPrescaler(FTM0, FTM_PSC_x32);
+        FTM_SetPrescaler(FTM0, FTM_PSC_x16);
         FTM_SetModulus(FTM0, PWM_modulus);
        // FTM_SetOverflowMode(FTM0, true);
         FTM_SetWorkingMode(FTM0, 0, FTM_mPulseWidthModulation);			// MSA  / B
