@@ -199,8 +199,7 @@ void App_Run (void)
         UART_SendString(bits);
         UART_SendString("\r\n");
     }
-
-	PWM_setDuty(50);
+	//PWM_setDuty(NCO2PWM(NCO_TickQ15(&nco_handle)));
 }
 
 /*******************************************************************************
@@ -229,7 +228,8 @@ static void NCO_ISRLut(void* user)
 {
 
     lut_value = NCO_TickQ15(&nco_handle);
-    DAC_SetData(DAC0, lut_value);
+    //DAC_SetData(DAC0, lut_value);
+    PWM_setDuty(NCO2PWM(lut_value));
 }
 
 static void delayLoop(uint32_t veces)
