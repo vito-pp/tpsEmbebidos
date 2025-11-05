@@ -19,6 +19,7 @@
 #include "drv/mcal/UART.h"
 #include "drv/mcal/dma.h"
 #include "drv/mcal/pit.h"
+#include "drv/mcal/ADC.h"
 
 /*******************************************************************************
  * DEFINES
@@ -32,7 +33,11 @@
  * FILE SCOPE VARIABLES
  ******************************************************************************/
 
-static const uint32_t led_mask_toggle  = (1 << 21);
+ #if MODEM_MODE == RX
+#define RX_BUF_LEN 32
+static uint16_t rx_buffer[RX_BUF_LEN] __attribute__((aligned(4)));
+static volatile bool rx_ready = false;
+#endif
 
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
@@ -45,7 +50,9 @@ static void __error_handler__(void);
  * FUNCTION PROTOTYPES FOR CALLBACKS
  ******************************************************************************/
 
-static void pit_cb(void * cb_param);
+ #if MODEM_MODE == RX
+static void dma_rx_major_cb(void *user);
+#endif 
 
 /*******************************************************************************
  *******************************************************************************
@@ -56,14 +63,14 @@ static void pit_cb(void * cb_param);
 /* Función que se llama 1 vez, al comienzo del programa */
 void App_Init (void)
 {
-    // for dma to write
+    // for the error handler
     gpioMode(PIN_LED_RED, OUTPUT);
-    gpioMode(PIN_LED_GREEN, OUTPUT);
-    gpioMode(PIN_LED_BLUE, OUTPUT);
     gpioWrite(PIN_LED_RED, !LED_ACTIVE);
-    gpioWrite(PIN_LED_GREEN, !LED_ACTIVE);
-    gpioWrite(PIN_LED_BLUE, !LED_ACTIVE);
+    
+    // UART init
+    UART_Init(UART_PARITY_ODD); 
 
+#if MODEM_MODE == RX 
     // DMA init
     DMA_Init();
     dma_cfg_t dma_cfg =
@@ -71,15 +78,15 @@ void App_Init (void)
         .ch = 0,
         .request_src = DMA_REQ_ALWAYS63,
         .trig_mode = true,
-        .saddr = (void *)&led_mask_toggle,
-        .daddr = (void *)&(PTB->PTOR),
-        .nbytes = 4,
-        .soff = 0, .doff = 0,
-        .major_count = 1,
+        .saddr = (void *)&ADC0->R[0],
+        .daddr = rx_buffer,
+        .nbytes = 2, // 16-bit
+        .soff = 0, .doff = 2,
+        .major_count = RX_BUF_LEN,
         .slast = 0,
-        .dlast = 0,
-        .int_major = false,
-        .on_major = NULL,
+        .dlast = -(RX_BUF_LEN * 2),
+        .int_major = true,
+        .on_major = dma_rx_major_cb,
         .user = NULL
     };
     DMA_Config(&dma_cfg);
@@ -90,27 +97,46 @@ void App_Init (void)
     pit_cfg_t pit_cfg =
     {
         .ch = PIT_CH0,
-        .load_val = PIT_TICKS_FROM_MS(1000),
+        .load_val = PIT_TICKS_FROM_US(83), // 12kHz ADC sampling
         .periodic = true,
         .int_en = false,
-        .dma_req = true,
+        .dma_req = true, // PIT asserts DMA request
         .callback = NULL,
         .user = NULL
     };
     PIT_Config(&pit_cfg);
-    PIT_Start(PIT_CH0);
 
-#if MODEM_MODE == RX 
+    ADC_Init(true); // true = dma_req enable
+
     // FPU enable
     SCB->CPACR |= (0xF << 20);
+
+#else // TX MODE
+
 #endif
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run (void)
 {
-    int i = 0;
-    i++;
+#if MODEM_MODE == RX
+    if (rx_ready)
+    {
+        rx_ready = false;
+        for (int i = 0; i < RX_BUF_LEN; i++)
+        {
+            float d = demodFSK(rx_buffer[i]);
+            bitstreamReconstruction(d);
+            if (isDataReady())
+            {
+                bool *frame = retrieveBitstream();
+                // send UART frame
+            }
+        }
+    }
+#else // TX MODE
+    
+#endif
 }
 
 /*******************************************************************************
@@ -129,8 +155,8 @@ static void __error_handler__(void)
     gpioWrite(PIN_LED_RED, LED_ACTIVE);
 }
 
-static void pit_cb(void *cb_param)
+static void dma_rx_major_cb(void *user)
 {
-    (void *)cb_param;
-    gpioToggle(PIN_LED_GREEN);
+    (void)user;
+    rx_ready = true;
 }

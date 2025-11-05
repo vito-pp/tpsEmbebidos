@@ -41,7 +41,7 @@ typedef ADC_Type *ADC_t;
 typedef uint8_t ADCChannel_t; /* Channel 0-23 */
 typedef uint16_t ADCData_t;
 
-void 		ADC_Init 			   (void);
+void 		ADC_Init 			   (bool dma_req);
 
 void 		ADC_SetInterruptMode   (ADC_t, bool);
 bool 		ADC_IsInterruptPending (ADC_t);

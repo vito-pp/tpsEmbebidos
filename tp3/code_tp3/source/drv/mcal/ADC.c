@@ -6,7 +6,7 @@
 bool ADC_interrupt[2] = {false, false};
 
 
-void ADC_Init (void)
+void ADC_Init (bool dma_req)
 {
 	SIM->SCGC6 |= SIM_SCGC6_ADC0_MASK;
 	SIM->SCGC3 |= SIM_SCGC3_ADC1_MASK;
@@ -17,11 +17,15 @@ void ADC_Init (void)
 	ADC0->CFG1 = ADC_CFG1_ADIV(0x00);
 	ADC1->CFG1 = ADC_CFG1_ADIV(0x00);
 
+	if (dma_req)
+	{
+		ADC0->SC2 = ADC_SC2_ADTRG_MASK | ADC_SC2_DMAEN_MASK; // HW trigger + DMA
+    	ADC0->SC1[0] = ADC_SC1_ADCH(31); // disable SW trigger
+	}
+
 	ADC_SetResolution(ADC0, ADC_b12);
 	ADC_SetCycles(ADC0, ADC_c4);
 	ADC_Calibrate(ADC0);
-
-
 }
 
 

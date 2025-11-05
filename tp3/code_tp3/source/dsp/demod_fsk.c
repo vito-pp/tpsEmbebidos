@@ -2,17 +2,18 @@
 #include "fir_coefs.h"
 //#include "../drv/mcal/ADC.h"
 
-#define DELAY 5    /* optimal delay is 446us. so DELAY = 446us * FS */
+#define DELAY 5    /* optimal delay is 446us. so DELAY = (int)446us * FS */
 #define SAMPLES_PER_BIT 10    /* FS_DAC / baud */
-#define ADC_MAX_VAL (1 << 12) /* ADC bits */
+#define ADC_MAX_VAL (1 << 12)   /* ADC no. of bits */
 #define UART_LEN 11
 #define SCALE 2048.0f
-
-static uint16_t adc_val;
 
 // i dont want them calculated at runtime
 static const uint8_t HALF_SAMPLES_BIT = SAMPLES_PER_BIT >> 1;
 static const uint16_t ADC_DC_VAL = ADC_MAX_VAL >> 1;
+
+// DMA source address
+static uint16_t adc_val;
 
 static bool idle = true;
 static bool data_ready;
@@ -21,16 +22,43 @@ static uint8_t samples_per_bit_cnt;
 static bool bits_recovered[UART_LEN];
 static uint8_t bit_cnt;
 
-//float demodFSK(uint16_t adc_value);
+// remember to enable FPU in main
+float demodFSK(uint16_t adc_value)
+{
+    static float x[DELAY + 1] = {0};  // the FSK signal read form the ADC
+    static float m[N] = {0};          // product of FSK and FSK delayed 
+    static uint8_t curr = 0;          // current index of delay array
+    static uint8_t i = 0;             // fir index
+
+    // get value form ADC
+    x[curr] = ((float)adc_value - ADC_DC_VAL) / SCALE; /* substract DC value 
+    and normalize to [-1, +1]*/
+
+    // get the product of the fsk and delayed fsk
+    m[i] = x[curr] * x[(curr + 1) % (DELAY + 1)];
+
+    // calculate FIR
+    float d = 0.0f;
+    int r = i;
+    for (int k = 0; k < N; k++)
+    {
+        d += m[r] * h[k];
+        if (--r < 0)
+            r = N - 1;
+    }
+
+    // advance indeces ring buffer style
+    curr = (curr + 1) % (DELAY + 1);
+    i = (i + 1) % N;
+
+    return d * SCALE; // scale back
+}
 
 // to be called after each ADC EOC. has to be faster than 1 / FS_ADC
 void bitstreamReconstruction(float fir_output)
 {
     static bool bit_democracy[3]; // oversampled bits
-    static uint8_t j = 0; // bit_democracy index
-
-    //uint16_t adc_val = ADC_getData(ADC0); // if not using DMA
-    // float fir_output = demodFSK(adc_val);
+    static uint8_t j = 0;         // bit_democracy index
 
     if (idle)
     {
@@ -85,34 +113,4 @@ bool *retrieveBitstream(void)
 {
     data_ready = false;
     return bits_recovered;
-}
-
-// remember to enable FPU in main
-float demodFSK(uint16_t adc_value)
-{
-    static float x[DELAY + 1] = {0}; // the FSK signal read form the ADC
-    static float m[N] = {0};            // product of FSK and FSK delayed 
-    static uint8_t curr = 0;    // current index of delay array
-    static uint8_t i = 0;       // fir index
-
-    // get value form ADC
-    x[curr] = ((float)adc_value - ADC_DC_VAL); // substract DC value
-
-    // get the product of the fsk and delayed fsk
-    m[i] = x[curr] * x[(curr + 1) % (DELAY + 1)];
-    curr = (curr + 1) % (DELAY + 1);
-
-    // calculate FIR
-    float d = 0.0f;
-    int r = i;
-    for (int k = 0; k < N; k++)
-    {
-        d += m[r] * h[k];
-        if (--r < 0)
-            r = N - 1;
-    }
-
-    i = (i + 1) % N;
-
-    return d;
 }

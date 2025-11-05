@@ -4,12 +4,12 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-bool isDataReady(void);
-
-bool *retrieveBitstream(void);
-
 float demodFSK(uint16_t adc_value);
 
 void bitstreamReconstruction(float fir_output);
+
+bool isDataReady(void);
+
+bool *retrieveBitstream(void);
 
 #endif // _DEMOD_FSK_
