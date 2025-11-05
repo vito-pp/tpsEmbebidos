@@ -8,23 +8,53 @@
 #include "DECODE_V2.h"
 #include "FTM.h"
 
+#define CONT_MAX 12 
+static int not_reading = 1;
 
-void decodeByte(void)
+uint8_t processByte(void)
 {
-	int freq, counter;
-	int prev_freq = IC_getFrequency();
-	for(;;)
-	{
-		if((freq = IC_getFrequency()) != prev_freq) //capaz conviene detectar si es igual a 2k2?
-		{
-			//se detectó un bit start
-			//Trigger timer Tt < ~ 833 us  / (833us -  Tt)* Nbits < 833 us
-			// 833us(1-1/Nbits) < Tt < 833us
-			break;
-		}
-		prev_freq = freq;
-	}
+	static int cont = 0;
+	int freq;
+	static uint16_t data = 0;
+	static int reset = 1;
 
+	data = data << 1;
+
+	freq = (int) IC_getFrequency();
+	
+	if(freq == 1200)
+	{
+		data = data | 1;
+	}
+	else if(freq != 2200)
+	{
+		cont = 0;
+		data = 0;
+		not_reading = 1;
+		return 15; // ERROR invalid frequency
+	}
+	cont++;
+	if(cont == CONT_MAX) //All bits have been succesfully read
+	{
+		cont = 0;
+		data = 0;
+		not_reading = 1;
+	} 
+	
+	return cont;
+}
+
+int activateTimer(void) 
+{
+	if(bitStartDetected() && not_reading)
+	{
+		//se detectó un bit start
+		//Trigger timer Tt < ~ 833 us  / (833us -  Tt)* Nbits < 833 us
+		// 833us(1-1/Nbits) < Tt < 833us
+		not_reading = 0;
+		return 1;
+	}
+	return 0;
 	/*
 	 * if(timer)
 	 * {
@@ -37,5 +67,17 @@ void decodeByte(void)
 	 * 		bit = 1;
 	 * }
 	 */
+	
+}
+int bitStartDetected(void)
+{
+	int freq, bit_counter;
 
+	if((freq = IC_getFrequency()) == 2200) //Conviene detectar asi, asi se que mi Tinicial esta ok
+	{
+		
+		return 1;
+	}
+
+	return 0;
 }
