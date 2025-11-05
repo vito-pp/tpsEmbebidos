@@ -53,3 +53,4 @@ uint16_t NCO_Q15ToPWMDutyMOD(int16_t q15, uint16_t mod)
 void NCO_main_initialization(NCO_Handle* nco){
     NCO_InitFixed(nco, K_MARK, K_SPACE, true);
 }
+

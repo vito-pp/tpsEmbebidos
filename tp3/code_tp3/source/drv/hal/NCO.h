@@ -9,7 +9,7 @@
 #define NCO_PHASE_BITS (32u)
 #endif
 
-#define FS      (48000u)  // frecuencia de muestreo
+#define FS      (50000u)  // frecuencia de muestreo
 
 #define TW32_ROUND(f, FS) ( (uint32_t)((((uint64_t)(f) << 32) + ((FS)/2)) / (uint64_t)(FS)) )
 #define K_MARK  TW32_ROUND(1200u,  FS)
@@ -34,7 +34,7 @@ void     NCO_InitFixed(NCO_Handle* nco, uint32_t K_mark, uint32_t K_space, bool 
 static inline void NCO_SetTuningWord(NCO_Handle* nco, uint32_t K) { nco->K = K; }
 
 // Advance 1 sample and return Q15 from LUT (uses external SINE_Q15).
-int16_t  NCO_TickQ15(NCO_Handle* nco);
+int16_t NCO_TickQ15(NCO_Handle* nco);
 
 /* -------- Conversions -------- */
 
