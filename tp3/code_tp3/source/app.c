@@ -52,6 +52,9 @@ void uint16_to_bin(uint16_t value, char *out, size_t out_len){
     }
     out[total_bits] = '\0';
 }
+#include "drv/mcal/FTM.h"
+#include "drv/mcal/CMP.h"
+
 
 /*******************************************************************************
  * FILE SCOPE VARIABLES
@@ -136,6 +139,8 @@ void App_Init (void)
 
     // DAC
     DAC_Init();
+	CMP_Init();
+	FTM_Init();
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
@@ -181,7 +186,7 @@ void App_Run (void)
     }
 
     uint8_t received_data = 0; // placeholder
-    recived_data = deformat_bitstream(reciving_bitstream);
+    received_data = deformat_bitstream(reciving_bitstream);
 
     if (received_data != 0){
         char bits[17];
@@ -195,6 +200,7 @@ void App_Run (void)
         UART_SendString("\r\n");
     }
 
+	PWM_setDuty(50);
 }
 
 /*******************************************************************************
