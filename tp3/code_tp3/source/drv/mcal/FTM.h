@@ -62,6 +62,14 @@ uint8_t IC_getCounter(void);
 void IC_clearCounter(void);
 
 void PWM_setDuty(char);
+
+/**
+ * @brief   Mapea valores de 12 bits a [0;99].
+ * @param   lut   Valor de senoidal [0;4095].
+ * @return  Valor de duty cycle entre [0;99].
+ */
+uint8_t NCO2PWM(uint16_t lut);
+
 void IC_Init (void);
 
 

@@ -84,15 +84,4 @@ int bitStartDetected(void)
 
 #include <stdint.h>
 
-uint8_t NCO2PWM(uint16_t lut)
-{
-    const uint16_t MAX12 = (1u<<12) - 1u; // 4095
-    if (lut > MAX12) 
-	{
-		lut = MAX12;         // clamp
-	}
-    // 0..4095 -> 0..99 
-    return (uint8_t)(((uint32_t)lut * 100u) >> 12);
-	//return (uint8_t)(((uint32_t)lut * 99) /MAX12);
 
-}

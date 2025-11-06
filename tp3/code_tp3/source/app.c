@@ -24,6 +24,7 @@
 #include "drv/mcal/pit.h"
 #include "drv/mcal/DAC.h"
 #include "bitstream.h"
+#include "drv/mcal/DECODE_V2.h"
 
 #define PARITY UART_PARITY_ODD
 
@@ -60,7 +61,7 @@ void uint16_to_bin(uint16_t value, char *out, size_t out_len){
  * FILE SCOPE VARIABLES
  ******************************************************************************/
 
- static char rx_line[64];
+ static char rx_line[2048];
 
  static NCO_Handle nco_handle;
 
@@ -147,6 +148,9 @@ void App_Init (void)
 void App_Run (void)
 {
     UART_Poll();
+    PWM_setDuty(50);
+
+
 
     /* TX no bloqueante */
     if (UART_TxPending() == 0)
@@ -154,7 +158,7 @@ void App_Run (void)
         /* Intentar encolar (puede no entrar todo a la vez) */
         // UART_SendString("Hola mundo!\r\n");
     }
-
+    //rx_line[0]='a';
     /* RX no bloqueante: copiar disponible hasta fin de línea o hasta llenar */
     int n = UART_ReceiveString(rx_line, sizeof(rx_line));
 
@@ -185,21 +189,20 @@ void App_Run (void)
     	}
     }
 
-    uint8_t received_data = 0; // placeholder
-    received_data = deformat_bitstream(reciving_bitstream);
-
-    if (received_data != 0){
-        char bits[17];
-        uint16_t frame = data_to_uart(received_data);
-        uint16_to_bin(frame, bits, sizeof(bits));
-        UART_SendString("Dato Recibido del ADC: ");
-        UART_SendString(received_data);
-        UART_SendString("\r\n");
-        UART_SendString("Informacion recibida en bits: ");
-        UART_SendString(bits);
-        UART_SendString("\r\n");
-    }
-	//PWM_setDuty(NCO2PWM(NCO_TickQ15(&nco_handle)));
+//     char received_data[1]; // placeholder
+//     received_data[0] = deformat_bitstream(reciving_bitstream);
+//
+//     if (received_data != 0){
+//         char bits[17];
+//         uint16_t frame = data_to_uart(received_data[0]);
+//         uint16_to_bin(frame, bits, sizeof(bits));
+//         UART_SendString("Dato Recibido del ADC: ");
+//         UART_SendString(received_data);
+//         UART_SendString("\r\n");
+//         UART_SendString("Informacion recibida en bits: ");
+//         UART_SendString(bits);
+//         UART_SendString("\r\n");
+//     }
 }
 
 /*******************************************************************************
@@ -230,6 +233,8 @@ static void NCO_ISRLut(void* user)
     lut_value = NCO_TickQ15(&nco_handle);
     //DAC_SetData(DAC0, lut_value);
     PWM_setDuty(NCO2PWM(lut_value));
+    //PWM_setDuty(50);
+
 }
 
 static void delayLoop(uint32_t veces)
