@@ -168,6 +168,7 @@ void App_Run (void)
         format_bitstream(rx_line[0], sending_bitstream);
         initiate_send = true;
         sending_data = true;
+        gpioWrite(PIN_LED_RED, LED_ACTIVE);
     }
 
     else // no data recieved
@@ -217,6 +218,7 @@ static void NCO_ISRBit(void *user)
     if(cnt == 11)
     {
     	sending_data = false;
+    	gpioWrite(PIN_LED_RED, !LED_ACTIVE);
         cnt = 0;
     }
 }
