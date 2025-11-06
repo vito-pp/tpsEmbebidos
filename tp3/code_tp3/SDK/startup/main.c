@@ -4,8 +4,6 @@
 
 #include "hardware.h"
 
-#define __FOREVER__ for (;;)
-
 void App_Init (void);
 void App_Run (void);
 

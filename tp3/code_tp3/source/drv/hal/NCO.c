@@ -2,7 +2,7 @@
 #include "SinLutQ15.h"   // SINE_Q15[LUT_SIZE], LUT_BITS/LUT_SIZE
 
 #define NCO_PHASE_FRAC_BITS   (NCO_PHASE_BITS - LUT_BITS)
-#define NCO_PHASE_FRAC_MASK   ((NCO_PHASE_FRAC_BITS >= NCO_PHASE_BOT) ? \ 
+#define NCO_PHASE_FRAC_MASK   ((NCO_PHASE_FRAC_BITS >= NCO_PHASE_BOT) ?\
 0xFFFFFFFFu : ((1u << NCO_PHASE_FRAC_BITS) - 1u))
 
 void NCO_InitFixed(NCO_Handle* nco, uint32_t K_mark, uint32_t K_space, 

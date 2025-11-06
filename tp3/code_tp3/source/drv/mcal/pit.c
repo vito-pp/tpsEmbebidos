@@ -67,7 +67,7 @@ bool PIT_Config(const pit_cfg_t *cfg)
     PIT->CHANNEL[ch].TCTRL = tctrl;
 
     /* 6. Start in periodic mode if requested */
-    if (cfg->periodic && !cfg->dma_req) 
+    if (cfg->periodic)
     {
         PIT_Start(cfg->ch);
     }

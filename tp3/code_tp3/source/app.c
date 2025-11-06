@@ -22,7 +22,8 @@
 #include "drv/mcal/pit.h"
 #include "drv/mcal/ADC.h"
 #include "drv/mcal/DAC.h"
-#include "bitstream.h"
+#include "dsp/bitstream.h"
+#include "dsp/demod_fsk.h"
 
 /*******************************************************************************
  * DEFINES
@@ -37,11 +38,13 @@
  ******************************************************************************/
 
 #if MODEM_MODE == RX
-#define RX_BUF_LEN 32
+#define RX_BUF_LEN 2048
 static uint16_t rx_buffer[RX_BUF_LEN] __attribute__((aligned(4)));
+static uint16_t rx_idx;
 static volatile bool rx_ready = false;
+static char rx_word[2048];
 #else
-static char rx_line[64];
+static char rx_line[2048];
 
 static NCO_Handle nco_handle;
 
@@ -100,25 +103,26 @@ void App_Init (void)
     DMA_Init();
 
 #if MODEM_MODE == RX 
+    ADC_Init(false); // true = dma_req enable
     // DMA init
-    dma_cfg_t dma_cfg =
-    {
-        .ch = 0,
-        .request_src = DMA_REQ_ALWAYS63,
-        .trig_mode = true,
-        .saddr = (void *)&ADC0->R[0],
-        .daddr = rx_buffer,
-        .nbytes = 2, // 16-bit
-        .soff = 0, .doff = 2,
-        .major_count = RX_BUF_LEN,
-        .slast = 0,
-        .dlast = -(RX_BUF_LEN * 2),
-        .int_major = true,
-        .on_major = dma_rx_major_cb,
-        .user = NULL
-    };
-    DMA_Config(&dma_cfg);
-    DMA_Start(0);
+    // dma_cfg_t dma_cfg =
+    // {
+    //     .ch = 0,
+    //     .request_src = DMA_REQ_ALWAYS63,
+    //     .trig_mode = true,
+    //     .saddr = (void *)&ADC0->R[0],
+    //     .daddr = rx_buffer,
+    //     .nbytes = 2, // 16-bit
+    //     .soff = 0, .doff = 2,
+    //     .major_count = RX_BUF_LEN,
+    //     .slast = 0,
+    //     .dlast = -(RX_BUF_LEN * 2),
+    //     .int_major = true,
+    //     .on_major = dma_rx_major_cb,
+    //     .user = NULL
+    // };
+    // DMA_Config(&dma_cfg);
+    // DMA_Start(0);
 
     // PIT configs
     pit_cfg_t pit_cfg =
@@ -126,14 +130,12 @@ void App_Init (void)
         .ch = PIT_CH0,
         .load_val = PIT_TICKS_FROM_US(83), // 12kHz ADC sampling
         .periodic = true,
-        .int_en = false,
-        .dma_req = true, // PIT asserts DMA request
-        .callback = NULL,
+        .int_en = true,
+        .dma_req = false, // PIT asserts DMA request
+        .callback = dma_rx_major_cb,
         .user = NULL
     };
     PIT_Config(&pit_cfg);
-
-    ADC_Init(true); // true = dma_req enable
 
     // FPU enable
     SCB->CPACR |= (0xF << 20);
@@ -173,7 +175,7 @@ void App_Init (void)
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run (void)
 {
-    UART_Poll();
+    //UART_Poll();
 #if MODEM_MODE == RX
     if (rx_ready)
     {
@@ -185,7 +187,8 @@ void App_Run (void)
             if (isDataReady())
             {
                 bool *frame = retrieveBitstream();
-                // send UART frame
+                rx_word[0] = deformat_bitstream(frame);
+                UART_SendString(rx_word);
             }
         }
     }
@@ -300,7 +303,19 @@ void uint16_to_bin(uint16_t value, char *out, size_t out_len){
 static void dma_rx_major_cb(void *user)
 {
     (void)user;
-    rx_ready = true;
+    static int cnt = 1;
+
+    ADC_Start(ADC0, 1, ADC_mA);
+    while (!ADC_IsReady(ADC0));
+	rx_buffer[rx_idx] = ADC_getData(ADC0);
+	rx_idx = (rx_idx + 1) % RX_BUF_LEN;
+
+    if (cnt == RX_BUF_LEN)
+    {
+        rx_ready = true;
+        cnt = 0;
+    }
+    cnt++;
 }
 #endif
 

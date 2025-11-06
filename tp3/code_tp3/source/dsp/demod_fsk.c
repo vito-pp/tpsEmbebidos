@@ -1,6 +1,5 @@
 #include "demod_fsk.h"
 #include "fir_coefs.h"
-//#include "../drv/mcal/ADC.h"
 
 #define DELAY 5    /* optimal delay is 446us. so DELAY = (int)446us * FS */
 #define SAMPLES_PER_BIT 10    /* FS_DAC / baud */
@@ -11,9 +10,6 @@
 // i dont want them calculated at runtime
 static const uint8_t HALF_SAMPLES_BIT = SAMPLES_PER_BIT >> 1;
 static const uint16_t ADC_DC_VAL = ADC_MAX_VAL >> 1;
-
-// DMA source address
-static uint16_t adc_val;
 
 static bool idle = true;
 static bool data_ready;
@@ -47,7 +43,7 @@ float demodFSK(uint16_t adc_value)
             r = N - 1;
     }
 
-    // advance indeces ring buffer style
+    // advance indices ring buffer style
     curr = (curr + 1) % (DELAY + 1);
     i = (i + 1) % N;
 
