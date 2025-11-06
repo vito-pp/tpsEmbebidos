@@ -57,7 +57,7 @@ void uint16_to_bin(uint16_t value, char *out, size_t out_len){
  * FILE SCOPE VARIABLES
  ******************************************************************************/
 
- static char rx_line[64];
+ static char rx_line[2048];
 
  static NCO_Handle nco_handle;
 
@@ -157,13 +157,13 @@ void App_Run (void)
     {
         char bits[17];
         uint16_t frame = data_to_uart(rx_line[0]);
-        uint16_to_bin(frame, bits, sizeof(bits));
-        UART_SendString("Dato Recibido: ");
+        // uint16_to_bin(frame, bits, sizeof(bits));
+        // UART_SendString("Dato Recibido: ");
         UART_SendString(rx_line);
-        UART_SendString("\r\n");
-        UART_SendString("Informacion enviada al NCO: ");
-        UART_SendString(bits);
-        UART_SendString("\r\n");
+        // UART_SendString("\r\n");
+        // UART_SendString("Informacion enviada al NCO: ");
+        // UART_SendString(bits);
+        // UART_SendString("\r\n");
         cnt = 0;
         format_bitstream(rx_line[0], sending_bitstream);
         initiate_send = true;
@@ -176,24 +176,26 @@ void App_Run (void)
             for (int i = 0; i < 11; i++)
             {
                 sending_bitstream[i] = true;
+                reciving_bitstream[i] = 0;
             }
     	}
     }
 
-    uint8_t received_data = 0; // placeholder
-    recived_data = deformat_bitstream(reciving_bitstream);
 
-    if (received_data != 0){
-        char bits[17];
-        uint16_t frame = data_to_uart(received_data);
-        uint16_to_bin(frame, bits, sizeof(bits));
-        UART_SendString("Dato Recibido del ADC: ");
-        UART_SendString(received_data);
-        UART_SendString("\r\n");
-        UART_SendString("Informacion recibida en bits: ");
-        UART_SendString(bits);
-        UART_SendString("\r\n");
-    }
+    // char received_data[1]; // placeholder
+    // received_data[0] = deformat_bitstream(reciving_bitstream);
+
+    // if (received_data != 0){
+    //     char bits[17];
+    //     uint16_t frame = data_to_uart(received_data[0]);
+    //     uint16_to_bin(frame, bits, sizeof(bits));
+    //     UART_SendString("Dato Recibido del ADC: ");
+    //     UART_SendString(received_data);
+    //     UART_SendString("\r\n");
+    //     UART_SendString("Informacion recibida en bits: ");
+    //     UART_SendString(bits);
+    //     UART_SendString("\r\n");
+    // }
 
 }
 
