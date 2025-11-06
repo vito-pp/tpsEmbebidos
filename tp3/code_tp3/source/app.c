@@ -38,7 +38,7 @@
  ******************************************************************************/
 
 #if MODEM_MODE == RX
-#define RX_BUF_LEN 2048
+#define RX_BUF_LEN 128
 static uint16_t rx_buffer[RX_BUF_LEN] __attribute__((aligned(4)));
 static uint16_t rx_idx;
 static volatile bool rx_ready = false;
