@@ -47,7 +47,9 @@ void App_Init (void)
 	CMP_Init();
 	FTM_Init();
 	PIT_Init();
-	/*pit_cfg_t pit_cfg =
+	gpioMode(PORTNUM2PIN(PB,2), OUTPUT);
+	gpioWrite(PORTNUM2PIN(PB,2), 0);
+	pit_cfg_t pit_cfg =
  	 {
 		.ch = 0,
 		.load_val = PIT_TICKS_FROM_US(810),
@@ -57,7 +59,7 @@ void App_Init (void)
 		.user = NULL
  	 };
 	PIT_Config(&pit_cfg);
-	PIT_Stop(0);*/
+	PIT_Stop(0);
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
@@ -65,9 +67,9 @@ void App_Run (void)
 {
   if (bitStartDetected())
   {
-   // PIT_Start(0);
+   PIT_Start(0);
   }
-	PWM_setDuty(50);
+  PWM_setDuty(50);
 }
 
 /*******************************************************************************

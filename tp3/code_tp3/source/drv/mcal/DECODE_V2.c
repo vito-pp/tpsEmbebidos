@@ -9,7 +9,7 @@
 #include "drv/mcal/FTM.h"
 
 #define CONT_MAX 12 
-static int reading = 1;
+static int reading = 0;
 
 void clearReadingFlag(void) //Should be called when reading finished
 {
@@ -24,8 +24,8 @@ uint8_t processBit(void)
 
 	switch(freq)
 	{
-	case 1200: bit = 1; break;
-	case 2200: bit = 0; break;
+	case 1200: bit = 0; break;
+	case 2200: bit = 1; break;
 	default: bit = 2; break; // ERROR
 	} 
 	return bit;

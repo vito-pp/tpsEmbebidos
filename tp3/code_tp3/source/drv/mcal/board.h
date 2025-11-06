@@ -37,6 +37,7 @@
 #define PIN_I2C_SDA     PORTNUM2PIN(PE, 25)
 
 #define FTM0_CH0 		PORTNUM2PIN(PC,1) //PWM
+#define FTM3CH5 		PORTNUM2PIN(PC,9) //IC
 
 #define CMP0_OUT        PORTNUM2PIN(PC,5)
 #define CMP0_IN1        PORTNUM2PIN(PC,7)
