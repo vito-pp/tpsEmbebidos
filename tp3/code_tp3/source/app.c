@@ -54,6 +54,8 @@ static char rx_word;
 
 static void rx_pit_cb(void *user);
 static void dma_rx_major_cb(void *user);
+static void NCO_ISRBit(void *user);
+static void NCO_ISRLut(void *user);
 
 /*******************************************************************************
  *******************************************************************************
@@ -67,10 +69,14 @@ void App_Init (void)
     // For the error handling
     gpioMode(PIN_LED_RED, OUTPUT);
     gpioWrite(PIN_LED_RED, !LED_ACTIVE);
+    gpioMode(PIN_TP1, OUTPUT);
+    gpioWrite(PIN_TP1, LOW);
     
     UART_Init(UART_PARITY_ODD); 
-    PIT_Init();
     ADC_Init(true); // true = dma_req enable
+    NCO_InitFixed(&nco_handle, K_MARK, K_SPACE, true);
+    DAC_Init();
+    PIT_Init();
     DMA_Init();
     
     // Initialize buffer pointers
@@ -96,7 +102,7 @@ void App_Init (void)
     DMA_Start(0);
 
     // PIT configs
-    pit_cfg_t pit_cfg =
+    pit_cfg_t pit_adc_cfg =
     {
         .ch = 0, // didnt work with ch2 (todo: check later)
         .load_val = PIT_TICKS_FROM_US(83), // 12kHz ADC sampling
@@ -106,7 +112,38 @@ void App_Init (void)
         .callback = rx_pit_cb,
         .user = NULL
     };
-    PIT_Config(&pit_cfg);
+    PIT_Config(&pit_adc_cfg);
+
+    pit_cfg_t pit_cfg_lut =
+    {
+        .ch = 1,
+        .load_val = PIT_TICKS_FROM_US(20),
+        .periodic = true,
+        .int_en = true,
+        .dma_req = false,
+        .callback = NCO_ISRLut,
+        .user = NULL
+    };
+    PIT_Config(&pit_cfg_lut);
+
+    pit_cfg_t pit_cfg_bit =
+    {
+        .ch = 2,
+        .load_val = PIT_TICKS_FROM_US(833),
+        .periodic = true,
+        .int_en = true,
+        .dma_req = false,
+        .callback = NCO_ISRBit,
+        .user = NULL
+    };
+    PIT_Config(&pit_cfg_bit);
+
+    // Inicializo los bitstreams en idle
+    for (int i = 0; i < 11; i++)
+    {
+        idle_sending_bitstream[i] = true;
+        idle_reciving_bitstream[i] = 0;
+    }
 
     // FPU enable
     SCB->CPACR |= (0xF << 20);
@@ -158,4 +195,43 @@ static void dma_rx_major_cb(void *user)
     DMA0->TCD[0].DADDR = (uint32_t)current_buffer;
     
     rx_ready = true;
+}
+
+static void NCO_ISRBit(void* user)
+{
+    (void)user; // cookie disposal
+
+    // Flag de reset de Contador de bits enviados (Redundancia para seguridad)
+    if (initiate_send)
+    {
+        cnt = 0;
+        initiate_send = false;
+    }
+
+    // Decidir si envio en idle o si envio datos
+    if (sending_data)
+    {
+        NCO_FskBit(&nco_handle, sending_bitstream[cnt]);
+    }
+    else
+    {
+        NCO_FskBit(&nco_handle, idle_sending_bitstream[cnt]);
+    }
+
+    cnt++;
+    // Se setearon cnt bits en el NCO.
+    if (cnt == 11)
+    {
+        sending_data = false;
+        gpioWrite(PIN_LED_RED, !LED_ACTIVE);
+        gpioWrite(PIN_TP1, LOW);
+        cnt = 0;
+    }
+}
+
+static void NCO_ISRLut(void *user)
+{
+
+    lut_value = NCO_TickQ15(&nco_handle);
+    DAC_SetData(DAC0, lut_value);
 }
