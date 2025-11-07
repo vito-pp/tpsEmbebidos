@@ -39,7 +39,7 @@ __ISR__ FTM3_IRQHandler(void)
 void IC_ISR(void) //FTM3 CH5 PTC9 as IC
 {
 	//gpioToggle(PORTNUM2PIN(PB,2));
-	gpioToggle(PORTNUM2PIN(PB,3));
+	//gpioToggle(PORTNUM2PIN(PB,3));
 	static uint32_t med1,med2,med;
 	static uint8_t  state=0;
 	static int freqs[1000];
@@ -82,8 +82,10 @@ void IC_ISR(void) //FTM3 CH5 PTC9 as IC
 		}
 		else
 		{
-			gpioToggle(PORTNUM2PIN(PB,2));
-			ic_freq = 0;
+			//gpioWrite(PORTNUM2PIN(PB,2), 1);
+			//int n = 100000;
+			//while(n--);
+			//ic_freq = 0;
 
 			freqs[i] = freq; //aparentemente solo erra por OF
 
@@ -93,12 +95,12 @@ void IC_ISR(void) //FTM3 CH5 PTC9 as IC
 			}
 			i++;
 
-			gpioToggle(PORTNUM2PIN(PB,2));
+			//gpioToggle(PORTNUM2PIN(PB,2));
 
 		}
 	}
 
-	gpioToggle(PORTNUM2PIN(PB,3));
+	//gpioToggle(PORTNUM2PIN(PB,3));
 	//gpioToggle(PORTNUM2PIN(PB,2));
 
 }

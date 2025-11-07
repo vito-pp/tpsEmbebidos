@@ -70,7 +70,9 @@ void App_Run (void)
 {
   if (bitStartDetected())
   {
-	  //PIT_Start(0);
+	  gpioToggle(PORTNUM2PIN(PB,3));
+	  PIT_Start(0);
+	  gpioToggle(PORTNUM2PIN(PB,3));
   }
   PWM_setDuty(50);
 }
@@ -101,6 +103,8 @@ static void ftm_cb(void* user)
 	if (cnt == 11 || (bit_stream[cnt-1] == 2)) //bit[cnt-1 ]== 2 => error
 	{
 		PIT_Stop(0);
+		int n = 100000;
+		while(n--);
 		cnt = 0;
 		clearReadingFlag();
 	}

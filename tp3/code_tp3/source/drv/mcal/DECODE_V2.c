@@ -36,7 +36,7 @@ uint8_t processBit(void)
 	case 2200: bit = 0; break;
 	default: bit = 2; break; // ERROR
 	} 
-	return freq;//bit;
+	return bit;//bit;
 }
 
 
