@@ -55,6 +55,7 @@ void bitstreamReconstruction(float fir_output)
 {
     static bool bit_democracy[3]; // oversampled bits
     static uint8_t j = 0;         // bit_democracy index
+    static uint16_t total_samples = 0; // Track total samples in frame
 
     if (idle)
     {
@@ -63,41 +64,65 @@ void bitstreamReconstruction(float fir_output)
             idle = false;
             samples_per_bit_cnt = 1;
             bit_cnt = 0;
+            total_samples = 1;
+            j = 0;
         }
-
-        // independientemente de si hubo o no un dato inmediatamente despues, ya el ultimo bit no fue de stop.
     }
-    else // recieving data
+    else // receiving data
     {
         samples_per_bit_cnt++;
-        // oversampling = 3
-        if ((samples_per_bit_cnt >= (HALF_SAMPLES_BIT) - 1) && 
-            (samples_per_bit_cnt <= (HALF_SAMPLES_BIT) + 1)) 
+        total_samples++;
+        
+        // Adjust sampling points based on total_samples
+        uint8_t expected_center = (bit_cnt * SAMPLES_PER_BIT) + HALF_SAMPLES_BIT;
+        
+        // Sample around the calculated center of each bit
+        if (total_samples >= expected_center - 1 && 
+            total_samples <= expected_center + 1) 
         {
             bit_democracy[j] = (fir_output < 0);
             j++;
         }
-        else if (samples_per_bit_cnt == SAMPLES_PER_BIT)
+
+        // Process bit when we have all samples
+        if (j == 3 || samples_per_bit_cnt >= (SAMPLES_PER_BIT + 2))  // Allow some tolerance
         {
-            // we read all samples per bit: now bit election, majority wins
-            if (bit_democracy[0] + bit_democracy[1] + bit_democracy[2] >= 2)
+            // Majority vote on collected samples
+            if (j > 0) // Only if we collected samples
             {
-                bits_recovered[bit_cnt] = 1;
+                uint8_t ones = 0;
+                for (uint8_t k = 0; k < j; k++)
+                {
+                    if (bit_democracy[k]) ones++;
+                }
+                bits_recovered[bit_cnt] = (ones >= (j/2 + 1));
             }
-            else 
+            else
             {
-                bits_recovered[bit_cnt] = 0;
+                // If we missed samples, use last sample
+                bits_recovered[bit_cnt] = (fir_output < 0);
             }
+            
             bit_cnt++;
             samples_per_bit_cnt = 0;
             j = 0;
         }
-        else; // ignore samples
 
-        if (bit_cnt == UART_LEN) // full UART frame has been read
+        // Verify stop bit and frame completion
+        if (bit_cnt == UART_LEN)
+        {
+            // Only accept frame if last bit is stop bit (logic 1, fir_output < 0)
+            if (fir_output < 0)
+            {
+                data_ready = true;
+            }
+            idle = true;  // Ready for next frame
+        }
+        
+        // Safety timeout - reset if frame takes too long
+        if (total_samples >= SAMPLES_PER_BIT * (UART_LEN + 2))
         {
             idle = true;
-            data_ready = true;
         }
     }
 }
