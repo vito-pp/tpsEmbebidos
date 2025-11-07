@@ -10,7 +10,7 @@
 void PWM_Init(void);
 void PWM_ISR(void);
 
-uint16_t PWM_modulus = 1000-1; // Freq = 50Meg/(1*10000) = sysclck /((pwm_modulus+1)*Prescale)
+uint16_t PWM_modulus = 10000-1; // Freq = 50Meg/(16*1000) = sysclck /((pwm_modulus+1)*Prescale)
 uint16_t PWM_duty    = 1000;//5000-1;
 
 static uint32_t ic_freq;
@@ -38,13 +38,13 @@ __ISR__ FTM3_IRQHandler(void)
 
 void IC_ISR(void) //FTM3 CH5 PTC9 as IC
 {
-	gpioToggle(PORTNUM2PIN(PB,2));
-	static uint16_t med1,med2,med;
+	//gpioToggle(PORTNUM2PIN(PB,2));
+	gpioToggle(PORTNUM2PIN(PB,3));
+	static uint32_t med1,med2,med;
 	static uint8_t  state=0;
-
-	FTM_ClearInterruptFlag (FTM3, FTM_CH_5);
-	static uint32_t buffer[501];
+	static int freqs[1000];
 	static int i = 0;
+	FTM_ClearInterruptFlag (FTM3, FTM_CH_5);
 	uint32_t freq = 0;
 
 	if(state==0)
@@ -55,33 +55,51 @@ void IC_ISR(void) //FTM3 CH5 PTC9 as IC
 	else if(state==1)
 	{
 		med2=FTM_GetCounter (FTM3, FTM_CH_5);
-		med=med2-med1;
-
-		freq = (50e6/128)/med;/// BusClock=sysclk/2= 50MHz
-		buffer[i] = freq;
-		i++;
-		state=0;
-	}
-	if(i == 500)
-	{
-		if(freq > 2050 && freq < 2350)
+		if(FTM3->SC & FTM_SC_TOF_MASK) //overflow
 		{
-			ic_freq= 2200;
+			FTM_ClearOverflowFlag(FTM3);
+			if ((med2 < med1)) //ignor if med1 < med2
+			{
+				med2 += 0xFFFF;
+			}
 
 		}
-		else if(freq > 1050 && freq< 1350)
+
+		med=med2-med1;
+
+		freq = (int)(50e6/16.0)/(2.0*med);/// BusClock=sysclk/2= 50MHz
+		state=0;
+
+
+
+		if(freq > 2000 && freq < 2700)
+		{
+			ic_freq= 2200;
+		}
+		else if(freq > 900&& freq< 1500)
 		{
 			ic_freq= 1200;
-
 		}
 		else
 		{
+			gpioToggle(PORTNUM2PIN(PB,2));
 			ic_freq = 0;
-		}
-		i=0;
 
+			freqs[i] = freq; //aparentemente solo erra por OF
+
+			if(i == 999)
+			{
+				i = 0;
+			}
+			i++;
+
+			gpioToggle(PORTNUM2PIN(PB,2));
+
+		}
 	}
-	gpioToggle(PORTNUM2PIN(PB,2));
+
+	gpioToggle(PORTNUM2PIN(PB,3));
+	//gpioToggle(PORTNUM2PIN(PB,2));
 
 }
 
@@ -159,11 +177,11 @@ void IC_Init (void)
 	/// Set prescaler = divx32 => Timer Clock = 32 x (1/BusClock)= 32x1/50MHz= 0.64 useg
 	//--- medidor
 
-	FTM_SetPrescaler(FTM3, FTM_PSC_x128);	 				// Set Prescaler = divx32
+	FTM_SetPrescaler(FTM3, FTM_PSC_x16);	 				// Set Prescaler = divx32
 	FTM3->CNTIN=0x0000;				  		  				// Free running
 	FTM3->MOD=0xFFFF;
 	FTM_SetWorkingMode(FTM3,FTM_CH_5,FTM_mInputCapture);   // Select IC Function
-	FTM_SetInputCaptureEdge (FTM3, FTM_CH_5,FTM_eRising);  // Capture on both edges or rising
+	FTM_SetInputCaptureEdge (FTM3, FTM_CH_5,FTM_eEither);  // Capture on both edges or rising
 	FTM_SetInterruptMode (FTM3,FTM_CH_5, true);            // Enable interrupts
 	FTM_StartClock(FTM3);                                  // Select BusClk
 }

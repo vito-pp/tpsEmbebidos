@@ -9,14 +9,15 @@ void CMP_Init(void)
 	SIM->SCGC4 |= SIM_SCGC4_CMP_MASK;
     //check filter cnt
     //hyst: 0 --> 5mV, 1 --> 10mV, 2--> 20mV , 3 --> 30mV
-	CMP0->CR0 = CMP_CR0_FILTER_CNT(0) | CMP_CR0_HYSTCTR(3);
+	CMP0->CR0 = CMP_CR0_FILTER_CNT(7) | CMP_CR0_HYSTCTR(3);
 
     
     //check SE, COS = 1 avoids filter, check ope
-    CMP0->CR1 = CMP_CR1_SE(0) | CMP_CR1_PMODE(1) |
+    CMP0->CR1 = CMP_CR1_SE(1) | CMP_CR1_PMODE(1) |
+    			CMP_CR1_WE(0)  |
                 CMP_CR1_INV(0) | CMP_CR1_COS(1) |
                 CMP_CR1_EN_MASK | CMP_CR1_OPE_MASK ;
-    CMP0->FPR = 0x0F; // bus-cycles units  estaria bueno q sea congruente con adc
+    CMP0->FPR = 1; // bus-cycles units  estaria bueno q sea congruente con adc
     //might need to enable dMA later
     CMP0->SCR = CMP_SCR_DMAEN(0) | CMP_SCR_IER(0);
 
