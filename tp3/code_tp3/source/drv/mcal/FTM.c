@@ -15,11 +15,11 @@ uint16_t PWM_duty    = 1000;//5000-1;
 
 static uint32_t ic_freq;
 static uint8_t ic_counter;
-static bool bit_start;
+static uint8_t bit_start;
 
 void IC_ISR(void);
 
-bool IC_getBitStart(void)
+uint8_t IC_getBitStart(void)
 {
 	return bit_start;
 }
@@ -44,7 +44,9 @@ void IC_clearCounter(void)
 __ISR__ FTM3_IRQHandler(void)
 {
 	//gpioToggle(PORTNUM2PIN(PB,2));
+	//gpioToggle(PORTNUM2PIN(PB,3));
 	IC_ISR();
+	//gpioToggle(PORTNUM2PIN(PB,3));
 	//gpioToggle(PORTNUM2PIN(PB,2));
 }
 
@@ -72,19 +74,20 @@ void IC_ISR(void) //FTM3 CH5 PTC9 as IC
 	int period = medision - prev_p;
 	freq = (int)(50e6/16.0)/(2.0*period);/// BusClock=sysclk/2= 50MHz
 
-	if(freq > 1800 && freq < 2700)
+	if(freq > 1800 && freq < 3000)
 	{
 		//gpioToggle(PORTNUM2PIN(PB,3));
 		ic_freq= 2200;
 		if(prev_f == 2200)
 		{
-			bit_start=1;
+			bit_start++;
 		}
 		//gpioToggle(PORTNUM2PIN(PB,3));
 	}
 	else if(freq > 900 && freq< 1800)
 	{
 		ic_freq= 1200;
+		bit_start = 0;
 	}
 
 	prev_f = ic_freq;

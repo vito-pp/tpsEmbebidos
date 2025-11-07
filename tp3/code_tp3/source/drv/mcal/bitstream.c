@@ -39,13 +39,14 @@ void format_bitstream(uint8_t data, bool out[11]){
         out[i] = (frame >> i) & 1;
     }
 }
+
 // Funcion que deforma un arreglo de 11 bits booleanos en un byte de datos.
 // Devuelve dicho byte de datos para ser enviado al UART.
 char deformat_bitstream(bool in[11]){
     uint8_t frame = 0;
     for (int i = 1; i < 9; ++i){
         if (in[i]){
-            frame |= (1 << i);
+            frame |= (1 << (i-1));
         }
     }
     return frame;

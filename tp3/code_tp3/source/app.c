@@ -24,11 +24,40 @@
 #include "drv/mcal/DECODE_V2.h"
 #include "drv/mcal/bitstream.h"
 
+  void uint16_to_bin(uint16_t value, char *out, size_t out_len);
+
+void uint16_to_bin(uint16_t value, char *out, size_t out_len)
+{
+    if (!out || out_len == 0)
+        return;
+
+    const size_t total_bits = 16;
+    size_t need = total_bits + 1; // +1 para '\0'
+
+    if (out_len < need)
+    {
+        size_t bits = out_len - 1; // cuantos bits podemos escribir
+        for (size_t i = 0; i < bits; ++i)
+        {
+            size_t shift = bits - 1 - i;
+            out[i] = ((value >> shift) & 1U) ? '1' : '0';
+        }
+        out[bits] = '\0';
+        return;
+    }
+
+    for (int i = 0; i < (int)total_bits; ++i)
+    {
+        int shift = (int)total_bits - 1 - i; // MSB first
+        out[i] = ((value >> shift) & 1U) ? '1' : '0';
+    }
+    out[total_bits] = '\0';
+}
 
 /*******************************************************************************
  * FILE SCOPE VARIABLES
  ******************************************************************************/
-uint8_t bit_stream[11];
+bool bit_stream[11];
 uint16_t data_stream[20];
 bool finished = 0;
 /*******************************************************************************
@@ -42,15 +71,18 @@ static void delayLoop(uint32_t veces);
                         GLOBAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
+bool finishStatus(void);
 bool finishStatus(void)
 {
 	return finished;
 }
+void finishedReading(void);
 void finishedReading(void)
 {
 	finished=1;
 }
-void clearReading(void)
+void clearFinished(void);
+void clearFinished(void)
 {
 	finished = 0;
 }
@@ -58,6 +90,7 @@ static void ftm_cb(void* user);
 /* Función que se llama 1 vez, al comienzo del programa */
 void App_Init (void)
 {
+	UART_Init(UART_PARITY_ODD);
 	CMP_Init();
 	FTM_Init();
 	PIT_Init();
@@ -69,7 +102,7 @@ void App_Init (void)
 	pit_cfg_t pit_cfg =
  	 {
 		.ch = 0,
-		.load_val = PIT_TICKS_FROM_US(830),
+		.load_val = PIT_TICKS_FROM_US(833),
 		.periodic = true,
 		.int_en = true,
 		.callback = ftm_cb,
@@ -82,6 +115,7 @@ void App_Init (void)
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run (void)
 {
+  UART_Poll();
   if (bitStartDetected())
   {
 
@@ -92,10 +126,27 @@ void App_Run (void)
 	  PIT_Start(0);
 	  //gpioToggle(PORTNUM2PIN(PB,3));
   }
+  bit_stream[0] +=0;
   if(finishStatus())
   {
-	  bit_stream[0] += 0;
-  }
+	  clearFinished();
+	  //bit_stream[0] += 0;
+
+
+    char received_data[1]; // placeholder
+    received_data[0] = deformat_bitstream(bit_stream);
+
+   // if (received_data != 0xFF){
+        char bits[17];
+        uint16_t frame = data_to_uart(received_data[0]);
+        uint16_to_bin(frame, bits, sizeof(bits));
+        UART_SendString("Dato Recibido del ADC: ");
+        UART_SendString(received_data);
+        UART_SendString("\r\n");
+        UART_SendString("Informacion recibida en bits: ");
+        UART_SendString(bits);
+        UART_SendString("\r\n");
+    }//}
 
   //PWM_setDuty(50);
 }

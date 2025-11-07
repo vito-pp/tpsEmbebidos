@@ -46,7 +46,7 @@ uint8_t processBit(void)
 
 bool bitStartDetected(void)
 {
-	if(IC_getBitStart() && !reading)
+	if((IC_getBitStart()>1) && !reading)
 	{
 		IC_clearBitStart();
 		return 1;
