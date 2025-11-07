@@ -196,7 +196,8 @@ void App_Run(void)
         format_bitstream(tx_buffer[tx_tail], sending_bitstream);
 
         // Hacer un echo del caracter realmente enviado
-        UART_SendString((char[]){tx_buffer[tx_tail], '\0'});
+
+        //UART_SendString((char[]){tx_buffer[tx_tail], '\0'});
 
         tx_tail = (tx_tail + 1) % TX_BUFFER_SIZE; // Avanzar al siguiente carácter
         initiate_send = true;
@@ -205,14 +206,16 @@ void App_Run(void)
         gpioWrite(PIN_TP1, HIGH);
     }
 
+    UART_Poll();
 
-    // RX main loop
+
+    // // RX main loop
     if (rx_ready)
     {
         rx_ready = false;
         for (int i = 0; i < RX_BUF_LEN; i++)
         {
-            float d = demodFSK(rx_buffer[i]);        
+            float d = demodFSK(rx_buffer[i]);
             bitstreamReconstruction(d);
             if (isDataReady())
             {
@@ -222,6 +225,7 @@ void App_Run(void)
             }
         }
     }
+    UART_Poll();
 }
 
 /*******************************************************************************
@@ -261,8 +265,8 @@ static void NCO_ISRBit(void* user)
     {
         NCO_FskBit(&nco_handle, idle_sending_bitstream[cnt]);
     }
-
     cnt++;
+
     // Se setearon cnt bits en el NCO.
     if (cnt == 11)
     {
