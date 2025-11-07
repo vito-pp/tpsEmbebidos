@@ -97,6 +97,8 @@ void App_Init (void)
 {
     gpioMode(PIN_LED_RED, OUTPUT);
     gpioWrite(PIN_LED_RED, !LED_ACTIVE);
+    gpioMode(PIN_TP1, OUTPUT);
+    gpioWrite(PIN_TP1, LOW);
 
     // PIT init
     PIT_Init();
@@ -169,6 +171,7 @@ void App_Run (void)
         initiate_send = true;
         sending_data = true;
         gpioWrite(PIN_LED_RED, LED_ACTIVE);
+        gpioWrite(PIN_TP1, HIGH);
     }
 
     else // no data recieved
@@ -219,6 +222,7 @@ static void NCO_ISRBit(void *user)
     {
     	sending_data = false;
     	gpioWrite(PIN_LED_RED, !LED_ACTIVE);
+        gpioWrite(PIN_TP1, LOW);
         cnt = 0;
     }
 }
