@@ -1,5 +1,5 @@
 /***************************************************************************//**
-  @file     App.c
+  @file     app.c
   @brief    Main Loop definition for TP3 of Embedded Systems
 *******************************************************************************/
 
@@ -43,7 +43,6 @@ static char rx_word[2048];
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
 
-void uint16_to_bin(uint16_t value, char *out, size_t out_len);
 
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR CALLBACKS
