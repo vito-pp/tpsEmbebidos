@@ -58,12 +58,14 @@ void bitstreamReconstruction(float fir_output)
 
     if (idle)
     {
-        if (fir_output > 0) // bit start detected
+        if (fir_output > 0) // bit start detected        
         {
             idle = false;
             samples_per_bit_cnt = 1;
             bit_cnt = 0;
         }
+
+        // independientemente de si hubo o no un dato inmediatamente despues, ya el ultimo bit no fue de stop.
     }
     else // recieving data
     {

@@ -41,9 +41,11 @@ size_t UART_RxAvailable(void)
 
 void UART_Poll(void)
 {
+
     /* RX: leer mientras haya datos */
     while (UART0->S1 & UART_S1_RDRF_MASK)
     {
+
         uint8_t s1 = UART0->S1;
         char c = (char)UART0->D; /* leer limpia los flags */
 
@@ -59,6 +61,7 @@ void UART_Poll(void)
         {
             s_rx_tail = rb_next(s_rx_tail, UART_RX_BUF_SIZE);
         }
+
         s_rx_buf[s_rx_head] = c;
         s_rx_head = next;
     }
