@@ -53,7 +53,7 @@ float demodFSK(uint16_t adc_value)
 // to be called after each ADC EOC. has to be faster than 1 / FS_ADC
 void bitstreamReconstruction(float fir_output)
 {
-    static bool bit_democracy[3]; // oversampled bits
+    static uint8_t bit_democracy[3]; // oversampled bits
     static uint8_t j = 0;         // bit_democracy index
 
     if (idle)
