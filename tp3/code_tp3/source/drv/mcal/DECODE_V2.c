@@ -9,19 +9,23 @@
 #include "drv/mcal/FTM.h"
 
 #define CONT_MAX 12 
-static int reading = 0;
+static bool reading = 0;
 
 void clearReadingFlag(void) //Should be called when reading finished
 {
 	reading = 0;
 }
 
+void setReadingFlag(void)
+{
+	reading = 1;
+}
 //Returns 2 if error
 uint8_t processBit(void)
 {
 	uint8_t bit;
 	int freq = (int) IC_getFrequency();
-	static int i = 0;
+	/*static int i = 0;
 	static int buffer[1000];
 	buffer[i] = freq;
 	if(i == 999)
@@ -29,7 +33,7 @@ uint8_t processBit(void)
 		i = 0;
 	}
 	i++;
-
+	*/
 	switch(freq)
 	{
 	case 1200: bit = 1; break;
@@ -42,17 +46,24 @@ uint8_t processBit(void)
 
 bool bitStartDetected(void)
 {
+	if(IC_getBitStart() && !reading)
+	{
+		IC_clearBitStart();
+		return 1;
+	}
+	return 0;
 	//se detectó un bit start
 	//Trigger timer Tt < ~ 833 us  / (833us -  Tt)* Nbits < 833 us
 	// 833us(1-1/Nbits) < Tt < 833us
-	static uint8_t prev = 3;
+	/*static uint8_t prev = 3;
 	uint8_t current = processBit();
+
 	if((current == 0) && (current == prev) &&  !reading) // requires 2 consecutive samples of a 0, to trigger better.
 	{
-		reading = 1;
-		current = 3;
+		prev = 3;
 		return 1;
 	}
 	prev = current;
 	return 0;
+    */
 }

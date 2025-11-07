@@ -23,13 +23,10 @@ void PIT_Init(void)
     SIM->SCGC6 |= SIM_SCGC6_PIT_MASK;
 
     /* 2. Enable timers, freeze in debug if desired */
-    PIT->MCR = 0;  // MDIS=0 (enable), FRZ=0 (run in debug)
+    PIT->MCR = PIT_MCR_FRZ_MASK;  // MDIS=0 (enable), FRZ=1 (freeze in debug)
 
     /* 3. Enable IRQs in NVIC */
     NVIC_EnableIRQ(PIT0_IRQn);
-    NVIC_EnableIRQ(PIT1_IRQn);
-    NVIC_EnableIRQ(PIT2_IRQn);
-    NVIC_EnableIRQ(PIT3_IRQn);
 }
 
 bool PIT_Config(const pit_cfg_t *cfg)
@@ -70,7 +67,7 @@ bool PIT_Config(const pit_cfg_t *cfg)
     PIT->CHANNEL[ch].TCTRL = tctrl;
 
     /* 6. Start in periodic mode if requested */
-    if (cfg->periodic && !cfg->dma_req) 
+    if (cfg->periodic)
     {
         PIT_Start(cfg->ch);
     }
@@ -126,7 +123,18 @@ static void pit_isr_handler(uint8_t ch)
     }
 }
 
-void PIT0_IRQHandler(void) { pit_isr_handler(0); }
-void PIT1_IRQHandler(void) { pit_isr_handler(1); }
-void PIT2_IRQHandler(void) { pit_isr_handler(2); }
-void PIT3_IRQHandler(void) { pit_isr_handler(3); }
+void PIT0_IRQHandler(void)
+{
+    int i;
+    for (i = 0; i < PIT_CHANNELS; i++)
+    {
+        if (PIT->CHANNEL[i].TFLG == PIT_TFLG_TIF_MASK)
+        {
+            pit_isr_handler(i);
+        }
+    }
+}
+// no existen en el Kinetis :^(
+// void PIT1_IRQHandler(void) { pit_isr_handler(1); }
+// void PIT2_IRQHandler(void) { pit_isr_handler(2); }
+// void PIT3_IRQHandler(void) { pit_isr_handler(3); }

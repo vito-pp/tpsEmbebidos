@@ -15,9 +15,19 @@ uint16_t PWM_duty    = 1000;//5000-1;
 
 static uint32_t ic_freq;
 static uint8_t ic_counter;
+static bool bit_start;
 
 void IC_ISR(void);
 
+bool IC_getBitStart(void)
+{
+	return bit_start;
+}
+
+void IC_clearBitStart(void)
+{
+	bit_start = 0;
+}
 double IC_getFrequency(void)
 {
 	return ic_freq;
@@ -33,7 +43,9 @@ void IC_clearCounter(void)
 }
 __ISR__ FTM3_IRQHandler(void)
 {
+	//gpioToggle(PORTNUM2PIN(PB,2));
 	IC_ISR();
+	//gpioToggle(PORTNUM2PIN(PB,2));
 }
 
 void IC_ISR(void) //FTM3 CH5 PTC9 as IC
@@ -44,10 +56,41 @@ void IC_ISR(void) //FTM3 CH5 PTC9 as IC
 	static uint8_t  state=0;
 	static int freqs[1000];
 	static int i = 0;
+
+	static int prev_f;
+	static int prev_p;
 	FTM_ClearInterruptFlag (FTM3, FTM_CH_5);
 	uint32_t freq = 0;
 
-	if(state==0)
+	int medision = FTM_GetCounter (FTM3, FTM_CH_5);
+	if(FTM3->SC & FTM_SC_TOF_MASK) //if overflow
+	{
+		FTM_ClearOverflowFlag(FTM3);
+
+		medision += 0xFFFF;
+	}
+	int period = medision - prev_p;
+	freq = (int)(50e6/16.0)/(2.0*period);/// BusClock=sysclk/2= 50MHz
+
+	if(freq > 1800 && freq < 2700)
+	{
+		//gpioToggle(PORTNUM2PIN(PB,3));
+		ic_freq= 2200;
+		if(prev_f == 2200)
+		{
+			bit_start=1;
+		}
+		//gpioToggle(PORTNUM2PIN(PB,3));
+	}
+	else if(freq > 900 && freq< 1500)
+	{
+		ic_freq= 1200;
+	}
+
+	prev_f = ic_freq;
+	prev_p = medision;
+
+	/*if(state==0)
 	{
 		med1=FTM_GetCounter (FTM3, FTM_CH_5); //
 		state=1;
@@ -72,37 +115,27 @@ void IC_ISR(void) //FTM3 CH5 PTC9 as IC
 
 
 
-		if(freq > 2000 && freq < 2700)
+		if(freq > 1800 && freq < 2700)
 		{
+			gpioToggle(PORTNUM2PIN(PB,3));
 			ic_freq= 2200;
+			if(prev == 2200)
+			{
+				bit_start=1;
+			}
+			gpioToggle(PORTNUM2PIN(PB,3));
 		}
-		else if(freq > 900&& freq< 1500)
+		else if(freq > 900 && freq< 1500)
 		{
 			ic_freq= 1200;
 		}
-		else
-		{
-			//gpioWrite(PORTNUM2PIN(PB,2), 1);
-			//int n = 100000;
-			//while(n--);
-			//ic_freq = 0;
 
-			freqs[i] = freq; //aparentemente solo erra por OF
-
-			if(i == 999)
-			{
-				i = 0;
-			}
-			i++;
-
-			//gpioToggle(PORTNUM2PIN(PB,2));
-
-		}
+		prev = ic_freq;
 	}
 
 	//gpioToggle(PORTNUM2PIN(PB,3));
 	//gpioToggle(PORTNUM2PIN(PB,2));
-
+*/
 }
 
 

@@ -60,6 +60,8 @@ typedef enum
 double IC_getFrequency(void);
 uint8_t IC_getCounter(void);
 void IC_clearCounter(void);
+bool IC_getBitStart(void);
+void IC_clearBitStart(void);
 
 void PWM_setDuty(char);
 void IC_Init (void);

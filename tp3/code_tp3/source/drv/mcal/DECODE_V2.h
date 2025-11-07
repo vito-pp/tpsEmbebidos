@@ -10,6 +10,7 @@
 #ifndef DRV_MCAL_DECODE_V2_H_
 #define DRV_MCAL_DECODE_V2_H_
 
+void setReadingFlag(void);
 void clearReadingFlag(void);
 uint8_t processBit(void);
 bool bitStartDetected(void);

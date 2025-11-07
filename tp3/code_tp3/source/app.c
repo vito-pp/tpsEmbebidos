@@ -28,6 +28,7 @@
  * FILE SCOPE VARIABLES
  ******************************************************************************/
 uint8_t bit_stream[11];
+uint16_t data_stream[20];
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
@@ -55,7 +56,7 @@ void App_Init (void)
 	pit_cfg_t pit_cfg =
  	 {
 		.ch = 0,
-		.load_val = PIT_TICKS_FROM_US(820),
+		.load_val = PIT_TICKS_FROM_US(830),
 		.periodic = true,
 		.int_en = true,
 		.callback = ftm_cb,
@@ -70,9 +71,12 @@ void App_Run (void)
 {
   if (bitStartDetected())
   {
-	  gpioToggle(PORTNUM2PIN(PB,3));
+
+	  gpioToggle(PORTNUM2PIN(PB,2));
+	  setReadingFlag();
+	  //gpioToggle(PORTNUM2PIN(PB,3));
 	  PIT_Start(0);
-	  gpioToggle(PORTNUM2PIN(PB,3));
+	  //gpioToggle(PORTNUM2PIN(PB,3));
   }
   PWM_setDuty(50);
 }
@@ -95,20 +99,42 @@ static void __error_handler__(void)
 
 static void ftm_cb(void* user)
 {
-	gpioToggle(PORTNUM2PIN(PB,2));
-	static uint8_t cnt = 0;
-
+	gpioToggle(PORTNUM2PIN(PB,3));
+	static uint8_t cnt = 1;
 	bit_stream[cnt]  = processBit();
+/*/////////////////////////////////////////
+	static uint8_t cnt = 0;
+	static int i=0;
+	data_stream[i] = data_stream[i]<< cnt | processBit() ;
+*/////////////////////////////////////////
 	cnt++;
-	if (cnt == 11 || (bit_stream[cnt-1] == 2)) //bit[cnt-1 ]== 2 => error
+	if (cnt == 11)//|| (bit_stream[i][cnt-1] == 2)) //bit[cnt-1 ]== 2 => error
 	{
 		PIT_Stop(0);
+		//DELAY
 		int n = 100000;
 		while(n--);
-		cnt = 0;
+		cnt = 1;
+		/////////
+		//i++;
+		//data_stream[i]= 0;
+		//cnt= 0;
+		//////////
 		clearReadingFlag();
+		IC_clearBitStart();
+		gpioToggle(PORTNUM2PIN(PB,2));
 	}
-	gpioToggle(PORTNUM2PIN(PB,2));
+	if(i == 10)
+	{
+		i = 0;
+	}
+	gpioToggle(PORTNUM2PIN(PB,3));
+	/*if(i == 10)
+	{
+		i= 0;
+	}*/
+
+
 
 }
 
