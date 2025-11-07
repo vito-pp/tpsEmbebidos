@@ -2,7 +2,7 @@
 #define UART_H_
 #include "MK64F12.h"
 
-#define UART_HAL_DEFAULT_BAUDRATE 1200
+#define UART_HAL_DEFAULT_BAUDRATE 9600
 
 #define UART0_TX_PIN 	17   //PTB17
 #define UART0_RX_PIN 	16   //PTB16
