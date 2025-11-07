@@ -82,7 +82,7 @@ void IC_ISR(void) //FTM3 CH5 PTC9 as IC
 		}
 		//gpioToggle(PORTNUM2PIN(PB,3));
 	}
-	else if(freq > 900 && freq< 1500)
+	else if(freq > 900 && freq< 1800)
 	{
 		ic_freq= 1200;
 	}
