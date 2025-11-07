@@ -152,6 +152,46 @@ void App_Init (void)
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run (void)
 {
+    // TX main loop
+    UART_Poll();
+    int r = UART_ReceiveString(rx_line, sizeof(rx_line));
+
+    if (r > 0)
+    {
+        // Encolar todos los caracteres recibidos en el buffer circular
+        for (int i = 0; i < r; i++)
+        {
+            size_t next_head = (tx_head + 1) % TX_BUFFER_SIZE;
+
+            // En un buffer circular verdadero, solo nos preocupamos si el siguiente
+            // espacio está ocupado por el tail
+            if (next_head != tx_tail)
+            {
+                tx_buffer[tx_head] = rx_line[i];
+                tx_head = next_head;
+            }
+            // Si el buffer está lleno, simplemente descartamos el carácter
+        }
+
+        // UART_SendString(rx_line); // Echo de lo recibido y guardado en el buffer circular
+    }
+
+    // Si no estamos enviando y hay datos en el buffer, iniciar nueva transmisión
+    if (!sending_data && tx_head != tx_tail)
+    {
+        format_bitstream(tx_buffer[tx_tail], sending_bitstream);
+
+        // Hacer un echo del caracter realmente enviado
+        UART_SendString((char[]){tx_buffer[tx_tail], '\0'});
+
+        tx_tail = (tx_tail + 1) % TX_BUFFER_SIZE; // Avanzar al siguiente carácter
+        initiate_send = true;
+        sending_data = true;
+        gpioWrite(PIN_LED_RED, LED_ACTIVE);
+        gpioWrite(PIN_TP1, HIGH);
+    }
+
+    // RX main loop
     if (rx_ready)
     {
         rx_ready = false;
