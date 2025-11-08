@@ -18,6 +18,7 @@ void ADC_Init (bool dma_req)
 
     if (dma_req) {
         ADC0->SC2 |= ADC_SC2_DMAEN_MASK;   // same for ADC1 if you use it
+		
     } else {
         ADC0->SC2 &= ~ADC_SC2_DMAEN_MASK;
     }

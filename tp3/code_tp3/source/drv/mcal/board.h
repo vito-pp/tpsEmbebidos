@@ -25,6 +25,9 @@
 #define PIN_LED_BLUE    PORTNUM2PIN(PB, 21)   // PTB21
 
 #define PIN_TP1         PORTNUM2PIN(PB, 2)             
+#define PIN_TP2         PORTNUM2PIN(PB, 3)   
+#define PIN_TP3         PORTNUM2PIN(PB, 10)
+#define PIN_TP4         PORTNUM2PIN(PB, 11)             
 
 #define LED_ACTIVE      LOW
 

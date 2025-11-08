@@ -22,6 +22,7 @@
 #include "drv/mcal/pit.h"
 #include "drv/mcal/ADC.h"
 #include "drv/mcal/DAC.h"
+#include "drv/mcal/SysTick.h"
 #include "dsp/bitstream.h"
 #include "dsp/demod_fsk.h"
 
@@ -72,7 +73,7 @@ static volatile bool sending_data = false;
 
 static void rx_pit_cb(void *user);
 static void dma_rx_major_cb(void *user);
-static void NCO_ISRBit(void *user);
+static void NCO_ISRBit(void);
 static void NCO_ISRLut(void *user);
 
 /*******************************************************************************
@@ -89,6 +90,12 @@ void App_Init(void)
     gpioWrite(PIN_LED_RED, !LED_ACTIVE);
     gpioMode(PIN_TP1, OUTPUT);
     gpioWrite(PIN_TP1, LOW);
+    gpioMode(PIN_TP2, OUTPUT);
+    gpioWrite(PIN_TP2, LOW);
+    gpioMode(PIN_TP3, OUTPUT);
+    gpioWrite(PIN_TP3, LOW);
+    gpioMode(PIN_TP4, OUTPUT);
+    gpioWrite(PIN_TP4, LOW);
     
     UART_Init(UART_PARITY_ODD); 
     ADC_Init(true); // true = dma_req enable
@@ -99,8 +106,8 @@ void App_Init(void)
     dma_cfg_t dma_cfg =
     {
         .ch = 0,
-        .request_src = DMA_REQ_ALWAYS63,
-        .trig_mode = true,
+        .request_src = DMA_REQ_ADC0,
+        .trig_mode = false,
         .saddr = (void *)&ADC0->R[0],
         .daddr = rx_buffer,
         .nbytes = 2, // 16-bit
@@ -115,42 +122,45 @@ void App_Init(void)
     DMA_Config(&dma_cfg);
     DMA_Start(0);
 
+    //use systick isr bit
+	SysTick_Init(NCO_ISRBit, 83333); // systick isr at 1.2kHz
+
     // PIT configs
+    pit_cfg_t pit_cfg_lut =
+    {
+        .ch = 0,
+        .load_val = PIT_TICKS_FROM_US(20),
+        .periodic = true,
+        .int_en = true,
+        .dma_req = false,
+        .callback = NCO_ISRLut,
+        .user = NULL
+    };
+    PIT_Config(&pit_cfg_lut);
+
     pit_cfg_t pit_adc_cfg =
     {
-        .ch = 0, // didnt work with ch2 (todo: check later)
+        .ch = 1,
         .load_val = PIT_TICKS_FROM_US(83), // 12kHz ADC sampling
         .periodic = true,
         .int_en = true,
-        .dma_req = true, // PIT asserts DMA request
-        .callback = rx_pit_cb,
+        .dma_req = false,
+        .callback = rx_pit_cb, // PIT starts ADC's start of conversion
         .user = NULL
     };
     PIT_Config(&pit_adc_cfg);
 
-    pit_cfg_t pit_cfg_lut =
-        {
-            .ch = 1,
-            .load_val = PIT_TICKS_FROM_US(20),
-            .periodic = true,
-            .int_en = true,
-            .dma_req = false,
-            .callback = NCO_ISRLut,
-            .user = NULL};
-
-    PIT_Config(&pit_cfg_lut);
-
-    pit_cfg_t pit_cfg_bit =
-        {
-            .ch = 2,
-            .load_val = PIT_TICKS_FROM_US(833),
-            .periodic = true,
-            .int_en = true,
-            .dma_req = false,
-            .callback = NCO_ISRBit,
-            .user = NULL};
-
-    PIT_Config(&pit_cfg_bit);
+    // pit_cfg_t pit_cfg_bit =
+    // {
+    //     .ch = 2,
+    //     .load_val = PIT_TICKS_FROM_US(833),
+    //     .periodic = true,
+    //     .int_en = true,
+    //     .dma_req = false,
+    //     .callback = NCO_ISRBit,
+    //     .user = NULL
+    // };
+    // PIT_Config(&pit_cfg_bit);
 
     // Inicializo los bitstreams en idle
     for (int i = 0; i < 11; i++)
@@ -212,7 +222,7 @@ void App_Run(void)
         rx_ready = false;
         for (int i = 0; i < RX_BUF_LEN; i++)
         {
-            float d = demodFSK(rx_buffer[i]);        
+            float d = demodFSK(rx_buffer[i]);
             bitstreamReconstruction(d);
             if (isDataReady())
             {
@@ -232,8 +242,9 @@ void App_Run(void)
 
 static void rx_pit_cb(void *user)
 {
-    (void)user; // cookie disposal
+    gpioWrite(PIN_TP3, HIGH);
     ADC_Start(ADC0, 1, ADC_mA); // starts adc's conversion
+    gpioWrite(PIN_TP3, LOW);
 }
 
 static void dma_rx_major_cb(void *user)
@@ -241,10 +252,9 @@ static void dma_rx_major_cb(void *user)
     rx_ready = true;
 }
 
-static void NCO_ISRBit(void* user)
+static void NCO_ISRBit(void)
 {
-    (void)user; // cookie disposal
-
+	gpioWrite(PIN_TP4, HIGH);
     // Flag de reset de Contador de bits enviados (Redundancia para seguridad)
     if (initiate_send)
     {
@@ -271,22 +281,13 @@ static void NCO_ISRBit(void* user)
         gpioWrite(PIN_TP1, LOW);
         cnt = 0;
     }
+    gpioWrite(PIN_TP4, LOW);
 }
 
 static void NCO_ISRLut(void *user)
 {
-
+	gpioWrite(PIN_TP2, HIGH);
     lut_value = NCO_TickQ15(&nco_handle);
     DAC_SetData(DAC0, lut_value);
-}
-
-static void delayLoop(uint32_t veces)
-{
-    while (veces--)
-        ;
-}
-
-static void __error_handler__(void)
-{
-    gpioWrite(PIN_LED_RED, LED_ACTIVE);
+    gpioWrite(PIN_TP2, LOW);
 }
