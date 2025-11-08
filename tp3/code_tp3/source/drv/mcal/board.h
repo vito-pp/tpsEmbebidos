@@ -26,6 +26,8 @@
 
 #define LED_ACTIVE      LOW
 
+#define PIN_TP1         PORTNUM2PIN(PB, 2)
+
 // On Board User Switches
 #define PIN_SW2         // ???
 #define PIN_SW3         PORTNUM2PIN(PA, 4)    // PTA4

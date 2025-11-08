@@ -38,6 +38,29 @@
 static volatile uint16_t rx_buffer[RX_BUF_LEN] __attribute__((aligned(4)));
 static volatile bool rx_ready = false;
 static char rx_word[2048];
+static char rx_line[2048];
+
+// Buffer circular para almacenar caracteres a transmitir
+#define TX_BUFFER_SIZE 2048
+static char tx_buffer[TX_BUFFER_SIZE];
+static volatile size_t tx_head = 0; // Índice donde escribir próximo carácter
+static volatile size_t tx_tail = 0; // Índice del próximo carácter a enviar
+
+static NCO_Handle nco_handle;
+
+// Bitstream de datos enviados por el DAC
+static bool sending_bitstream[11];
+static bool idle_sending_bitstream[11];
+static bool idle_reciving_bitstream[11];
+
+// Bitstream de datos recibidos por el ADC
+static bool reciving_bitstream[11]; // 11?
+
+static uint16_t lut_value;
+static size_t cnt;
+static volatile bool initiate_send = false;
+static volatile bool sending_data = false;
+
 
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
@@ -108,6 +131,46 @@ void App_Init (void)
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run (void)
 {
+    // Tx main loop
+    UART_Poll();
+    int r = UART_ReceiveString(rx_line, sizeof(rx_line));
+
+    if (r > 0)
+    {
+        // Encolar todos los caracteres recibidos en el buffer circular
+        for (int i = 0; i < r; i++)
+        {
+            size_t next_head = (tx_head + 1) % TX_BUFFER_SIZE;
+
+            // En un buffer circular verdadero, solo nos preocupamos si el siguiente
+            // espacio está ocupado por el tail
+            if (next_head != tx_tail)
+            {
+                tx_buffer[tx_head] = rx_line[i];
+                tx_head = next_head;
+            }
+            // Si el buffer está lleno, simplemente descartamos el carácter
+        }
+
+        // UART_SendString(rx_line); // Echo de lo recibido y guardado en el buffer circular
+    }
+
+    // Si no estamos enviando y hay datos en el buffer, iniciar nueva transmisión
+    if (!sending_data && tx_head != tx_tail)
+    {
+        format_bitstream(tx_buffer[tx_tail], sending_bitstream);
+
+        // Hacer un echo del caracter realmente enviado
+        UART_SendString((char[]){tx_buffer[tx_tail], '\0'});
+
+        tx_tail = (tx_tail + 1) % TX_BUFFER_SIZE; // Avanzar al siguiente carácter
+        initiate_send = true;
+        sending_data = true;
+        gpioWrite(PIN_LED_RED, LED_ACTIVE);
+        gpioWrite(PIN_TP1, HIGH);
+    }
+
+    // Rx main loop
     if (rx_ready)
     {
         rx_ready = false;
@@ -140,4 +203,43 @@ static void rx_pit_cb(void *user)
 static void dma_rx_major_cb(void *user)
 {
     rx_ready = true;
+}
+
+static void NCO_ISRBit(void* user)
+{
+    (void)user; // cookie disposal
+
+    // Flag de reset de Contador de bits enviados (Redundancia para seguridad)
+    if (initiate_send)
+    {
+        cnt = 0;
+        initiate_send = false;
+    }
+
+    // Decidir si envio en idle o si envio datos
+    if (sending_data)
+    {
+        NCO_FskBit(&nco_handle, sending_bitstream[cnt]);
+    }
+    else
+    {
+        NCO_FskBit(&nco_handle, idle_sending_bitstream[cnt]);
+    }
+
+    cnt++;
+    // Se setearon cnt bits en el NCO.
+    if (cnt == 11)
+    {
+        sending_data = false;
+        gpioWrite(PIN_LED_RED, !LED_ACTIVE);
+        gpioWrite(PIN_TP1, LOW);
+        cnt = 0;
+    }
+}
+
+static void NCO_ISRLut(void *user)
+{
+
+    lut_value = NCO_TickQ15(&nco_handle);
+    DAC_SetData(DAC0, lut_value);
 }
