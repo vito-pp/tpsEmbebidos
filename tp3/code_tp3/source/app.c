@@ -41,7 +41,7 @@ static char rx_word[2048];
 static char rx_line[2048];
 
 // Buffer circular para almacenar caracteres a transmitir
-#define TX_BUFFER_SIZE 2048
+#define TX_BUFFER_SIZE 32
 static char tx_buffer[TX_BUFFER_SIZE];
 static volatile size_t tx_head = 0; // Índice donde escribir próximo carácter
 static volatile size_t tx_tail = 0; // Índice del próximo carácter a enviar
@@ -118,7 +118,7 @@ void App_Init(void)
     // PIT configs
     pit_cfg_t pit_cfg_lut =
         {
-            .ch = 0,
+            .ch = 1,
             .load_val = PIT_TICKS_FROM_US(20),
             .periodic = true,
             .int_en = true,
@@ -130,7 +130,7 @@ void App_Init(void)
 
     pit_cfg_t pit_cfg_bit =
         {
-            .ch = 1,
+            .ch = 0,
             .load_val = PIT_TICKS_FROM_US(833),
             .periodic = true,
             .int_en = true,
@@ -161,6 +161,11 @@ void App_Init(void)
 
     // FPU enable
     SCB->CPACR |= (0xF << 20);
+
+    NVIC_SetPriority(UART0_RX_TX_IRQn, 1);   // UART alta prioridad
+    NVIC_SetPriority(DMA0_IRQn, 5);          // DMA menor prioridad
+    NVIC_SetPriority(ADC0_IRQn, 3);          // ADC menos prioritario
+    NVIC_SetPriority(PIT0_IRQn, 4);           // PIT muy bajo
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
@@ -205,20 +210,20 @@ void App_Run(void)
         gpioWrite(PIN_TP1, HIGH);
     }
 
-
+    UART_Poll();
     // RX main loop
     if (rx_ready)
     {
         rx_ready = false;
-        for (int i = 0; i < RX_BUF_LEN; i++)
+        for (int i = 0; i < 32; i++)
         {
-            float d = demodFSK(rx_buffer[i]);        
+            float d = demodFSK(rx_buffer[i]);
             bitstreamReconstruction(d);
             if (isDataReady())
             {
                 bool *frame = retrieveBitstream();
                 rx_word[0] = deformat_bitstream(frame);
-                UART_SendString(rx_word);
+                //UART_SendString(rx_word);
             }
         }
     }
@@ -279,6 +284,8 @@ static void NCO_ISRLut(void *user)
     lut_value = NCO_TickQ15(&nco_handle);
     DAC_SetData(DAC0, lut_value);
 }
+
+
 
 static void delayLoop(uint32_t veces)
 {
