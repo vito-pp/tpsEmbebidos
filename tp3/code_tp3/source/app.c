@@ -42,7 +42,7 @@ static char rx_word[2048];
 static char rx_line[2048];
 
 // Buffer circular para almacenar caracteres a transmitir
-#define TX_BUFFER_SIZE 2048
+#define TX_BUFFER_SIZE 32
 static char tx_buffer[TX_BUFFER_SIZE];
 static volatile size_t tx_head = 0; // Índice donde escribir próximo carácter
 static volatile size_t tx_tail = 0; // Índice del próximo carácter a enviar
@@ -214,6 +214,7 @@ void App_Run(void)
         gpioWrite(PIN_LED_RED, LED_ACTIVE);
         gpioWrite(PIN_TP1, HIGH);
     }
+    UART_Poll();
 
 
     // RX main loop
