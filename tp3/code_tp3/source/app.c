@@ -127,10 +127,13 @@ void App_Run (void)
 	  //gpioToggle(PORTNUM2PIN(PB,3));
   }
   bit_stream[0] +=0;
+  static char palabras[20];
+  static int k;
   if(finishStatus())
   {
 	  clearFinished();
 	  //bit_stream[0] += 0;
+
 
 
     char received_data[1]; // placeholder
@@ -140,13 +143,19 @@ void App_Run (void)
         char bits[17];
         uint16_t frame = data_to_uart(received_data[0]);
         uint16_to_bin(frame, bits, sizeof(bits));
-        UART_SendString("Dato Recibido del ADC: ");
+        //UART_SendString("Dato Recibido del ADC: ");
         UART_SendString(received_data);
-        UART_SendString("\r\n");
-        UART_SendString("Informacion recibida en bits: ");
-        UART_SendString(bits);
-        UART_SendString("\r\n");
+        palabras[k]= received_data[0];
+        k++;
+        //UART_SendString("\r\n");
+        //UART_SendString("Informacion recibida en bits: ");
+        //UART_SendString(bits);
+        //UART_SendString("\r\n");
     }//}
+  if(k==20)
+  {
+	  k=0;
+  }
 
   //PWM_setDuty(50);
 }
@@ -193,7 +202,7 @@ static void ftm_cb(void* user)
 		clearReadingFlag();
 		finishedReading();
 		IC_clearBitStart();
-		gpioToggle(PORTNUM2PIN(PB,2));
+		//gpioToggle(PORTNUM2PIN(PB,2));
 	}
 	gpioToggle(PORTNUM2PIN(PB,3));
 	/*if(i == 10)
