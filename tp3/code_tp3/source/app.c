@@ -66,7 +66,6 @@ static volatile bool sending_data = false;
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
 
-void uint16_to_bin(uint16_t value, char *out, size_t out_len);
 
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR CALLBACKS
@@ -74,6 +73,8 @@ void uint16_to_bin(uint16_t value, char *out, size_t out_len);
 
 static void rx_pit_cb(void *user);
 static void dma_rx_major_cb(void *user);
+static void NCO_ISRBit(void *user);
+static void NCO_ISRLut(void *user);
 
 /*******************************************************************************
  *******************************************************************************
@@ -87,10 +88,14 @@ void App_Init (void)
     // For the error handling
     gpioMode(PIN_LED_RED, OUTPUT);
     gpioWrite(PIN_LED_RED, !LED_ACTIVE);
+    gpioMode(PIN_TP1, OUTPUT);
+    gpioWrite(PIN_TP1, LOW);
     
     UART_Init(UART_PARITY_ODD); 
-    PIT_Init();
     ADC_Init(true); // true = dma_req enable
+    NCO_InitFixed(&nco_handle, K_MARK, K_SPACE, true);
+    DAC_Init();
+    PIT_Init();
     DMA_Init();
     dma_cfg_t dma_cfg =
     {
@@ -112,7 +117,31 @@ void App_Init (void)
     DMA_Start(0);
 
     // PIT configs
-    pit_cfg_t pit_cfg =
+    pit_cfg_t pit_cfg_lut =
+        {
+            .ch = 0,
+            .load_val = PIT_TICKS_FROM_US(20),
+            .periodic = true,
+            .int_en = true,
+            .dma_req = false,
+            .callback = NCO_ISRLut,
+            .user = NULL};
+
+    PIT_Config(&pit_cfg_lut);
+
+    // pit_cfg_t pit_cfg_bit =
+    //     {
+    //         .ch = 1,
+    //         .load_val = PIT_TICKS_FROM_US(833),
+    //         .periodic = true,
+    //         .int_en = true,
+    //         .dma_req = false,
+    //         .callback = NCO_ISRBit,
+    //         .user = NULL};
+
+    // PIT_Config(&pit_cfg_bit);
+
+    pit_cfg_t pit_adc_cfg =
     {
         .ch = 0, // didnt work with ch2 (todo: check later)
         .load_val = PIT_TICKS_FROM_US(83), // 12kHz ADC sampling
@@ -122,7 +151,14 @@ void App_Init (void)
         .callback = rx_pit_cb,
         .user = NULL
     };
-    PIT_Config(&pit_cfg);
+    PIT_Config(&pit_adc_cfg);
+
+    // Inicializo los bitstreams en idle
+    for (int i = 0; i < 11; i++)
+    {
+        idle_sending_bitstream[i] = true;
+        idle_reciving_bitstream[i] = 0;
+    }
 
     // FPU enable
     SCB->CPACR |= (0xF << 20);
@@ -132,43 +168,43 @@ void App_Init (void)
 void App_Run (void)
 {
     // Tx main loop
-    UART_Poll();
-    int r = UART_ReceiveString(rx_line, sizeof(rx_line));
+    // UART_Poll();
+    // int r = UART_ReceiveString(rx_line, sizeof(rx_line));
 
-    if (r > 0)
-    {
-        // Encolar todos los caracteres recibidos en el buffer circular
-        for (int i = 0; i < r; i++)
-        {
-            size_t next_head = (tx_head + 1) % TX_BUFFER_SIZE;
+    // if (r > 0)
+    // {
+    //     // Encolar todos los caracteres recibidos en el buffer circular
+    //     for (int i = 0; i < r; i++)
+    //     {
+    //         size_t next_head = (tx_head + 1) % TX_BUFFER_SIZE;
 
-            // En un buffer circular verdadero, solo nos preocupamos si el siguiente
-            // espacio está ocupado por el tail
-            if (next_head != tx_tail)
-            {
-                tx_buffer[tx_head] = rx_line[i];
-                tx_head = next_head;
-            }
-            // Si el buffer está lleno, simplemente descartamos el carácter
-        }
+    //         // En un buffer circular verdadero, solo nos preocupamos si el siguiente
+    //         // espacio está ocupado por el tail
+    //         if (next_head != tx_tail)
+    //         {
+    //             tx_buffer[tx_head] = rx_line[i];
+    //             tx_head = next_head;
+    //         }
+    //         // Si el buffer está lleno, simplemente descartamos el carácter
+    //     }
 
-        // UART_SendString(rx_line); // Echo de lo recibido y guardado en el buffer circular
-    }
+    //     // UART_SendString(rx_line); // Echo de lo recibido y guardado en el buffer circular
+    // }
 
-    // Si no estamos enviando y hay datos en el buffer, iniciar nueva transmisión
-    if (!sending_data && tx_head != tx_tail)
-    {
-        format_bitstream(tx_buffer[tx_tail], sending_bitstream);
+    // // Si no estamos enviando y hay datos en el buffer, iniciar nueva transmisión
+    // if (!sending_data && tx_head != tx_tail)
+    // {
+    //     format_bitstream(tx_buffer[tx_tail], sending_bitstream);
 
-        // Hacer un echo del caracter realmente enviado
-        UART_SendString((char[]){tx_buffer[tx_tail], '\0'});
+    //     // Hacer un echo del caracter realmente enviado
+    //     //UART_SendString((char[]){tx_buffer[tx_tail], '\0'});
 
-        tx_tail = (tx_tail + 1) % TX_BUFFER_SIZE; // Avanzar al siguiente carácter
-        initiate_send = true;
-        sending_data = true;
-        gpioWrite(PIN_LED_RED, LED_ACTIVE);
-        gpioWrite(PIN_TP1, HIGH);
-    }
+    //     tx_tail = (tx_tail + 1) % TX_BUFFER_SIZE; // Avanzar al siguiente carácter
+    //     initiate_send = true;
+    //     sending_data = true;
+    //     gpioWrite(PIN_LED_RED, LED_ACTIVE);
+    //     gpioWrite(PIN_TP1, HIGH);
+    // }
 
     // Rx main loop
     if (rx_ready)
