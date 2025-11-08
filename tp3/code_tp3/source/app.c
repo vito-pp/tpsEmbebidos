@@ -129,17 +129,17 @@ void App_Init (void)
 
     PIT_Config(&pit_cfg_lut);
 
-    // pit_cfg_t pit_cfg_bit =
-    //     {
-    //         .ch = 1,
-    //         .load_val = PIT_TICKS_FROM_US(833),
-    //         .periodic = true,
-    //         .int_en = true,
-    //         .dma_req = false,
-    //         .callback = NCO_ISRBit,
-    //         .user = NULL};
+    pit_cfg_t pit_cfg_bit =
+        {
+            .ch = 1,
+            .load_val = PIT_TICKS_FROM_US(833),
+            .periodic = true,
+            .int_en = true,
+            .dma_req = false,
+            .callback = NCO_ISRBit,
+            .user = NULL};
 
-    // PIT_Config(&pit_cfg_bit);
+    PIT_Config(&pit_cfg_bit);
 
     pit_cfg_t pit_adc_cfg =
     {
@@ -168,43 +168,43 @@ void App_Init (void)
 void App_Run (void)
 {
     // Tx main loop
-    // UART_Poll();
-    // int r = UART_ReceiveString(rx_line, sizeof(rx_line));
+    UART_Poll();
+    int r = UART_ReceiveString(rx_line, sizeof(rx_line));
 
-    // if (r > 0)
-    // {
-    //     // Encolar todos los caracteres recibidos en el buffer circular
-    //     for (int i = 0; i < r; i++)
-    //     {
-    //         size_t next_head = (tx_head + 1) % TX_BUFFER_SIZE;
+    if (r > 0)
+    {
+        // Encolar todos los caracteres recibidos en el buffer circular
+        for (int i = 0; i < r; i++)
+        {
+            size_t next_head = (tx_head + 1) % TX_BUFFER_SIZE;
 
-    //         // En un buffer circular verdadero, solo nos preocupamos si el siguiente
-    //         // espacio está ocupado por el tail
-    //         if (next_head != tx_tail)
-    //         {
-    //             tx_buffer[tx_head] = rx_line[i];
-    //             tx_head = next_head;
-    //         }
-    //         // Si el buffer está lleno, simplemente descartamos el carácter
-    //     }
+            // En un buffer circular verdadero, solo nos preocupamos si el siguiente
+            // espacio está ocupado por el tail
+            if (next_head != tx_tail)
+            {
+                tx_buffer[tx_head] = rx_line[i];
+                tx_head = next_head;
+            }
+            // Si el buffer está lleno, simplemente descartamos el carácter
+        }
 
-    //     // UART_SendString(rx_line); // Echo de lo recibido y guardado en el buffer circular
-    // }
+        // UART_SendString(rx_line); // Echo de lo recibido y guardado en el buffer circular
+    }
 
-    // // Si no estamos enviando y hay datos en el buffer, iniciar nueva transmisión
-    // if (!sending_data && tx_head != tx_tail)
-    // {
-    //     format_bitstream(tx_buffer[tx_tail], sending_bitstream);
+    // Si no estamos enviando y hay datos en el buffer, iniciar nueva transmisión
+    if (!sending_data && tx_head != tx_tail)
+    {
+        format_bitstream(tx_buffer[tx_tail], sending_bitstream);
 
-    //     // Hacer un echo del caracter realmente enviado
-    //     //UART_SendString((char[]){tx_buffer[tx_tail], '\0'});
+        // Hacer un echo del caracter realmente enviado
+        //UART_SendString((char[]){tx_buffer[tx_tail], '\0'});
 
-    //     tx_tail = (tx_tail + 1) % TX_BUFFER_SIZE; // Avanzar al siguiente carácter
-    //     initiate_send = true;
-    //     sending_data = true;
-    //     gpioWrite(PIN_LED_RED, LED_ACTIVE);
-    //     gpioWrite(PIN_TP1, HIGH);
-    // }
+        tx_tail = (tx_tail + 1) % TX_BUFFER_SIZE; // Avanzar al siguiente carácter
+        initiate_send = true;
+        sending_data = true;
+        gpioWrite(PIN_LED_RED, LED_ACTIVE);
+        gpioWrite(PIN_TP1, HIGH);
+    }
 
     // Rx main loop
     if (rx_ready)
@@ -245,32 +245,32 @@ static void NCO_ISRBit(void* user)
 {
     (void)user; // cookie disposal
 
-    // Flag de reset de Contador de bits enviados (Redundancia para seguridad)
-    if (initiate_send)
-    {
-        cnt = 0;
-        initiate_send = false;
-    }
+    // // Flag de reset de Contador de bits enviados (Redundancia para seguridad)
+    // if (initiate_send)
+    // {
+    //     cnt = 0;
+    //     initiate_send = false;
+    // }
 
-    // Decidir si envio en idle o si envio datos
-    if (sending_data)
-    {
-        NCO_FskBit(&nco_handle, sending_bitstream[cnt]);
-    }
-    else
-    {
-        NCO_FskBit(&nco_handle, idle_sending_bitstream[cnt]);
-    }
+    // // Decidir si envio en idle o si envio datos
+    // if (sending_data)
+    // {
+    //     NCO_FskBit(&nco_handle, sending_bitstream[cnt]);
+    // }
+    // else
+    // {
+    //     NCO_FskBit(&nco_handle, idle_sending_bitstream[cnt]);
+    // }
 
-    cnt++;
-    // Se setearon cnt bits en el NCO.
-    if (cnt == 11)
-    {
-        sending_data = false;
-        gpioWrite(PIN_LED_RED, !LED_ACTIVE);
-        gpioWrite(PIN_TP1, LOW);
-        cnt = 0;
-    }
+    // cnt++;
+    // // Se setearon cnt bits en el NCO.
+    // if (cnt == 11)
+    // {
+    //     sending_data = false;
+    //     gpioWrite(PIN_LED_RED, !LED_ACTIVE);
+    //     gpioWrite(PIN_TP1, LOW);
+    //     cnt = 0;
+    // }
 }
 
 static void NCO_ISRLut(void *user)
