@@ -45,7 +45,7 @@ char deformat_bitstream(bool in[11]){
     uint8_t frame = 0;
     for (int i = 1; i < 9; ++i){
         if (in[i]){
-            frame |= (1 << i);
+            frame |= (1 << (i-1));
         }
     }
     return frame;

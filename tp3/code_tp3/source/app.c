@@ -116,9 +116,21 @@ void App_Init(void)
     DMA_Start(0);
 
     // PIT configs
+    pit_cfg_t pit_adc_cfg =
+    {
+        .ch = 0, // didnt work with ch2 (todo: check later)
+        .load_val = PIT_TICKS_FROM_US(83), // 12kHz ADC sampling
+        .periodic = true,
+        .int_en = true,
+        .dma_req = true, // PIT asserts DMA request
+        .callback = rx_pit_cb,
+        .user = NULL
+    };
+    PIT_Config(&pit_adc_cfg);
+
     pit_cfg_t pit_cfg_lut =
         {
-            .ch = 0,
+            .ch = 1,
             .load_val = PIT_TICKS_FROM_US(20),
             .periodic = true,
             .int_en = true,
@@ -130,7 +142,7 @@ void App_Init(void)
 
     pit_cfg_t pit_cfg_bit =
         {
-            .ch = 1,
+            .ch = 2,
             .load_val = PIT_TICKS_FROM_US(833),
             .periodic = true,
             .int_en = true,
@@ -139,18 +151,6 @@ void App_Init(void)
             .user = NULL};
 
     PIT_Config(&pit_cfg_bit);
-
-    pit_cfg_t pit_adc_cfg =
-    {
-        .ch = 2, // didnt work with ch2 (todo: check later)
-        .load_val = PIT_TICKS_FROM_US(83), // 12kHz ADC sampling
-        .periodic = true,
-        .int_en = true,
-        .dma_req = true, // PIT asserts DMA request
-        .callback = rx_pit_cb,
-        .user = NULL
-    };
-    PIT_Config(&pit_adc_cfg);
 
     // Inicializo los bitstreams en idle
     for (int i = 0; i < 11; i++)
