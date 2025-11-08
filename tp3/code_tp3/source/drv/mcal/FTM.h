@@ -56,6 +56,7 @@ typedef enum
 #define FTM_CH_6 6
 #define FTM_CH_7 7
 
+uint8_t NCO2PWM(uint16_t lut);
 
 double IC_getFrequency(void);
 uint8_t IC_getCounter(void);

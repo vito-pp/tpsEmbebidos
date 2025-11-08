@@ -4,14 +4,16 @@
 #include "FTM.h"
 #include "gpio.h"
 #include "PORT.H"
+#include "MK64F12.h"
+#include <stdint.h>
 
 
 
 void PWM_Init(void);
 void PWM_ISR(void);
 
-uint16_t PWM_modulus = 10000-1; // Freq = 50Meg/(16*1000) = sysclck /((pwm_modulus+1)*Prescale)
-uint16_t PWM_duty    = 1000;//5000-1;
+uint16_t PWM_modulus = 100-1; // Freq = 50Meg/(1*100) = sysclck /((pwm_modulus+1)*Prescale)
+uint16_t PWM_duty    = 50;//5000-1;
 
 static uint32_t ic_freq;
 static uint8_t ic_counter;
@@ -162,7 +164,18 @@ void PWM_setDuty(char duty)
 	FTM_SetCounter(FTM0, 0, PWM_duty);  //change DC
 }
 
+uint8_t NCO2PWM(uint16_t lut)
+{
+    const uint16_t MAX12 = (1u<<12) - 1u; // 4095
+    if (lut > MAX12)
+	{
+		lut = MAX12;         // clamp
+	}
+    // 0..4095 -> 0..99
+    return (uint8_t)(((uint32_t)lut * 100u) >> 12);
+	//return (uint8_t)(((uint32_t)lut * 99) /MAX12);
 
+}
 
 void FTM_Init (void)
 {
@@ -242,7 +255,7 @@ void PWM_Init (void)
         //FTM0_CH0 PC1
         PORTC->PCR[1]=UserPCR.PCR ;
 
-        FTM_SetPrescaler(FTM0, FTM_PSC_x16);
+        FTM_SetPrescaler(FTM0, FTM_PSC_x1);
         FTM_SetModulus(FTM0, PWM_modulus);
        // FTM_SetOverflowMode(FTM0, true);
         FTM_SetWorkingMode(FTM0, 0, FTM_mPulseWidthModulation);			// MSA  / B

@@ -1,3 +1,9 @@
+/**
+ * @file    ADC.c
+ * @brief   Driver de ADC para Kinetis (ADC0/ADC1): init, configuración de resolución/ciclos,
+ *          promedios por hardware, calibración, disparo y lectura de conversión.
+ * @note    Habilita clocks, NVIC e inicializa ADC0 por defecto. Incluye rutina de calibración.
+ */
 
 #include "ADC.h"
 
