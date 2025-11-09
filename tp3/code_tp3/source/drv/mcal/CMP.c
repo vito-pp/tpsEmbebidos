@@ -24,7 +24,7 @@ void CMP_Init(void)
     //uses vin1 (vdd)
     //DACO = (V in /64) * (VOSEL[5:0] + 1) , so the DACO range is from V in /64 to V in .
     CMP0->DACCR = CMP_DACCR_VRSEL(1) |CMP_DACCR_DACEN(1) 
-                | CMP_DACCR_VOSEL(32); //need to select comparation level
+                | CMP_DACCR_VOSEL(20); //need to select comparation level
 
     //Compares CMP0_IN1 to CMP0_IN2
     CMP0->MUXCR = CMP_MUXCR_PSEL(1) | CMP_MUXCR_MSEL(7); //2
