@@ -133,12 +133,8 @@ void App_Init (void)
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run (void)
 {
-  	UART_Poll();
 //******************Glouzao*******************************************
-	PWM_setDuty(50); //????????????
-
 	UART_Poll();
-    PWM_setDuty(50);
 
 
 
@@ -157,7 +153,7 @@ void App_Run (void)
         char bits[17];
         uint16_t frame = data_to_uart(rx_line[0]);
         uint16_to_bin(frame, bits, sizeof(bits));
-        UART_SendString("Dato Recibido: ");
+        UART_SendString("Dato enviado: ");
         UART_SendString(rx_line);
         UART_SendString("\r\n");
         UART_SendString("Informacion enviada al NCO: ");
@@ -208,7 +204,7 @@ void App_Run (void)
 		PIT_Start(2);
 		//gpioToggle(PORTNUM2PIN(PB,3));
 	}
-	bit_stream[0] +=0;
+	//bit_stream[0] +=0;
 	static char palabras[20];
 	static int k;
 	if(finishStatus())
@@ -217,22 +213,26 @@ void App_Run (void)
 		//bit_stream[0] += 0;
 
 
-
-		char received_data[1]; // placeholder
+		//bool fake[11] = {0,1,1,0,0,1,1,1,0,0,1};
+		char received_data[2]; // placeholder
+		received_data[1] = 0;
 		received_data[0] = deformat_bitstream(bit_stream);
 
 	// if (received_data != 0xFF){
 			char bits[17];
 			uint16_t frame = data_to_uart(received_data[0]);
 			uint16_to_bin(frame, bits, sizeof(bits));
-			//UART_SendString("Dato Recibido del ADC: ");
+			UART_SendString("Dato Recibido: ");
 			UART_SendString(received_data);
+			UART_SendString("\r\n");
 			palabras[k]= received_data[0];
 			k++;
 			//UART_SendString("\r\n");
 			//UART_SendString("Informacion recibida en bits: ");
 			//UART_SendString(bits);
 			//UART_SendString("\r\n");
+
+
 		}//}
 	if(k==20)
 	{
