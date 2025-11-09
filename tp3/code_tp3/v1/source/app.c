@@ -1,6 +1,7 @@
 /***************************************************************************//**
   @file     app.c
-  @brief    Main Loop definition for TP3 of Embedded Systems
+  @brief    Main Loop definition for TP3 of Embedded Systems v1
+  @authors  Grupo 1
 *******************************************************************************/
 
 /*******************************************************************************
@@ -30,35 +31,32 @@
  * DEFINES
  ******************************************************************************/
 
-#define RX_BUF_LEN 32
+#define RX_BUFFER_SIZE 32
+#define TX_BUFFER_SIZE 32
 
 /*******************************************************************************
  * FILE SCOPE VARIABLES
  ******************************************************************************/
 
-static volatile uint16_t rx_buffer[RX_BUF_LEN] __attribute__((aligned(4)));
+static uint16_t rx_buffer[RX_BUFFER_SIZE] __attribute__((aligned(4)));
 static volatile bool rx_ready = false;
 static char rx_word[2048];
 static char rx_line[2048];
 
-// Buffer circular para almacenar caracteres a transmitir
-#define TX_BUFFER_SIZE 32
+// Circular buffer for transmission data
 static char tx_buffer[TX_BUFFER_SIZE];
-static volatile size_t tx_head = 0; // Índice donde escribir próximo carácter
-static volatile size_t tx_tail = 0; // Índice del próximo carácter a enviar
+static volatile size_t tx_head = 0; 
+static volatile size_t tx_tail = 0; 
 
 static NCO_Handle nco_handle;
 
-// Bitstream de datos enviados por el DAC
+// Bitstream sent by the DAC
 static bool sending_bitstream[11];
 static bool idle_sending_bitstream[11];
 static bool idle_reciving_bitstream[11];
 
-// Bitstream de datos recibidos por el ADC
-static bool reciving_bitstream[11]; // 11?
-
 static uint16_t lut_value;
-static size_t cnt;
+static size_t bit_cnt;
 static volatile bool initiate_send = false;
 static volatile bool sending_data = false;
 
@@ -82,12 +80,13 @@ static void NCO_ISRLut(void *user);
  *******************************************************************************
  ******************************************************************************/
 
-/* Función que se llama 1 vez, al comienzo del programa */
 void App_Init(void)
 {
-    // For the error handling
+    // For the debugging and meassuring times
     gpioMode(PIN_LED_RED, OUTPUT);
     gpioWrite(PIN_LED_RED, !LED_ACTIVE);
+    gpioMode(PIN_LED_BLUE, OUTPUT);
+    gpioWrite(PIN_LED_BLUE, !LED_ACTIVE);
     gpioMode(PIN_TP1, OUTPUT);
     gpioWrite(PIN_TP1, LOW);
     gpioMode(PIN_TP2, OUTPUT);
@@ -112,9 +111,9 @@ void App_Init(void)
         .daddr = rx_buffer,
         .nbytes = 2, // 16-bit
         .soff = 0, .doff = 2,
-        .major_count = RX_BUF_LEN,
+        .major_count = RX_BUFFER_SIZE,
         .slast = 0,
-        .dlast = -(RX_BUF_LEN * 2),
+        .dlast = -(RX_BUFFER_SIZE * 2),
         .int_major = true,
         .on_major = dma_rx_major_cb,
         .user = NULL
@@ -122,14 +121,14 @@ void App_Init(void)
     DMA_Config(&dma_cfg);
     DMA_Start(0);
 
-    //use systick isr bit
+    // use systick for bit ISR
 	SysTick_Init(NCO_ISRBit, 83333); // systick isr at 1.2kHz
 
     // PIT configs
     pit_cfg_t pit_cfg_lut =
     {
         .ch = 0,
-        .load_val = PIT_TICKS_FROM_US(20),
+        .load_val = PIT_TICKS_FROM_US(20), // DAC's output refresh rate
         .periodic = true,
         .int_en = true,
         .dma_req = false,
@@ -150,18 +149,6 @@ void App_Init(void)
     };
     PIT_Config(&pit_adc_cfg);
 
-    // pit_cfg_t pit_cfg_bit =
-    // {
-    //     .ch = 2,
-    //     .load_val = PIT_TICKS_FROM_US(833),
-    //     .periodic = true,
-    //     .int_en = true,
-    //     .dma_req = false,
-    //     .callback = NCO_ISRBit,
-    //     .user = NULL
-    // };
-    // PIT_Config(&pit_cfg_bit);
-
     // Inicializo los bitstreams en idle
     for (int i = 0; i < 11; i++)
     {
@@ -173,7 +160,6 @@ void App_Init(void)
     SCB->CPACR |= (0xF << 20);
 }
 
-/* Función que se llama constantemente en un ciclo infinito */
 void App_Run(void)
 {
     // TX main loop
@@ -182,25 +168,22 @@ void App_Run(void)
 
     if (r > 0)
     {
-        // Encolar todos los caracteres recibidos en el buffer circular
+        // Queue all the recieved characters on the ring buffer
         for (int i = 0; i < r; i++)
         {
             size_t next_head = (tx_head + 1) % TX_BUFFER_SIZE;
 
-            // En un buffer circular verdadero, solo nos preocupamos si el siguiente
-            // espacio está ocupado por el tail
             if (next_head != tx_tail)
             {
                 tx_buffer[tx_head] = rx_line[i];
                 tx_head = next_head;
             }
-            // Si el buffer está lleno, simplemente descartamos el carácter
         }
 
-        // UART_SendString(rx_line); // Echo de lo recibido y guardado en el buffer circular
+        // UART_SendString(rx_line); // Echo from the recieve data
     }
 
-    // Si no estamos enviando y hay datos en el buffer, iniciar nueva transmisión
+    // If we aren't recieving data, send whats in the buffer
     if (!sending_data && tx_head != tx_tail)
     {
         format_bitstream(tx_buffer[tx_tail], sending_bitstream);
@@ -208,7 +191,7 @@ void App_Run(void)
         // Hacer un echo del caracter realmente enviado
         //UART_SendString((char[]){tx_buffer[tx_tail], '\0'});
 
-        tx_tail = (tx_tail + 1) % TX_BUFFER_SIZE; // Avanzar al siguiente carácter
+        tx_tail = (tx_tail + 1) % TX_BUFFER_SIZE; 
         initiate_send = true;
         sending_data = true;
         gpioWrite(PIN_LED_RED, LED_ACTIVE);
@@ -221,7 +204,7 @@ void App_Run(void)
     if (rx_ready)
     {
         rx_ready = false;
-        for (int i = 0; i < RX_BUF_LEN; i++)
+        for (int i = 0; i < RX_BUFFER_SIZE; i++)
         {
             float d = demodFSK(rx_buffer[i]);
             bitstreamReconstruction(d);
@@ -244,7 +227,7 @@ void App_Run(void)
 static void rx_pit_cb(void *user)
 {
     gpioWrite(PIN_TP3, HIGH);
-    ADC_Start(ADC0, 1, ADC_mA); // starts adc's conversion
+    ADC_Start(ADC0, 1, ADC_mA); // starts ADC's conversion
     gpioWrite(PIN_TP3, LOW);
 }
 
@@ -259,28 +242,28 @@ static void NCO_ISRBit(void)
     // Flag de reset de Contador de bits enviados (Redundancia para seguridad)
     if (initiate_send)
     {
-        cnt = 0;
+        bit_cnt = 0;
         initiate_send = false;
     }
 
     // Decidir si envio en idle o si envio datos
     if (sending_data)
     {
-        NCO_FskBit(&nco_handle, sending_bitstream[cnt]);
+        NCO_FskBit(&nco_handle, sending_bitstream[bit_cnt]);
     }
     else
     {
-        NCO_FskBit(&nco_handle, idle_sending_bitstream[cnt]);
+        NCO_FskBit(&nco_handle, idle_sending_bitstream[bit_cnt]);
     }
 
-    cnt++;
-    // Se setearon cnt bits en el NCO.
-    if (cnt == 11)
+    bit_cnt++;
+    // Se setearon bit_cnt bits en el NCO.
+    if (bit_cnt == 11)
     {
         sending_data = false;
         gpioWrite(PIN_LED_RED, !LED_ACTIVE);
         gpioWrite(PIN_TP1, LOW);
-        cnt = 0;
+        bit_cnt = 0;
     }
     gpioWrite(PIN_TP4, LOW);
 }
