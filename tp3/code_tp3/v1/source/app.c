@@ -55,7 +55,7 @@ static bool sending_bitstream[11];
 static bool idle_sending_bitstream[11];
 static bool idle_reciving_bitstream[11];
 
-static uint16_t lut_value;
+static volatile uint16_t lut_value;
 static size_t bit_cnt;
 static volatile bool initiate_send = false;
 static volatile bool sending_data = false;
@@ -102,9 +102,29 @@ void App_Init(void)
     DAC_Init();
     PIT_Init();
     DMA_Init();
-    dma_cfg_t dma_cfg =
+
+    dma_cfg_t dma_dac_cfg =
     {
         .ch = 0,
+        .request_src = DMA_REQ_ALWAYS63,
+        .trig_mode = true, // PIT ch0 will trigger this dma req
+        .saddr = (void*)&lut_value,
+        .daddr = (void*)&DAC0->DAT[0].DATL,
+        .nbytes = 2, // 16-bit
+        .soff = 0, .doff = 0,
+        .major_count = 1,
+        .slast = 0,
+        .dlast = 0,
+        .int_major = false,
+        .on_major = NULL,
+        .user = NULL
+    };
+    DMA_Config(&dma_dac_cfg);
+    DMA_Start(0);
+
+    dma_cfg_t dma_adc_cfg = // ToDo: implement ping pong buffer
+    {
+        .ch = 1,
         .request_src = DMA_REQ_ADC0,
         .trig_mode = false,
         .saddr = (void *)&ADC0->R[0],
@@ -118,8 +138,8 @@ void App_Init(void)
         .on_major = dma_rx_major_cb,
         .user = NULL
     };
-    DMA_Config(&dma_cfg);
-    DMA_Start(0);
+    DMA_Config(&dma_adc_cfg);
+    DMA_Start(1);
 
     // use systick for bit ISR
 	SysTick_Init(NCO_ISRBit, 83333); // systick isr at 1.2kHz
@@ -127,11 +147,11 @@ void App_Init(void)
     // PIT configs
     pit_cfg_t pit_cfg_lut =
     {
-        .ch = 0,
+        .ch = 0, // has to be the same channel as DMA channel to be triggered
         .load_val = PIT_TICKS_FROM_US(20), // DAC's output refresh rate
         .periodic = true,
         .int_en = true,
-        .dma_req = false,
+        .dma_req = true,
         .callback = NCO_ISRLut,
         .user = NULL
     };
@@ -272,6 +292,5 @@ static void NCO_ISRLut(void *user)
 {
 	gpioWrite(PIN_TP2, HIGH);
     lut_value = NCO_TickQ15(&nco_handle);
-    DAC_SetData(DAC0, lut_value);
     gpioWrite(PIN_TP2, LOW);
 }
