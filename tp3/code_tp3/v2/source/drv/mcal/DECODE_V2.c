@@ -29,15 +29,7 @@ uint8_t processBit(void)
 {
 	uint8_t bit;
 	int freq = (int) IC_getFrequency();
-	/*static int i = 0;
-	static int buffer[1000];
-	buffer[i] = freq;
-	if(i == 999)
-	{
-		i = 0;
-	}
-	i++;
-	*/
+	
 	switch(freq)
 	{
 	case 1200: bit = 1; break;
@@ -59,15 +51,5 @@ bool bitStartDetected(void)
 	//se detectó un bit start
 	//Trigger timer Tt < ~ 833 us  / (833us -  Tt)* Nbits < 833 us
 	// 833us(1-1/Nbits) < Tt < 833us
-	/*static uint8_t prev = 3;
-	uint8_t current = processBit();
-
-	if((current == 0) && (current == prev) &&  !reading) // requires 2 consecutive samples of a 0, to trigger better.
-	{
-		prev = 3;
-		return 1;
-	}
-	prev = current;
-	return 0;
-    */
+	
 }

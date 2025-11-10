@@ -1,4 +1,3 @@
-///FACULI
 
 
 #include "FTM.h"
@@ -46,17 +45,13 @@ void IC_clearCounter(void)
 }
 __ISR__ FTM3_IRQHandler(void)
 {
-	//gpioToggle(PORTNUM2PIN(PB,2));
-	//gpioToggle(PORTNUM2PIN(PB,3));
 	IC_ISR();
-	//gpioToggle(PORTNUM2PIN(PB,3));
-	//gpioToggle(PORTNUM2PIN(PB,2));
+
 }
 
 void IC_ISR(void) //FTM3 CH5 PTC9 as IC
 {
-	//gpioToggle(PORTNUM2PIN(PB,2));
-	//gpioToggle(PORTNUM2PIN(PB,3));
+	
 	static uint32_t med1,med2,med;
 	static uint8_t  state=0;
 	static int freqs[1000];
@@ -77,23 +72,14 @@ void IC_ISR(void) //FTM3 CH5 PTC9 as IC
 	int period = medision - prev_p;
 	freq = (int)(50e6/16.0)/(2.0*period);/// BusClock=sysclk/2= 50MHz
 
-	/*if(!getReadingFlag())
-	{
-		if(freq > 1600 && freq < 1800)
-		{
-			//freq = 2200;
-			gpioToggle(PORTNUM2PIN(PB,3));
-		}
-	}*/
+
 	if(freq > 1700 && freq < 3500)
 	{
-		//gpioToggle(PORTNUM2PIN(PB,3));
 		ic_freq= 2200;
 		if(prev_f == 2200)
 		{
 			bit_start++;
 		}
-		//gpioToggle(PORTNUM2PIN(PB,3));
 	}
 	else if(freq > 900 && freq< 1700)
 	{
@@ -104,52 +90,7 @@ void IC_ISR(void) //FTM3 CH5 PTC9 as IC
 	prev_f = ic_freq;
 	prev_p = medision;
 
-	/*if(state==0)
-	{
-		med1=FTM_GetCounter (FTM3, FTM_CH_5); //
-		state=1;
-	}
-	else if(state==1)
-	{
-		med2=FTM_GetCounter (FTM3, FTM_CH_5);
-		if(FTM3->SC & FTM_SC_TOF_MASK) //overflow
-		{
-			FTM_ClearOverflowFlag(FTM3);
-			if ((med2 < med1)) //ignor if med1 < med2
-			{
-				med2 += 0xFFFF;
-			}
 
-		}
-
-		med=med2-med1;
-
-		freq = (int)(50e6/16.0)/(2.0*med);/// BusClock=sysclk/2= 50MHz
-		state=0;
-
-
-
-		if(freq > 1800 && freq < 2700)
-		{
-			gpioToggle(PORTNUM2PIN(PB,3));
-			ic_freq= 2200;
-			if(prev == 2200)
-			{
-				bit_start=1;
-			}
-			gpioToggle(PORTNUM2PIN(PB,3));
-		}
-		else if(freq > 900 && freq< 1500)
-		{
-			ic_freq= 1200;
-		}
-
-		prev = ic_freq;
-	}
-
-	//gpioToggle(PORTNUM2PIN(PB,3));
-	//gpioToggle(PORTNUM2PIN(PB,2));
-*/
 }
 
 
@@ -212,16 +153,6 @@ void FTM_Init (void)
 void IC_Init (void)
 {
 	PCRstr UserPCR;
-	/*// PTC8 as GPIO
-	UserPCR.PCR=false;			// Default All false, Set only those needed
-
-	UserPCR.FIELD.DSE=true;
-	UserPCR.FIELD.MUX=PORT_mGPIO;
-	UserPCR.FIELD.IRQC=PORT_eDisabled;
-
-	PORT_Configure2 (PORTC,8,UserPCR);
-
-	GPIO_SetDirection(PTC, 8, GPIO__OUT);*/
 
 
 	// PTC9 as IC (FTM3-CH5)
@@ -235,7 +166,6 @@ void IC_Init (void)
 
 	/// BusClock=sysclk/2= 50MHz
 	/// Set prescaler = divx32 => Timer Clock = 32 x (1/BusClock)= 32x1/50MHz= 0.64 useg
-	//--- medidor
 
 	FTM_SetPrescaler(FTM3, FTM_PSC_x16);	 				// Set Prescaler = divx32
 	FTM3->CNTIN=0x0000;				  		  				// Free running

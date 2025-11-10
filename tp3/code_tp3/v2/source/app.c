@@ -159,11 +159,7 @@ void App_Init (void)
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run (void)
 {
-	/*static uint64_t index = 0;
-	 // TX main loop
-	index++;
-	if(index %1000 == 0)
-	{*/
+
     UART_Poll();
     int r = UART_ReceiveString(rx_line, sizeof(rx_line));
 
@@ -181,7 +177,6 @@ void App_Run (void)
 				}
 			}
 
-			// UART_SendString(rx_line); // Echo from the recieve data
 		}
 
 		// If we aren't recieving data, send whats in the buffer
@@ -200,77 +195,16 @@ void App_Run (void)
             initiate_send = true;
             sending_data = true;
 
-        // Hacer un echo del caracter realmente enviado
-        //UART_SendString((char[]){tx_buffer[tx_tail], '\0'});
-
-
-            //gpioWrite(PIN_LED_RED, LED_ACTIVE);
-            //gpioWrite(PIN_TP1, HIGH);
         }
 
 
     }
-//}
+
     UART_Poll();
-//******************Glouzao*******************************************
-	/*UART_Poll();
 
-    /* TX no bloqueante */
-    //if (UART_TxPending() == 0)
-    //{
-        /* Intentar encolar (puede no entrar todo a la vez) */
-        // UART_SendString("Hola mundo!\r\n");
-    //}
-    //rx_line[0]='a';
-    /* RX no bloqueante: copiar disponible hasta fin de línea o hasta llenar */
-    //int n = UART_ReceiveString(rx_line, sizeof(rx_line));
 
-    /*if (n > 0)
-    {
-        char bits[17];
-        uint16_t frame = data_to_uart(rx_line[0]);
-        uint16_to_bin(frame, bits, sizeof(bits));
-        UART_SendString("Dato enviado: ");
-        UART_SendString(rx_line);
-        UART_SendString("\r\n");
-        UART_SendString("Informacion enviada al NCO: ");
-        UART_SendString(bits);
-        UART_SendString("\r\n");
-        cnt = 0;
-        format_bitstream(rx_line[0], sending_bitstream);
-        initiate_send = true;
-        sending_data = true;
-    }
-
-    else // no data recieved
-    {
-    	if (!sending_data){
-            for (int i = 0; i < 11; i++)
-            {
-                sending_bitstream[i] = true;
-            }
-    	}
-    }
-*/
-//     char received_data[1]; // placeholder
-//     received_data[0] = deformat_bitstream(reciving_bitstream);
-//
-//     if (received_data != 0){
-//         char bits[17];
-//         uint16_t frame = data_to_uart(received_data[0]);
-//         uint16_to_bin(frame, bits, sizeof(bits));
-//         UART_SendString("Dato Recibido del ADC: ");
-//         UART_SendString(received_data);
-//         UART_SendString("\r\n");
-//         UART_SendString("Informacion recibida en bits: ");
-//         UART_SendString(bits);
-//         UART_SendString("\r\n");
-//     }
-
-//******************Glouzao*******************************************
 //--------------------------------------------------------------------
 //--------------------------------------------------------------------
-//******************FACULI********************************************
 	if (bitStartDetected())
 	{
 
@@ -301,31 +235,13 @@ void App_Run (void)
 			UART_SendString(received_data);
 		}
 
-	// if (received_data != 0xFF){
-			//char bits[17];
-			//uint16_t frame = data_to_uart(received_data[0]);
-			//uint16_to_bin(frame, bits, sizeof(bits));
-			//UART_SendString("Dato Recibido: ");
 
-			//UART_SendString("\r\n");
-			/*palabras[k]= bit_stream[1]  |bit_stream[2] << 1|
-				         bit_stream[3]<< 2 | bit_stream[4]<< 3 |
-						bit_stream[5] << 4|bit_stream[6] << 5|
-						bit_stream[7]<< 6 | bit_stream[8]<< 17; // received_data[0];
-			k++;*/
-			//UART_SendString("\r\n");
-			//UART_SendString("Informacion recibida en bits: ");
-			//UART_SendString(bits);
-			//UART_SendString("\r\n");
-
-
-		}//}
+		}
 	if(k==100)
 	{
 		k=0;
 	}
 
-	//PWM_setDuty(50);
 }
 
 /*******************************************************************************
@@ -383,7 +299,6 @@ void uint16_to_bin(uint16_t value, char *out, size_t out_len){
 
 static void NCO_ISRBit(void* user)
 {
-    //gpioWrite(PIN_TP4, HIGH);
     // Flag de reset de Contador de bits enviados (Redundancia para seguridad)
     if (initiate_send)
     {
@@ -413,20 +328,15 @@ static void NCO_ISRBit(void* user)
             last_byte_idle = false;
         }
         sending_data = false;
-        //gpioWrite(PIN_LED_RED, !LED_ACTIVE);
-        //gpioWrite(PIN_TP1, LOW);
         bit_cnt = 0;
     }
-    //gpioWrite(PIN_TP4, LOW);
 }
 
 static void NCO_ISRLut(void* user)
 {
 
     lut_value = NCO_TickQ15(&nco_handle);
-    //DAC_SetData(DAC0, lut_value);
     PWM_setDuty(NCO2PWM(lut_value));
-    //PWM_setDuty(50);
 
 }
 
@@ -436,34 +346,18 @@ static void ftm_cb(void* user)
 	gpioToggle(PORTNUM2PIN(PB,3));
 	static uint8_t cnt = 1;
 	bit_stream[cnt]  = processBit();
-/*/////////////////////////////////////////
-	static uint8_t cnt = 0;
-	static int i=0;
-	data_stream[i] = data_stream[i]<< cnt | processBit() ;
-*/////////////////////////////////////////
+
 	cnt++;
-	if (cnt == 11)//|| (bit_stream[i][cnt-1] == 2)) //bit[cnt-1 ]== 2 => error
+	if (cnt == 11)
 	{
 		PIT_Stop(2);
-		//DELAY
-		//int n = 100000;
-		//while(n--);
 		cnt = 1;
-		/////////
-		//i++;
-		//data_stream[i]= 0;
-		//cnt= 0;
-		//////////
 		clearReadingFlag();
 		finishedReading();
 		IC_clearBitStart();
 		gpioToggle(PORTNUM2PIN(PB,2));
 	}
 	gpioToggle(PORTNUM2PIN(PB,3));
-	/*if(i == 10)
-	{
-		i= 0;
-	}*/
 }
 
 bool finishStatus(void)
