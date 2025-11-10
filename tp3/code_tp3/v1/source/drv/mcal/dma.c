@@ -1,6 +1,8 @@
 #include "dma.h"
 #include "MK64F12.h"
 #include "hardware.h"
+#include "board.h"
+#include "gpio.h"
 
 static bool initialized = false;
 
@@ -142,12 +144,14 @@ static int size2code(uint8_t bytes)
 
 static void DMA_IRQHandler(uint8_t ch)
 {
+    gpioWrite(PIN_TP3, HIGH);
 	/* Clear the interrupt flag. */
 	DMA0->CINT |= DMA_CINT_CINT(ch);
 	if(dma_ch_states[ch].on_major_cb)
     {
 		dma_ch_states[ch].on_major_cb(dma_ch_states[ch].user_param);
 	}
+    gpioWrite(PIN_TP3, LOW);
 }
 
 void DMA0_IRQHandler(void){ DMA_IRQHandler(0); }
