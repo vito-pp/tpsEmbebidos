@@ -37,9 +37,8 @@
 /*******************************************************************************
  * FILE SCOPE VARIABLES
  ******************************************************************************/
-
+// Variables de recepcion de datos. Strings
 static uint16_t rx_buffer[RX_BUFFER_SIZE] __attribute__((aligned(4)));
-static volatile bool rx_ready = false;
 static char rx_word[2048];
 static char rx_line[2048];
 
@@ -54,14 +53,16 @@ static NCO_Handle nco_handle;
 static bool sending_bitstream[11];
 static bool idle_sending_bitstream[11];
 static bool idle_reciving_bitstream[11];
-
 static volatile uint16_t lut_value;
 static size_t bit_cnt;
-static volatile bool initiate_send = false;
-static volatile bool sending_data = false;
 
+
+// Miscellaneous Variables - Manejo de Estados
 static char idle_counter;
 static bool last_byte_idle;
+static volatile bool rx_ready = false;
+static volatile bool initiate_send = false;
+static volatile bool sending_data = false;
 
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
@@ -83,6 +84,7 @@ static void NCO_ISRLut(void *user);
  *******************************************************************************
  ******************************************************************************/
 
+ 
 void App_Init(void)
 {
     // For the debugging and meassuring times
@@ -209,7 +211,7 @@ void App_Run(void)
     // // If we aren't recieving data, send whats in the buffer
     if (!sending_data && tx_head != tx_tail)
     {
-        if (idle_counter == 9){
+        if (idle_counter == 20){
             last_byte_idle = true;
             idle_counter = 0;
         }

@@ -1,6 +1,21 @@
+/**
+ * @file bitstream.c
+ * @brief Archivo de implementación para el manejo de bitstreams en comunicación UART.
+ *
+ * Este archivo contiene las implementaciones de las funciones declaradas en bitstream.h,
+ * incluyendo formateo de datos a frames UART, cálculo de paridad y conversiones entre
+ * bytes y arreglos de bits.
+ */
+
 #include "bitstream.h"
 
 // Formatea un byte de datos en un bitstream con start, parity y stop bits.
+/**
+ * @brief Formatea un byte de datos en un frame UART de 11 bits.
+ *
+ * @param data El byte de datos a formatear.
+ * @return El frame UART como uint16_t.
+ */
 uint16_t data_to_uart(uint8_t data){
     // use existing parity_bit(data) function (returns bool)
     bool p = parity_bit(data);
@@ -12,7 +27,12 @@ uint16_t data_to_uart(uint8_t data){
     return frame;
 }
 
-// Calcula el bit de paridad par para un byte de datos entrante.
+/**
+ * @brief Calcula el bit de paridad par para un byte de datos entrante.
+ *
+ * @param data El byte de datos para calcular la paridad.
+ * @return true si la cantidad de 1s es par (paridad = 1), false si es impar (paridad = 0).
+ */
 bool parity_bit(const uint8_t data){
     int counter = 0;
     // Procesar el byte de datos entrante
@@ -33,14 +53,25 @@ bool parity_bit(const uint8_t data){
 //-------------------------------------------------------
 // Funcion para modificar a formato bool[11]. 
 // Modifica el arreglo original introducido en la funcion.
+/**
+ * @brief Formatea un bitstream en un arreglo de 11 bits booleanos.
+ *
+ * @param data El byte de datos a formatear.
+ * @param out Arreglo de 11 booleanos donde se almacenará el bitstream.
+ */
 void format_bitstream(uint8_t data, bool out[11]){
     uint16_t frame = data_to_uart(data);
     for (int i = 0; i < 11; ++i){
         out[i] = (frame >> i) & 1;
     }
 }
-// Funcion que deforma un arreglo de 11 bits booleanos en un byte de datos.
-// Devuelve dicho byte de datos para ser enviado al UART.
+
+/**
+ * @brief Deformatea un arreglo de 11 bits booleanos en un byte de datos.
+ *
+ * @param in Arreglo de 11 booleanos que representa el bitstream.
+ * @return El byte de datos extraído como char.
+ */
 char deformat_bitstream(bool in[11]){
     uint8_t frame = 0;
     for (int i = 1; i < 9; ++i){
@@ -50,5 +81,3 @@ char deformat_bitstream(bool in[11]){
     }
     return frame;
 }
-
-

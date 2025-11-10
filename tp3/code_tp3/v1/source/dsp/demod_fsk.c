@@ -1,3 +1,11 @@
+/**
+ * @file demod_fsk.c
+ * @brief Implementación de la demodulación FSK y reconstrucción de bitstream.
+ *
+ * Incluye procesamiento de señales con retraso, multiplicación y filtro FIR para demodular FSK.
+ * Reconstruye bits con oversampling y detección de idle/datos.
+ */
+
 #include "demod_fsk.h"
 #include "fir_coefs.h"
 
@@ -11,14 +19,42 @@
 static const uint8_t HALF_SAMPLES_BIT = SAMPLES_PER_BIT >> 1;
 static const uint16_t ADC_DC_VAL = ADC_MAX_VAL >> 1;
 
+/**
+ * @var idle
+ * @brief Flag para estado idle (esperando inicio de bit).
+ */
 static bool idle = true;
+
+/**
+ * @var data_ready
+ * @brief Flag para indicar que hay un frame UART completo listo.
+ */
 static bool data_ready;
+
+/**
+ * @var samples_per_bit_cnt
+ * @brief Contador de muestras por bit.
+ */
 static uint8_t samples_per_bit_cnt;
 
+/**
+ * @var bits_recovered
+ * @brief Arreglo para bits reconstruidos (11 bits para frame UART).
+ */
 static bool bits_recovered[UART_LEN];
+
+/**
+ * @var bit_cnt
+ * @brief Contador de bits recibidos.
+ */
 static uint8_t bit_cnt;
 
-// remember to enable FPU in main
+/**
+ * @brief Demodula una muestra ADC en formato FSK.
+ *
+ * @param adc_value Valor ADC.
+ * @return Salida demodulada.
+ */
 float demodFSK(uint16_t adc_value)
 {
     static float x[DELAY + 1] = {0};  // the FSK signal read form the ADC
@@ -50,7 +86,11 @@ float demodFSK(uint16_t adc_value)
     return d * SCALE; // scale back
 }
 
-// to be called after each ADC EOC. has to be faster than 1 / FS_ADC
+/**
+ * @brief Reconstruye el bitstream a partir de la salida del FIR.
+ *
+ * @param fir_output Salida FIR.
+ */
 void bitstreamReconstruction(float fir_output)
 {
     static uint8_t bit_democracy[3]; // oversampled bits
@@ -100,11 +140,21 @@ void bitstreamReconstruction(float fir_output)
     }
 }
 
+/**
+ * @brief Verifica si hay datos listos.
+ *
+ * @return True si listos.
+ */
 bool isDataReady(void)
 {
     return data_ready;
 }
 
+/**
+ * @brief Recupera el bitstream reconstruido.
+ *
+ * @return Puntero al bitstream.
+ */
 bool *retrieveBitstream(void)
 {
     data_ready = false;

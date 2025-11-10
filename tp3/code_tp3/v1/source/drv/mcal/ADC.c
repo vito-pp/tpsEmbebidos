@@ -1,10 +1,25 @@
+/**
+ * @file ADC.c
+ * @brief Driver de ADC para Kinetis (ADC0/ADC1): init, configuración de resolución/ciclos, promedios por hardware, calibración, disparo y lectura de conversión.
+ *
+ * Habilita clocks, NVIC e inicializa ADC0 por defecto. Incluye rutina de calibración.
+ */
+
 #include "ADC.h"
 
 #define TWO_POW_NUM_OF_CAL (1 << 4)
 
+/**
+ * @var ADC_interrupt
+ * @brief Arreglo de flags para modo de interrupción en ADC0 y ADC1.
+ */
 bool ADC_interrupt[2] = {false, false};
 
-
+/**
+ * @brief Inicializa el subsistema ADC (ADC0/ADC1) y configura ADC0 por defecto.
+ *
+ * @param dma_req True para habilitar DMA en ADC0, false para deshabilitar.
+ */
 void ADC_Init (bool dma_req)
 {
 	SIM->SCGC6 |= SIM_SCGC6_ADC0_MASK;
@@ -28,12 +43,23 @@ void ADC_Init (bool dma_req)
 	ADC_Calibrate(ADC0);
 }
 
-
+/**
+ * @brief Selecciona la resolución de conversión del ADC.
+ *
+ * @param adc ADC0 o ADC1.
+ * @param bits Modo de resolución.
+ */
 void ADC_SetResolution (ADC_t adc, ADCBits_t bits)
 {
 	adc->CFG1 = (adc->CFG1 & ~ADC_CFG1_MODE_MASK) | ADC_CFG1_MODE(bits);
 }
 
+/**
+ * @brief Configura tiempo de muestreo (ciclos) del ADC.
+ *
+ * @param adc ADC0 o ADC1.
+ * @param cycles Ciclos de muestreo.
+ */
 void ADC_SetCycles (ADC_t adc, ADCCycles_t cycles)
 {
 	if (cycles & ~ADC_CFG2_ADLSTS_MASK)
@@ -47,7 +73,12 @@ void ADC_SetCycles (ADC_t adc, ADCCycles_t cycles)
 	}
 }
 
-
+/**
+ * @brief Habilita o deshabilita el modo de interrupción por fin de conversión.
+ *
+ * @param adc ADC0 o ADC1.
+ * @param mode True para habilitar, false para deshabilitar.
+ */
 void ADC_SetInterruptMode (ADC_t adc, bool mode)
 {
 	if (adc == ADC0)
@@ -56,26 +87,45 @@ void ADC_SetInterruptMode (ADC_t adc, bool mode)
 		ADC_interrupt[1] = mode;
 }
 
+/**
+ * @brief Indica si hay fin de conversión pendiente.
+ *
+ * @param adc ADC0 o ADC1.
+ * @return True si pendiente, false caso contrario.
+ */
 bool ADC_IsInterruptPending (ADC_t adc)
 {
 	return adc->SC1[0] & ADC_SC1_COCO_MASK;
 }
 
+/**
+ * @brief Limpia el flag de interrupción.
+ *
+ * @param adc ADC0 o ADC1.
+ */
 void ADC_ClearInterruptFlag (ADC_t adc)
 {
 	adc->SC1[0] = 0x00;
 }
 
-
-
+/**
+ * @brief Obtiene la resolución configurada del ADC.
+ *
+ * @param adc ADC0 o ADC1.
+ * @return Resolución actual.
+ */
 ADCBits_t ADC_GetResolution (ADC_t adc)
 {
 	return adc->CFG1 & ADC_CFG1_MODE_MASK;
 }
 
-
-
-ADCCycles_t ADC_GetSCycles (ADC_t adc)
+/**
+ * @brief Retorna la configuración de ciclos de muestreo vigente.
+ *
+ * @param adc ADC0 o ADC1.
+ * @return Ciclos actuales.
+ */
+ADCCycles_t ADC_GetCycles (ADC_t adc)
 {
 	if (adc->CFG1 & ADC_CFG1_ADLSMP_MASK)
 		return ADC_c4;
@@ -83,6 +133,12 @@ ADCCycles_t ADC_GetSCycles (ADC_t adc)
 		return adc->CFG2 & ADC_CFG2_ADLSTS_MASK;
 }
 
+/**
+ * @brief Configura promediado por hardware del ADC.
+ *
+ * @param adc ADC0 o ADC1.
+ * @param taps Número de muestras a promediar.
+ */
 void ADC_SetHardwareAverage (ADC_t adc, ADCTaps_t taps)
 {
 	if (taps & ~ADC_SC3_AVGS_MASK)
@@ -95,6 +151,13 @@ void ADC_SetHardwareAverage (ADC_t adc, ADCTaps_t taps)
 		adc->SC3 = (adc->SC3 & ~ADC_SC3_AVGS_MASK) | ADC_SC3_AVGS(taps);
 	}
 }
+
+/**
+ * @brief Consulta la configuración de promediado por hardware.
+ *
+ * @param adc ADC0 o ADC1.
+ * @return Configuración actual de taps.
+ */
 ADCTaps_t ADC_GetHardwareAverage (ADC_t adc)
 {
 	if (adc->SC3 & ADC_SC3_AVGE_MASK)
@@ -103,6 +166,12 @@ ADCTaps_t ADC_GetHardwareAverage (ADC_t adc)
 		return adc->SC3 & ADC_SC3_AVGS_MASK;
 }
 
+/**
+ * @brief Ejecuta rutina de calibración del ADC.
+ *
+ * @param adc ADC0 o ADC1.
+ * @return True si exitosa, false si error.
+ */
 bool ADC_Calibrate (ADC_t adc)
 {
 	int32_t  Offset		= 0;
@@ -179,6 +248,13 @@ bool ADC_Calibrate (ADC_t adc)
 	return true;
 }
 
+/**
+ * @brief Dispara una conversión en el canal indicado.
+ *
+ * @param adc ADC0 o ADC1.
+ * @param channel Canal a convertir.
+ * @param mux MUX a seleccionar.
+ */
 void ADC_Start (ADC_t adc, ADCChannel_t channel, ADCMux_t mux)
 {
 	adc->CFG2 = (adc->CFG2 & ~ADC_CFG2_MUXSEL_MASK) | ADC_CFG2_MUXSEL(mux);
@@ -189,11 +265,23 @@ void ADC_Start (ADC_t adc, ADCChannel_t channel, ADCMux_t mux)
 		adc->SC1[0] = ADC_SC1_AIEN(ADC_interrupt[1]) | ADC_SC1_ADCH(channel);
 }
 
+/**
+ * @brief Consulta si la conversión en curso finalizó.
+ *
+ * @param adc ADC0 o ADC1.
+ * @return True si lista, false caso contrario.
+ */
 bool ADC_IsReady (ADC_t adc)
 {
 	return adc->SC1[0] & ADC_SC1_COCO_MASK;
 }
 
+/**
+ * @brief Lee el dato convertido.
+ *
+ * @param adc ADC0 o ADC1.
+ * @return Dato convertido.
+ */
 ADCData_t ADC_getData (ADC_t adc)
 {
 	return adc->R[0];

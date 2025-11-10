@@ -1,3 +1,12 @@
+/**
+ * @file UART_strings.h
+ * @brief Archivo de cabecera para el manejo abstracto de cadenas en UART.
+ *
+ * Este archivo proporciona funciones para el manejo no bloqueante de transmisión y recepción
+ * de cadenas a través de UART, utilizando buffers circulares para TX y RX. Define tamaños de buffers
+ * y funciones para polling, envío y recepción de strings.
+ */
+
 #ifndef UART_ABSTRACT_H_
 #define UART_ABSTRACT_H_
 
@@ -8,10 +17,18 @@
 
 /* Ajustá los tamaños según tu caso de uso */
 #ifndef UART_TX_BUF_SIZE
+/**
+ * @def UART_TX_BUF_SIZE
+ * @brief Tamaño del buffer circular para transmisión (TX) en bytes (2048 por defecto).
+ */
 #define UART_TX_BUF_SIZE 2048
 #endif
 
 #ifndef UART_RX_BUF_SIZE
+/**
+ * @def UART_RX_BUF_SIZE
+ * @brief Tamaño del buffer circular para recepción (RX) en bytes (2048 por defecto).
+ */
 #define UART_RX_BUF_SIZE 2048
 #endif
 

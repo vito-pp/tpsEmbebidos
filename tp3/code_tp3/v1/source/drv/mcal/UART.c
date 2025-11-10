@@ -1,8 +1,19 @@
+/**
+ * @file UART.c
+ * @brief Implementación del driver de UART para Kinetis.
+ *
+ * Incluye inicialización de UARTs, configuración de baudrate y paridad,
+ * y funciones básicas para envío y recepción de datos individuales.
+ */
+
 #include "hardware.h"
 #include "UART.h"
 
-
-
+/**
+ * @brief Inicializa el UART con paridad especificada.
+ *
+ * @param parity Paridad (ver uart_parity_t).
+ */
 void UART_Init (char parity)
 {
 
@@ -46,6 +57,12 @@ void UART_Init (char parity)
 
 }
 
+/**
+ * @brief Configura la paridad para un UART específico.
+ *
+ * @param uart UART a configurar.
+ * @param parity Tipo de paridad.
+ */
 void UART_SetParity(UART_Type *uart, uart_parity_t parity) {
     /* poner formato 9‑bit si se usa paridad */
     if (parity == UART_PARITY_NONE) {
@@ -59,8 +76,12 @@ void UART_SetParity(UART_Type *uart, uart_parity_t parity) {
     uart->BDH &= ~UART_BDH_SBNS_MASK; // 1 stop
 }
 
-
-
+/**
+ * @brief Configura el baudrate para un UART específico.
+ *
+ * @param uart UART a configurar.
+ * @param baudrate Baudrate deseado.
+ */
 void UART_SetBaudRate (UART_Type *uart, uint32_t baudrate)
 {
 	uint16_t sbr, brfa;
@@ -79,8 +100,11 @@ void UART_SetBaudRate (UART_Type *uart, uint32_t baudrate)
 	uart->C4 = (uart->C4 & ~UART_C4_BRFA_MASK) | UART_C4_BRFA(brfa);
 }
 
-
-
+/**
+ * @brief Envía un byte de datos por UART0.
+ *
+ * @param txdata Byte a enviar.
+ */
 void UART_Send_Data(unsigned char txdata)
 {
 	if(((UART0->S1) & UART_S1_TDRE_MASK) != 0)
@@ -89,6 +113,11 @@ void UART_Send_Data(unsigned char txdata)
 	}
 }
 
+/**
+ * @brief Recibe un byte de datos por UART0.
+ *
+ * @return Byte recibido.
+ */
 unsigned char UART_Recieve_Data(void)
 {
     uint8_t s1 = UART0->S1;
@@ -101,4 +130,3 @@ unsigned char UART_Recieve_Data(void)
     }
     return 0;                            // no hay dato disponible
 }
-

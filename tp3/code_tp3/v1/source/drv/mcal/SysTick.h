@@ -1,8 +1,11 @@
-/***************************************************************************//**
-  @file     SysTick.h
-  @brief    SysTick driver
-  @author   Nicolas Magliola
- ******************************************************************************/
+/**
+ * @file SysTick.h
+ * @brief Archivo de cabecera para el driver del SysTick.
+ *
+ * Este driver proporciona funcionalidad para inicializar y manejar el temporizador SysTick
+ * en el microcontrolador, permitiendo configurar una función de callback que se ejecuta
+ * periódicamente según un conteo especificado.
+ */
 
 #ifndef _SYSTICK_H_
 #define _SYSTICK_H_
@@ -18,6 +21,10 @@
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
 
+/**
+ * @def SYSTICK_ISR_FREQUENCY_HZ
+ * @brief Frecuencia de interrupción del SysTick en Hz (2000 Hz por defecto).
+ */
 #define SYSTICK_ISR_FREQUENCY_HZ 2000U
 
 /*******************************************************************************
@@ -33,21 +40,22 @@
  ******************************************************************************/
 
 /**
- * @brief Initialize SysTic driver
- * @param funcallback Function to be called every SysTick
- * @param count Counter number which will be decreased @ 100 MHz.
- *        So to get, e.g., 8 Hz (125 ms) count = 12'500'000. 
- *        f_systick = 100 MHz / count
- *        Count is nonnegative and cant be bigger than 
- *        2^(25)-1 = 33'554'431, which equals f_systick = 2.98 Hz
- * @return Initialization and registration succeed. funcallback = NULL or 
- * invalid count returns false
+ * @brief Inicializa el driver del SysTick.
+ *
+ * Configura el SysTick con un conteo específico y registra una función de callback
+ * que se llamará en cada interrupción del SysTick.
+ *
+ * @param funcallback Función a llamar en cada interrupción del SysTick.
+ * @param count Valor de conteo para el temporizador (debe ser positivo y no exceder 2^25 - 1).
+ *              La frecuencia del SysTick es 100 MHz / count.
+ * @return True si la inicialización y registro son exitosos, false si funcallback es NULL o count es inválido.
  */
 bool SysTick_Init(void (*funcallback)(void), uint32_t count);
 
 /**
- * @brief Gets the current value of the SysTick counter register
- * @return Value of the counter
+ * @brief Obtiene el valor actual del registro de conteo del SysTick.
+ *
+ * @return Valor actual del contador del SysTick.
  */
 uint32_t getValue_SysTick(void);
 

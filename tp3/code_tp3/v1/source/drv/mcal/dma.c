@@ -1,21 +1,56 @@
+/**
+ * @file dma.c
+ * @brief Implementación del driver de DMA para Kinetis.
+ *
+ * Incluye inicialización, configuración de canales, manejo de interrupciones y funciones auxiliares.
+ */
+
 #include "dma.h"
 #include "MK64F12.h"
 #include "hardware.h"
 
+/**
+ * @var initialized
+ * @brief Flag para indicar si el DMA ya fue inicializado.
+ */
 static bool initialized = false;
 
+/**
+ * @brief Estructura de estado para cada canal DMA.
+ */
 typedef struct 
 {
-    dma_cb_t on_major_cb;
-    void *user_param;
-    bool active;
+    dma_cb_t on_major_cb;   /**< Callback para interrupción mayor. */
+    void *user_param;       /**< Parámetro de usuario. */
+    bool active;            /**< Flag de activo. */
 } dma_state_t;
 
+/**
+ * @var dma_ch_states
+ * @brief Arreglo de estados para los 16 canales DMA.
+ */
 static dma_state_t dma_ch_states[DMA_NUM_CH];
 
+/**
+ * @brief Convierte tamaño en bytes a código para ATTR (SSIZE/DSIZE).
+ *
+ * @param bytes Tamaño en bytes (1,2,4).
+ * @return Código correspondiente, -1 si inválido.
+ */
 static int size2code(uint8_t bytes);
+
+/**
+ * @brief Manejador genérico de interrupción DMA para un canal.
+ *
+ * @param ch Canal DMA.
+ */
 static void DMA_IRQHandler(uint8_t ch);
 
+/**
+ * @brief Inicializa el DMA.
+ *
+ * @return 0 si éxito, -1 si ya inicializado.
+ */
 int DMA_Init(void)
 {
     if (initialized) return -1;
@@ -36,6 +71,12 @@ int DMA_Init(void)
     return 0;
 }
 
+/**
+ * @brief Configura un canal DMA.
+ *
+ * @param cfg Configuración del canal.
+ * @return 0 si éxito, <0 si error.
+ */
 int DMA_Config(const dma_cfg_t *cfg)
 {
     // Validate
@@ -104,6 +145,12 @@ int DMA_Config(const dma_cfg_t *cfg)
     return 0;
 }
 
+/**
+ * @brief Inicia un canal DMA.
+ *
+ * @param ch Canal a iniciar.
+ * @return 0 si éxito, <0 si error.
+ */
 int DMA_Start(uint8_t ch)
 {
     if (!initialized) return -4;
@@ -118,6 +165,12 @@ int DMA_Start(uint8_t ch)
     return 0;
 }
 
+/**
+ * @brief Detiene un canal DMA.
+ *
+ * @param ch Canal a detener.
+ * @return 0 si éxito, <0 si error.
+ */
 int DMA_Stop(uint8_t ch)
 {
     if (!initialized) return -4;
@@ -150,6 +203,9 @@ static void DMA_IRQHandler(uint8_t ch)
 	}
 }
 
+/**
+ * @brief Manejadores de interrupción para canales DMA 0-15.
+ */
 void DMA0_IRQHandler(void){ DMA_IRQHandler(0); }
 void DMA1_IRQHandler(void){ DMA_IRQHandler(1); }
 void DMA2_IRQHandler(void){ DMA_IRQHandler(2); }

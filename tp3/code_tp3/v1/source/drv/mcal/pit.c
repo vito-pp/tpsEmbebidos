@@ -1,6 +1,9 @@
-/*======================================================================
- *  Includes
- *====================================================================*/
+/**
+ * @file pit.c
+ * @brief Implementación del driver del Temporizador de Interrupción Periódica (PIT).
+ *
+ * Incluye inicialización, configuración de canales, manejo de interrupciones y funciones auxiliares.
+ */
 
 #include <stddef.h>
 #include "MK64F12.h"
@@ -10,13 +13,25 @@
  *  Static variables
  *====================================================================*/
 
+/**
+ * @var g_callbacks
+ * @brief Arreglo de callbacks por canal del PIT.
+ */
 static pit_cb_t  g_callbacks[PIT_CHANNELS] = {NULL};
+
+/**
+ * @var g_users
+ * @brief Arreglo de datos de usuario por canal del PIT.
+ */
 static void     *g_users[PIT_CHANNELS]     = {NULL};
 
 /*======================================================================
  *  Global Functions
  *====================================================================*/
 
+/**
+ * @brief Inicializa el PIT globalmente.
+ */
 void PIT_Init(void)
 {
     /* 1. Enable clock for PIT */
@@ -29,6 +44,12 @@ void PIT_Init(void)
     NVIC_EnableIRQ(PIT0_IRQn);
 }
 
+/**
+ * @brief Configura un canal del PIT.
+ *
+ * @param cfg Configuración del canal.
+ * @return True si éxito, false si error.
+ */
 bool PIT_Config(const pit_cfg_t *cfg)
 {
     if (cfg == NULL || cfg->ch >= PIT_CHANNELS || cfg->load_val == 0) 
@@ -75,6 +96,12 @@ bool PIT_Config(const pit_cfg_t *cfg)
     return true;
 }
 
+/**
+ * @brief Inicia un canal del PIT.
+ *
+ * @param ch Canal.
+ * @return True si éxito, false si error.
+ */
 bool PIT_Start(pit_ch_e ch)
 {
     if (ch >= PIT_CHANNELS) return false;
@@ -82,6 +109,12 @@ bool PIT_Start(pit_ch_e ch)
     return true;
 }
 
+/**
+ * @brief Detiene un canal del PIT.
+ *
+ * @param ch Canal.
+ * @return True si éxito, false si error.
+ */
 bool PIT_Stop(pit_ch_e ch)
 {
     if (ch >= PIT_CHANNELS) return false;
@@ -89,6 +122,13 @@ bool PIT_Stop(pit_ch_e ch)
     return true;
 }
 
+/**
+ * @brief Establece un nuevo valor de carga.
+ *
+ * @param ch Canal.
+ * @param new_load Nuevo valor.
+ * @return True si éxito, false si error.
+ */
 bool PIT_SetLoad(pit_ch_e ch, uint32_t new_load)
 {
     if (ch >= PIT_CHANNELS || new_load == 0) return false;
@@ -101,6 +141,12 @@ bool PIT_SetLoad(pit_ch_e ch, uint32_t new_load)
     return true;
 }
 
+/**
+ * @brief Obtiene el conteo actual de un canal.
+ *
+ * @param ch Canal.
+ * @return Conteo actual.
+ */
 uint32_t PIT_GetCount(pit_ch_e ch)
 {
     if (ch >= PIT_CHANNELS) return true;
@@ -111,6 +157,11 @@ uint32_t PIT_GetCount(pit_ch_e ch)
  *  ISR Handlers
  *====================================================================*/
 
+/**
+ * @brief Manejador de ISR para un canal del PIT.
+ *
+ * @param ch Canal.
+ */
 static void pit_isr_handler(uint8_t ch)
 {
     /* Clear flag */
@@ -123,6 +174,9 @@ static void pit_isr_handler(uint8_t ch)
     }
 }
 
+/**
+ * @brief Manejador de interrupción para PIT0 (maneja todos los canales).
+ */
 void PIT0_IRQHandler(void) 
 {
     int i;
