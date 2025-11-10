@@ -12,6 +12,7 @@
 
 void setReadingFlag(void);
 void clearReadingFlag(void);
+bool getReadingFlag(void);
 uint8_t processBit(void);
 bool bitStartDetected(void);
 

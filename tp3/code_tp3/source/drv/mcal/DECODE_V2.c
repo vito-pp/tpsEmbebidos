@@ -20,6 +20,10 @@ void setReadingFlag(void)
 {
 	reading = 1;
 }
+bool getReadingFlag(void)
+{
+	return reading;
+}
 //Returns 2 if error
 uint8_t processBit(void)
 {
@@ -46,7 +50,7 @@ uint8_t processBit(void)
 
 bool bitStartDetected(void)
 {
-	if((IC_getBitStart()>1) && !reading)
+	if((IC_getBitStart()==2) && !reading)
 	{
 		IC_clearBitStart();
 		return 1;

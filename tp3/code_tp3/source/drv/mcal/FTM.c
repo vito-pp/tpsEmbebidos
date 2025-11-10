@@ -6,6 +6,7 @@
 #include "PORT.H"
 #include "MK64F12.h"
 #include <stdint.h>
+#include "drv/mcal/DECODE_V2.h"
 
 
 
@@ -76,7 +77,15 @@ void IC_ISR(void) //FTM3 CH5 PTC9 as IC
 	int period = medision - prev_p;
 	freq = (int)(50e6/16.0)/(2.0*period);/// BusClock=sysclk/2= 50MHz
 
-	if(freq > 1800 && freq < 3000)
+	/*if(!getReadingFlag())
+	{
+		if(freq > 1600 && freq < 1800)
+		{
+			//freq = 2200;
+			gpioToggle(PORTNUM2PIN(PB,3));
+		}
+	}*/
+	if(freq > 1700 && freq < 3500)
 	{
 		//gpioToggle(PORTNUM2PIN(PB,3));
 		ic_freq= 2200;
@@ -86,7 +95,7 @@ void IC_ISR(void) //FTM3 CH5 PTC9 as IC
 		}
 		//gpioToggle(PORTNUM2PIN(PB,3));
 	}
-	else if(freq > 900 && freq< 1800)
+	else if(freq > 900 && freq< 1700)
 	{
 		ic_freq= 1200;
 		bit_start = 0;
