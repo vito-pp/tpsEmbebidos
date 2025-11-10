@@ -32,7 +32,7 @@
  ******************************************************************************/
 
 #define RX_BUFFER_SIZE 32
-#define TX_BUFFER_SIZE 32
+#define TX_BUFFER_SIZE 2048
 
 /*******************************************************************************
  * FILE SCOPE VARIABLES
@@ -59,6 +59,9 @@ static volatile uint16_t lut_value;
 static size_t bit_cnt;
 static volatile bool initiate_send = false;
 static volatile bool sending_data = false;
+
+static char idle_counter;
+static bool last_byte_idle;
 
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
@@ -203,22 +206,29 @@ void App_Run(void)
         // UART_SendString(rx_line); // Echo from the recieve data
     }
 
-    // If we aren't recieving data, send whats in the buffer
+    // // If we aren't recieving data, send whats in the buffer
     if (!sending_data && tx_head != tx_tail)
     {
-        format_bitstream(tx_buffer[tx_tail], sending_bitstream);
+        if (idle_counter == 9){
+            last_byte_idle = true;
+            idle_counter = 0;
+        }
+
+        if (last_byte_idle)
+        {
+            format_bitstream(tx_buffer[tx_tail], sending_bitstream);
+            tx_tail = (tx_tail + 1) % TX_BUFFER_SIZE;
+
+            initiate_send = true;
+            sending_data = true;
 
         // Hacer un echo del caracter realmente enviado
         //UART_SendString((char[]){tx_buffer[tx_tail], '\0'});
-
-        tx_tail = (tx_tail + 1) % TX_BUFFER_SIZE; 
-        initiate_send = true;
-        sending_data = true;
-        gpioWrite(PIN_LED_RED, LED_ACTIVE);
-        gpioWrite(PIN_TP1, HIGH);
+            gpioWrite(PIN_LED_RED, LED_ACTIVE);
+            gpioWrite(PIN_TP1, HIGH);
+        }
     }
     UART_Poll();
-
 
     // RX main loop
     if (rx_ready)
@@ -258,7 +268,7 @@ static void dma_rx_major_cb(void *user)
 
 static void NCO_ISRBit(void)
 {
-	gpioWrite(PIN_TP4, HIGH);
+    gpioWrite(PIN_TP4, HIGH);
     // Flag de reset de Contador de bits enviados (Redundancia para seguridad)
     if (initiate_send)
     {
@@ -273,13 +283,22 @@ static void NCO_ISRBit(void)
     }
     else
     {
+
         NCO_FskBit(&nco_handle, idle_sending_bitstream[bit_cnt]);
+        if (!last_byte_idle)
+        {
+            idle_counter++;
+        }
     }
 
     bit_cnt++;
     // Se setearon bit_cnt bits en el NCO.
     if (bit_cnt == 11)
     {
+        if (sending_data)
+        {
+            last_byte_idle = false;
+        }
         sending_data = false;
         gpioWrite(PIN_LED_RED, !LED_ACTIVE);
         gpioWrite(PIN_TP1, LOW);
