@@ -296,7 +296,7 @@ void App_Run (void)
 		//received_data[1] = 0;
 		//bool bit_stream1[] = {0,1,1,0,1,0,1,1,0,0,1};
 		received_data[0] = deformat_bitstream(bit_stream);
-		if(1)//validateBitStream(bit_stream))
+		if(validateBitStream(bit_stream))
 		{
 			UART_SendString(received_data);
 		}
