@@ -1,21 +1,18 @@
 # --- Project ---
-PROJECT_NAME           = "TP3 for Embedded Systems"
-PROJECT_BRIEF          = "FSK Modem: v1 and v2"
+PROJECT_NAME           = "TP3 for Embedded Systems: v1"
+PROJECT_BRIEF          = "FSK Modem: Transmission and generation of FSK signal (Bell 202 coded) and reception using a FIR filter"
 OUTPUT_DIRECTORY       = docs
 OPTIMIZE_OUTPUT_FOR_C  = YES
 JAVADOC_AUTOBRIEF      = YES
 TAB_SIZE               = 4
 
 # --- Inputs (your layout) ---
-INPUT                  = source SDK/CMSIS
+INPUT                  = source
 RECURSIVE              = YES
-FILE_PATTERNS          = *.h *.c *.hpp *.hh *.md *.dox
+FILE_PATTERNS          = *.h *.c
 EXCLUDE                = Debug
 EXCLUDE_PATTERNS       = */Debug/* *.launch
 EXCLUDE_SYMLINKS       = YES
-
-# If you don't want CMSIS in the docs, comment SDK/CMSIS above or add:
-# EXCLUDE += SDK
 
 # --- Preprocessing (handles macros/includes) ---
 ENABLE_PREPROCESSING   = YES
@@ -43,7 +40,7 @@ CALLER_GRAPH           = YES
 # --- Output ---
 GENERATE_HTML          = YES
 HTML_OUTPUT            = html
-GENERATE_LATEX         = YES
+GENERATE_LATEX         = NO
 GENERATE_TREEVIEW      = YES
 USE_MDFILE_AS_MAINPAGE = README.md     # if you have one
 MARKDOWN_SUPPORT       = YES
