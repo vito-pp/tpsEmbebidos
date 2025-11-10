@@ -1,10 +1,10 @@
 /**
- * @file    ADC.c
- * @brief   Driver de ADC para Kinetis (ADC0/ADC1): init, configuración de 
- * resolución/ciclos, promedios por hardware, calibración, disparo y lectura de 
- * conversión.
- * @note    Habilita clocks, NVIC e inicializa ADC0 por defecto. Incluye rutina 
- * de calibración.
+ * @file ADC.h
+ * @brief ADC driver for Kinetis (ADC0/ADC1): init, resolution/cycles config, 
+ * hardware averaging, calibration, trigger and read.
+ *
+ * Enables clocks and NVIC and initializes ADC0 by default. Includes 
+ * calibration routine.
  */
 
 #ifndef SOURCES_TEMPLATE_ADC_H_
@@ -15,34 +15,34 @@
 
 typedef enum
 {
-	ADC_b8,
-	ADC_b12,
-	ADC_b10,
-	ADC_b16,
+    ADC_b8,
+    ADC_b12,
+    ADC_b10,
+    ADC_b16,
 } ADCBits_t;
 
 typedef enum
 {
-	ADC_c24,
-	ADC_c16,
-	ADC_c10,
-	ADC_c6,
-	ADC_c4,
+    ADC_c24,
+    ADC_c16,
+    ADC_c10,
+    ADC_c6,
+    ADC_c4,
 } ADCCycles_t;
 
 typedef enum
 {
-	ADC_t4,
-	ADC_t8,
-	ADC_t16,
-	ADC_t32,
-	ADC_t1,
+    ADC_t4,
+    ADC_t8,
+    ADC_t16,
+    ADC_t32,
+    ADC_t1,
 } ADCTaps_t;
 
 typedef enum
 {
-	ADC_mA,
-	ADC_mB,
+    ADC_mA,
+    ADC_mB,
 } ADCMux_t;
 
 typedef ADC_Type *ADC_t;
@@ -50,130 +50,156 @@ typedef uint8_t ADCChannel_t; /* Channel 0-23 */
 typedef uint16_t ADCData_t;
 
 /**
- * @brief   Inicializa el subsistema ADC (ADC0/ADC1) y configura ADC0 por defecto.
+ * @brief Initialize the ADC subsystem (ADC0/ADC1) and configure ADC0 by 
+ * default.
  *
- * - Habilita clocks a ADC0 y ADC1.
- * - Habilita interrupciones en NVIC.
- * - Ajusta prescaler/config base (CFG1).
- * - Setea resolución y ciclos de muestreo de ADC0.
- * - Ejecuta calibración de ADC0.
+ * - Enables clocks for ADC0 and ADC1.
+ * - Enables NVIC interrupts for ADC.
+ * - Configures prescaler / base settings (CFG1).
+ * - Sets ADC0 resolution and sample cycles.
+ * - Performs ADC0 calibration.
  *
- * @post    ADC0 queda listo para convertir con la resolución/ciclos elegidos.
+ * @post ADC0 is ready to perform conversions with the selected resolution/
+ * cycles.
+ *
+ * @param dma_req  true to enable DMA request mode during init, false otherwise.
  */
 void 		ADC_Init 			   (bool dma_req);
+
 /**
- * @brief   Habilita o deshabilita el modo de interrupción por fin de conversión para un ADC.
- * @param   adc    ADC0/ADC1.
- * @param   mode   true para habilitar interrupción, false para deshabilitar.
- * @note    Actualiza un flag interno usado al disparar conversiones (SC1.AIEN).
+ * @brief Enable or disable end-of-conversion interrupt mode for an ADC.
+ *
+ * @param adc   ADC0 or ADC1 peripheral pointer.
+ * @param mode  true to enable interrupt, false to disable.
+ *
+ * @note Updates an internal flag used when starting conversions (SC1.AIEN).
  */
 void 		ADC_SetInterruptMode   (ADC_t, bool);
 
 /**
- * @brief   Indica si hay fin de conversión pendiente (COCO=1) en el canal 0.
- * @param   adc   ADC0/ADC1.
- * @return  true si COCO está en 1, false caso contrario.
- * @note    Lee SC1[0] y evalúa el bit COCO.
+ * @brief Check whether an end-of-conversion interrupt is pending (COCO=1) on 
+ * SC1[0].
+ *
+ * @param adc  ADC0 or ADC1 peripheral pointer.
+ * @return true if COCO==1, false otherwise.
+ *
+ * @note Reads SC1[0] and evaluates the COCO bit.
  */
 bool 		ADC_IsInterruptPending (ADC_t);
 
 /**
- * @brief   Limpia el flag de conversión completada en SC1[0].
- * @param   adc   ADC0/ADC1.
- * @note    Escribe SC1[0] para limpiar COCO según el manual de referencia.
+ * @brief Clear the conversion-complete flag for SC1[0].
+ *
+ * @param adc  ADC0 or ADC1 peripheral pointer.
+ *
+ * @note Writes SC1[0] to clear COCO as described in the reference manual.
  */
 void 		ADC_ClearInterruptFlag (ADC_t);
 
 /**
- * @brief   Selecciona la resolución de conversión del ADC (8/10/12/16 bits, según SoC).
- * @param   adc   Puntero al periférico ADC (ADC0 o ADC1).
- * @param   bits  Modo de resolución (enum ADCBits_t).
- * @note    Actualiza el campo MODE de CFG1.
+ * @brief Set the ADC conversion resolution (8/10/12/16 bits, as supported by 
+ * the SoC).
+ *
+ * @param adc   ADC0 or ADC1 peripheral pointer.
+ * @param bits  Resolution mode (enum ADCBits_t).
+ *
+ * @note Updates the MODE field in CFG1.
  */
 void 		ADC_SetResolution 	   (ADC_t, ADCBits_t);
 
-
 /**
- * @brief   Obtiene la resolución configurada del ADC.
- * @param   adc   ADC0/ADC1.
- * @return  Valor del campo MODE de CFG1 (enum ADCBits_t).
+ * @brief Get the currently configured ADC resolution.
+ *
+ * @param adc  ADC0 or ADC1 peripheral pointer.
+ * @return ADCBits_t Current MODE field value from CFG1.
  */
 ADCBits_t 	ADC_GetResolution 	   (ADC_t);
 
 /**
- * @brief   Configura tiempo de muestreo (ciclos) del ADC.
- * @param   adc     ADC0/ADC1.
- * @param   cycles  Selección de ciclos (enum ADCCycles_t).
- * @details Si el valor requiere modo de muestreo largo, habilita ADLSMP y programa ADLSTS.
- *          Caso contrario, deshabilita muestreo largo.
+ * @brief Configure ADC sample time (number of cycles).
+ *
+ * @param adc     ADC0 or ADC1 peripheral pointer.
+ * @param cycles  Sample cycles selection (enum ADCCycles_t).
+ *
+ * @details If the selected value requires long sampling, enable ADLSMP and set ADLSTS.
+ *          Otherwise disable long sampling.
  */
 void 		ADC_SetCycles	 	   (ADC_t, ADCCycles_t);
 
 /**
- * @brief   Retorna la configuración de ciclos de muestreo vigente.
- * @param   adc   ADC0/ADC1.
- * @return  ADCCycles_t correspondiente a la configuración actual (muestreo corto/largo).
- * @note    Si ADLSMP=1 devuelve ADC_c4 (muestreo largo); de lo contrario, usa ADLSTS.
+ * @brief Return the active sample cycles configuration.
+ *
+ * @param adc  ADC0 or ADC1 peripheral pointer.
+ * @return ADCCycles_t Corresponding to the current sample time configuration.
+ *
+ * @note If ADLSMP==1 returns ADC_c4 (long sample); otherwise uses ADLSTS to determine cycles.
  */
-
 ADCCycles_t ADC_GetCycles	 	   (ADC_t);
 
 /**
- * @brief   Configura promediado por hardware del ADC.
- * @param   adc   ADC0/ADC1.
- * @param   taps  Cantidad de muestras a promediar (enum ADCTaps_t).
- * @details Si @p taps no es válido, deshabilita el promedio (AVGE=0).
- *          Caso contrario, habilita AVGE y programa AVGS.
+ * @brief Configure hardware averaging for the ADC.
+ *
+ * @param adc   ADC0 or ADC1 peripheral pointer.
+ * @param taps  Number of samples to average (enum ADCTaps_t).
+ *
+ * @details If @p taps is invalid, hardware averaging is disabled (AVGE=0).
+ *          Otherwise AVGE is enabled and AVGS is programmed accordingly.
  */
 void 		ADC_SetHardwareAverage (ADC_t, ADCTaps_t);
 
 /**
- * @brief   Consulta si el promediado por hardware está activo y su configuración.
- * @param   adc   ADC0/ADC1.
- * @return  Si AVGE=1 devuelve ADC_t1 (indicando promedio activo),
- *          si no, devuelve AVGS (taps configurados).
+ * @brief Query whether hardware averaging is active and its configuration.
+ *
+ * @param adc  ADC0 or ADC1 peripheral pointer.
+ * @return ADCTaps_t If AVGE==1 returns the configured taps value; otherwise 
+ * returns ADC_t1 indicating averaging disabled.
  */
 ADCTaps_t   ADC_GetHardwareAverage (ADC_t);
 
 /**
- * @brief   Ejecuta rutina de calibración del ADC.
+ * @brief Perform ADC calibration routine.
  *
- * @param   adc   ADC0/ADC1.
- * @return  true si la calibración finaliza sin errores; false si se detecta CALF.
+ * @param adc  ADC0 or ADC1 peripheral pointer.
+ * @return true if calibration completes without errors; false if CALF 
+ * (calibration failed) is detected.
  *
  * @details
- * - Realiza una calibración inicial y verifica CALF.
- * - Calcula PG/MG en base a sumatoria de coeficientes (CLPx/CLMx).
- * - Ejecuta iteraciones adicionales (2^4) para refinar OFS/ganancias.
- * - Restaura SC3 original al finalizar.
+ * - Runs the calibration sequence and checks the CALF flag.
+ * - Computes PG/MG from the sum of calibration coefficients (CLPx/CLMx).
+ * - Performs additional iterations (2^4) to refine OFS/gain values.
+ * - Restores original SC3 on completion.
  *
- * @post    PG, MG, OFS y coeficientes CLP/CLM* quedan actualizados
+ * @post PG, MG, OFS and calibration coefficients CLP/CLM* are updated.
  */
 bool 		ADC_Calibrate 		   (ADC_t);
 
 /**
- * @brief   Dispara una conversión en el canal indicado.
- * @param   adc      ADC0/ADC1.
- * @param   channel  Canal a convertir (enum ADCChannel_t).
- * @param   mux      Selección del MUX (enum ADCMux_t).
- * @note    Ajusta MUXSEL (CFG2) y escribe SC1[0] con ADCH y AIEN (según flag interno).
+ * @brief Trigger a conversion on the specified channel.
+ *
+ * @param adc      ADC0 or ADC1 peripheral pointer.
+ * @param channel  Channel to convert (ADCChannel_t).
+ * @param mux      Mux selection (ADCMux_t).
+ *
+ * @note Adjusts MUXSEL (CFG2) and writes SC1[0] with ADCH and AIEN according 
+ * to internal interrupt flag.
  */
 void 		ADC_Start 			   (ADC_t, ADCChannel_t, ADCMux_t);
 
-
 /**
- * @brief   Consulta si la conversión en curso finalizó (COCO=1).
- * @param   adc   ADC0/ADC1.
- * @return  true si COCO=1; false en caso contrario.
+ * @brief Check if the current conversion has finished (COCO==1).
+ *
+ * @param adc  ADC0 or ADC1 peripheral pointer.
+ * @return true if COCO==1, false otherwise.
  */
 bool 		ADC_IsReady 	       (ADC_t);
 
-
 /**
- * @brief   Lee el dato convertido del resultado R[0].
- * @param   adc   ADC0/ADC1.
- * @return  Muestra convertida (tipo ADCData_t).
- * @note    Debe llamarse luego de que COCO indique fin de conversión.
+ * @brief Read the converted result from R[0].
+ *
+ * @param adc  ADC0 or ADC1 peripheral pointer.
+ * @return ADCData_t Converted sample.
+ *
+ * @note Must be called after COCO indicates conversion completion.
  */
 ADCData_t 	ADC_getData 		   (ADC_t);
 

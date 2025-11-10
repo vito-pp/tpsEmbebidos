@@ -1,3 +1,8 @@
+/**
+ * @file dma.h
+ * @brief DMA (eDMA/DMAMUX) driver public API and configuration types.
+ */
+
 #ifndef _DMA_H_
 #define _DMA_H_
 

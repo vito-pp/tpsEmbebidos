@@ -1,6 +1,6 @@
 # --- Project ---
 PROJECT_NAME           = "TP3 for Embedded Systems"
-PROJECT_BRIEF          = "FSK Modem: v1 and v2"
+PROJECT_BRIEF          = "FSK Modem: v1"
 OUTPUT_DIRECTORY       = docs
 OPTIMIZE_OUTPUT_FOR_C  = YES
 JAVADOC_AUTOBRIEF      = YES

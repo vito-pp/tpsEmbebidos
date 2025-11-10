@@ -1,6 +1,6 @@
-/*======================================================================
- *  pit.h
- *  Periodic Interrupt Timer driver for Kinetis K64 (MK64F12)
+/**
+ * @file pit.h
+ * @brief Periodic Interrupt Timer driver for Kinetis K64 (MK64F12)
  *
  *  - 4 independent channels (PIT_CH0 … PIT_CH3)
  *  - 32-bit down-counter, bus-clock source (@ 50 MHz on FRDM K64F)
@@ -8,8 +8,7 @@
  *  - One-shot or periodic mode
  *  - Optional DMA request on timeout
  *  - Callback per channel (major interrupt)
- *
- *======================================================================*/
+ */
 
 #ifndef _PIT_H_
 #define _PIT_H_

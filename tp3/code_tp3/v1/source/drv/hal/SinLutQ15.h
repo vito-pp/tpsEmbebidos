@@ -3,12 +3,12 @@
 
 #include <stdint.h>
 
-#define LUT_BITS (8u) // 256 puntos por defecto
+#define LUT_BITS (8u) // 256 points
 #define LUT_SIZE (1u << LUT_BITS)
 
-// LUT de seno Q15: SINE_Q15[k] = round( sin(2π k / 256) * 32767 )
-// Nota: "static const" para evitar múltiples definiciones al incluir este header
-static const uint16_t SINE_Q15[LUT_SIZE] = {
+// Sine LUT Q15: SINE_Q15[k] = round( sin(2pi k / 256) * 32767 )
+static const uint16_t SINE_Q15[LUT_SIZE] = 
+{
 2048, 2098, 2148, 2198, 2248, 2298, 2348, 2398, 2447, 2496, 2545, 2594, 2642, 2690, 2737, 2784,
 2831, 2877, 2923, 2968, 3013, 3057, 3100, 3143, 3185, 3226, 3267, 3307, 3346, 3385, 3423, 3459,
 3495, 3530, 3565, 3598, 3630, 3662, 3692, 3722, 3750, 3777, 3804, 3829, 3853, 3876, 3898, 3919,
