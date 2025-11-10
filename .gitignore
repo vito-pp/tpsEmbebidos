@@ -17,3 +17,6 @@ Release/
 # Virtual Enviroments
 .venv/
 venv/
+
+# Doxygen output
+docs/
