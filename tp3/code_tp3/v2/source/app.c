@@ -182,7 +182,7 @@ void App_Run (void)
 		// If we aren't recieving data, send whats in the buffer
 		if (!sending_data && tx_head != tx_tail)
     {
-        if (idle_counter == 20){
+        if (idle_counter == 4){
             last_byte_idle = true;
             idle_counter = 0;
         }
@@ -208,7 +208,7 @@ void App_Run (void)
 	if (bitStartDetected())
 	{
 
-		gpioToggle(PORTNUM2PIN(PB,2));
+
 		setReadingFlag();
 		clearFinished();
 		//gpioToggle(PORTNUM2PIN(PB,3));
@@ -343,7 +343,7 @@ static void NCO_ISRLut(void* user)
 
 static void ftm_cb(void* user)
 {
-	gpioToggle(PORTNUM2PIN(PB,3));
+	//gpioToggle(PORTNUM2PIN(PB,3));
 	static uint8_t cnt = 1;
 	bit_stream[cnt]  = processBit();
 
@@ -355,9 +355,9 @@ static void ftm_cb(void* user)
 		clearReadingFlag();
 		finishedReading();
 		IC_clearBitStart();
-		gpioToggle(PORTNUM2PIN(PB,2));
+		//gpioToggle(PORTNUM2PIN(PB,2));
 	}
-	gpioToggle(PORTNUM2PIN(PB,3));
+	//gpioToggle(PORTNUM2PIN(PB,3));
 }
 
 bool finishStatus(void)
