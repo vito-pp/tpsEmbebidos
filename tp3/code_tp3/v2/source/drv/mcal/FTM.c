@@ -45,7 +45,9 @@ void IC_clearCounter(void)
 }
 __ISR__ FTM3_IRQHandler(void)
 {
+	//gpioToggle(PORTNUM2PIN(PB,2));
 	IC_ISR();
+	//gpioToggle(PORTNUM2PIN(PB,2));
 
 }
 

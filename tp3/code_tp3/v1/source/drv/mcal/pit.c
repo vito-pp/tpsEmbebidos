@@ -8,6 +8,8 @@
 #include <stddef.h>
 #include "MK64F12.h"
 #include "pit.h"
+#include "board.h"
+#include "gpio.h"
 
 /*======================================================================
  *  Static variables
@@ -179,6 +181,7 @@ static void pit_isr_handler(uint8_t ch)
  */
 void PIT0_IRQHandler(void) 
 {
+    gpioWrite(PIN_TP2, HIGH);
     int i;
     for (i = 0; i < PIT_CHANNELS; i++)
     {
@@ -186,7 +189,8 @@ void PIT0_IRQHandler(void)
         {
             pit_isr_handler(i);
         }
-    }  
+    }
+    gpioWrite(PIN_TP2, LOW);  
 }
 // no existen en el Kinetis :^(
 // void PIT1_IRQHandler(void) { pit_isr_handler(1); }

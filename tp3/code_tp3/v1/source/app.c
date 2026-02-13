@@ -211,7 +211,11 @@ void App_Run(void)
     // // If we aren't recieving data, send whats in the buffer
     if (!sending_data && tx_head != tx_tail)
     {
+<<<<<<< HEAD
         if (idle_counter == 20){
+=======
+        if (idle_counter == 4){
+>>>>>>> 7bb88c13bd4e796cc1c6cd59c516845ae8321edb
             last_byte_idle = true;
             idle_counter = 0;
         }
@@ -258,9 +262,9 @@ void App_Run(void)
 
 static void rx_pit_cb(void *user)
 {
-    gpioWrite(PIN_TP3, HIGH);
+    //gpioWrite(PIN_TP3, HIGH);
     ADC_Start(ADC0, 1, ADC_mA); // starts ADC's conversion
-    gpioWrite(PIN_TP3, LOW);
+    //gpioWrite(PIN_TP3, LOW);
 }
 
 static void dma_rx_major_cb(void *user)
@@ -270,7 +274,7 @@ static void dma_rx_major_cb(void *user)
 
 static void NCO_ISRBit(void)
 {
-    gpioWrite(PIN_TP4, HIGH);
+    //gpioWrite(PIN_TP4, HIGH);
     // Flag de reset de Contador de bits enviados (Redundancia para seguridad)
     if (initiate_send)
     {
@@ -306,12 +310,12 @@ static void NCO_ISRBit(void)
         gpioWrite(PIN_TP1, LOW);
         bit_cnt = 0;
     }
-    gpioWrite(PIN_TP4, LOW);
+    //gpioWrite(PIN_TP4, LOW);
 }
 
 static void NCO_ISRLut(void *user)
 {
-	gpioWrite(PIN_TP2, HIGH);
+	//gpioWrite(PIN_TP2, HIGH);
     lut_value = NCO_TickQ15(&nco_handle);
-    gpioWrite(PIN_TP2, LOW);
+    //gpioWrite(PIN_TP2, LOW);
 }
