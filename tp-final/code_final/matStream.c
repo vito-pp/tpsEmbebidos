@@ -16,8 +16,8 @@ uint32_t current_bit;
 
 //CNV values to achieve desiredduty cycle
 //cambiar por macros parametrizadas definidas en ftm.h
-#define LOGICAL_1   200
-#define LOGICAL_0   300
+#define LOGICAL_1   DC2CNV(25)
+#define LOGICAL_0   DC2CNV(35)
 #define RESET 0
 
 void dispBus_init(void)

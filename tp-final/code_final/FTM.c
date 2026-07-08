@@ -12,7 +12,7 @@
 void PWM_Init(void);
 void PWM_ISR(void);
 
-uint16_t PWM_modulus = 500-1; // Freq = 50Meg/(1*100) = sysclck /((pwm_modulus+1)*Prescale)
+uint16_t PWM_modulus = PWM_MOD; 
 uint16_t PWM_duty    = 50;//5000-1;
 
 static uint32_t ic_freq;

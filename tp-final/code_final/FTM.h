@@ -56,6 +56,9 @@ typedef enum
 #define FTM_CH_6 6
 #define FTM_CH_7 7
 
+#define PWM_MOD (500-1) // Freq = 50Meg/(1*100) = sysclck /((pwm_modulus+1)*Prescale)
+#define DC2CNV(x) (PWM_MOD * (x)/100.0)
+
 uint8_t NCO2PWM(uint16_t lut);
 
 double IC_getFrequency(void);
