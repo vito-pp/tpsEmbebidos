@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 typedef struct{
     uint8_t red;
@@ -11,6 +12,6 @@ typedef struct{
 } led_t;
 
 
-int displayMatrix(led_t * leds, size_t n);
+int displayMatrix(char * colour, uint8_t intensity ,size_t n);
 
 #endif

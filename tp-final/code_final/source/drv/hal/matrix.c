@@ -1,5 +1,5 @@
 #include "matrix.h"
-#include "matStream.h"
+#include "../mcal/matStream.h"
 
 
 //capaz se puede cambiar por  estructura para mas versatilidad... char*

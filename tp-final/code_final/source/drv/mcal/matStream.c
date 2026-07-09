@@ -7,7 +7,7 @@ Every 1.25us it should be updated with next bit value.
 */
 
 
-void updateDisplay(void);
+
 
 uint8_t duty_cycles[1537]; //64*24+1 local array containing the data that should
                     //be send to display (%DC) + extr a byte to indicate reset (0%DC)
@@ -18,11 +18,11 @@ uint32_t current_bit;
 //cambiar por macros parametrizadas definidas en ftm.h
 #define LOGICAL_1   DC2CNV(25)
 #define LOGICAL_0   DC2CNV(35)
-#define RESET 0
+#define LOGICAL_RESET 0
 
 void dispBus_init(void)
 {
-    FTM_init();
+    FTM_Init();
     //config dma source and stop
 }
 
@@ -31,6 +31,7 @@ void dispBus_init(void)
 
 void updateDisplay(void)
 {
+    
     return; //enable dma request
 }
 void loadDisplay(uint32_t * word, size_t n)

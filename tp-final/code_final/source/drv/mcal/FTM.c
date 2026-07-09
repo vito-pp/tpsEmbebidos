@@ -215,6 +215,12 @@ void FTM_SetPrescaler (FTM_t ftm, FTM_Prescal_t data)
 {
 	ftm->SC = (ftm->SC & ~FTM_SC_PS_MASK) | FTM_SC_PS(data);
 }
+/*
+void FTM_SetSscaler (FTM_t ftm, FTM_Prescal_t data)
+{
+	ftm->SC = (ftm->SC & ~FTM_SC_PS_MASK) | FTM_SC_PS(data);
+}
+*/
 
 void FTM_SetModulus (FTM_t ftm, FTMData_t data)
 {
