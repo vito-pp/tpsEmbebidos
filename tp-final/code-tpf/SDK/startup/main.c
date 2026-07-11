@@ -4,23 +4,31 @@
   @author   Nicolás Magliola
  ******************************************************************************/
 
+#include <os.h>
+
 #include "hardware.h"
-#include <stdio.h>
+#include "rtos/app_main_task.h"
 
-
-
-void App_Init (void);
-void App_Run (void);
-//#include "fsl_debug_console.h"
-
-
-
-int main (void)
+int main(void)
 {
+    OS_ERR err;
+
     hw_Init();
     hw_DisableInterrupts();
-    App_Init(); /* Program-specific setup */
-    hw_EnableInterrupts();
-    __FOREVER__
-      App_Run(); /* Program-specific loop  */
+
+    OSInit(&err);
+    if (err != OS_ERR_NONE) {
+        while (1) {
+        }
+    }
+
+    AppMainTask_Create();
+
+    OSStart(&err);
+
+    while (1) {
+        /*
+         * Should never reach this point.
+         */
+    }
 }

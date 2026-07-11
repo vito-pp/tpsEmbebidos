@@ -5,6 +5,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <os.h>
 #include "hardware.h"
 
 #include "gpio.h"
@@ -31,9 +32,17 @@ bool SysTick_Init (void (*funcallback)(void), uint32_t count)
     return true;
 }
 
-__ISR__ SysTick_Handler (void)
+void SysTick_Handler (void)
 {
-    cb();
+    OSIntEnter();
+
+    OSTimeTick();
+
+    if (cb != NULL) {
+        cb();
+    }
+
+    OSIntExit();
 }
 
 uint32_t getValue_SysTick(void)
