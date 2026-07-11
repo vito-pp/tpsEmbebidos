@@ -31,7 +31,7 @@ int displayMatrix(char * colour, uint8_t intensity ,size_t n)
     }
 
     loadDisplay(word, n);
-    updateDisplay();
+    WS2812_Update();
 
     //delay?
 

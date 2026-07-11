@@ -26,6 +26,9 @@
 #include "drv/mcal/DECODE_V2.h"
 #include "drv/mcal/bitstream.h"
 #include "drv/mcal/matStream.h"
+#include "drv/hal/matrix.h"
+
+extern uint8_t sendingDMA;
 
 /* Función que se llama 1 vez, al comienzo del programa */
 void App_Init (void)
@@ -40,10 +43,12 @@ void App_Init (void)
     gpioWrite(PIN_LED_RED, !LED_ACTIVE);
 	gpioMode(PORTNUM2PIN(PB,2), OUTPUT);
 	gpioWrite(PORTNUM2PIN(PB,2), 0);
+
 	gpioMode(PORTNUM2PIN(PB,3), OUTPUT);
 	gpioWrite(PORTNUM2PIN(PB,3), 0);
 
-	DMA_Start(0);
+
+	//DMA_Start(0);
 
 }
 
@@ -53,8 +58,25 @@ void App_Run (void)
 	static unsigned long int i = 0;
 	//DMA0->SSRT = DMA_SSRT_SSRT(0);
 	//FTM0->CONTROLS[0].CnSC &= ~FTM_CnSC_CHF_MASK;
-	int n = DMA0->HRS;
-	int l = DMA0->TCD[0].CITER_ELINKNO;
+	char display[64] = {
+		    'g','g','g','g','g','g','g','g',
+		    'r','r','r','r','r','r','r','r',
+		    'b','b','b','b','b','b','b','b',
+		    'g','g','g','g','g','g','g','g',
+		    'r','r','r','r','r','r','r','r',
+		    'b','b','b','b','b','b','b','b',
+		    'g','g','g','g','g','g','g','g',
+		    'r','r','r','r','r','r','r','r'
+		    };
+	if(!sendingDMA)
+	{
+		displayMatrix(display,7,sizeof(display));
+		gpioWrite(PORTNUM2PIN(PB,3), 1);
+	}
+
+	//gpioToggle(PORTNUM2PIN(PB,3));
+	//WS2812_Update();
+
 	//PWM_setDuty(50);
 	/*if(i %2)
 	{

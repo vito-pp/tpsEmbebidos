@@ -68,10 +68,13 @@ int DMA_Config(const dma_cfg_t *cfg)
 	DMA0->TCD[ch].SOFF =cfg->soff;
 	DMA0->TCD[ch].DOFF =cfg->doff;
 
-	/* Set source and destination data transfer size is 1 byte. */
-	DMA0->TCD[ch].ATTR = DMA_ATTR_SSIZE(size2code(cfg->elem_size)) 
-                        |DMA_ATTR_DSIZE(size2code(cfg->elem_size));
+	/* Set source and destination data transfer size to 16 bits (CnV is 2 bytes wide). */
+	DMA0->TCD[0].ATTR = DMA_ATTR_SSIZE(1) | DMA_ATTR_DSIZE(1);
+	//////////jacoby
 
+	/*DMA0->TCD[ch].ATTR = DMA_ATTR_SSIZE(size2code(cfg->elem_size))
+                        |DMA_ATTR_DSIZE(size2code(cfg->elem_size));
+	*/
 	/*Number of bytes to be transfered in each service request of the channel.*/
 	DMA0->TCD[ch].NBYTES_MLNO= cfg->elem_size;
 
@@ -91,6 +94,8 @@ int DMA_Config(const dma_cfg_t *cfg)
     {
 	    DMA0->TCD[ch].CSR = DMA_CSR_INTMAJOR_MASK;	//Enable Major Interrupt.
     }
+    //dani
+    DMA0->ERQ = DMA_ERQ_ERQ0_MASK;
 
     return 0;
 }
