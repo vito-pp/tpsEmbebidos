@@ -147,8 +147,10 @@ void FTM_Init (void)
 	FTM2->PWMLOAD = FTM_PWMLOAD_LDOK_MASK | 0x0F;
 	FTM3->PWMLOAD = FTM_PWMLOAD_LDOK_MASK | 0x0F;
 
+	DMA_Init();
 	PWM_Init();
 	IC_Init();
+	
 }
 
 
@@ -202,6 +204,7 @@ void PWM_Init (void)
         FTM_SetWorkingMode(FTM0, 0, FTM_mPulseWidthModulation);			// MSA  / B
         FTM_SetPulseWidthModulationLogic(FTM0, 0, FTM_lAssertedHigh);   // ELSA / B
         FTM_SetCounter(FTM0, 0, PWM_duty);
+		FTM_EnableDMA(FTM0, 0); 						//Enables DMA transfers
         FTM_StartClock(FTM0);
 
 }
@@ -326,5 +329,11 @@ bool FTM_IsInterruptPending (FTM_t ftm, FTMChannel_t channel)
 void FTM_ClearInterruptFlag (FTM_t ftm, FTMChannel_t channel)
 {
 	ftm->CONTROLS[channel].CnSC &= ~FTM_CnSC_CHF_MASK;
+}
+
+//Added
+void FTM_EnableDMA (FTM_t ftm, FTMChannel_t channel)
+{
+	ftm->CONTROLS[channel].CnSC |= FTM_CnSC_DMA_MASK;
 }
 

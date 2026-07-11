@@ -1,7 +1,7 @@
 #include "matrix.h"
 #include "../mcal/matStream.h"
 
-
+void updateDisplay(void);
 //capaz se puede cambiar por  estructura para mas versatilidad... char*
 // la intensidad e Z ^ [0,7]
 //max intensity = 7.
