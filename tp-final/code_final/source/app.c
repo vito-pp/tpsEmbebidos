@@ -7,6 +7,7 @@
  * INCLUDE HEADER FILES
  ******************************************************************************/
 
+#include <drv/mcal/dma.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdbool.h>
@@ -18,13 +19,13 @@
 #include "drv/mcal/SysTick.h"
 #include "drv/mcal/UART_strings.h"
 #include "drv/mcal/UART.h"
-#include "drv/mcal/dma.h"
 #include "drv/mcal/FTM.h"
 #include "drv/mcal/CMP.h"
 #include "drv/mcal/pit.h"
 #include "drv/mcal/DAC.h"
 #include "drv/mcal/DECODE_V2.h"
 #include "drv/mcal/bitstream.h"
+#include "drv/mcal/matStream.h"
 
 /* Función que se llama 1 vez, al comienzo del programa */
 void App_Init (void)
@@ -32,7 +33,8 @@ void App_Init (void)
 	CMP_Init();
 	FTM_Init();
 
-	PIT_Init();
+	//PIT_Init();
+	dispBus_init();
 
 	gpioMode(PIN_LED_RED, OUTPUT);
     gpioWrite(PIN_LED_RED, !LED_ACTIVE);
@@ -41,20 +43,27 @@ void App_Init (void)
 	gpioMode(PORTNUM2PIN(PB,3), OUTPUT);
 	gpioWrite(PORTNUM2PIN(PB,3), 0);
 
+	DMA_Start(0);
+
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run (void)
 {
-	static int i = 0;
-	if(i %2)
+	static unsigned long int i = 0;
+	//DMA0->SSRT = DMA_SSRT_SSRT(0);
+	//FTM0->CONTROLS[0].CnSC &= ~FTM_CnSC_CHF_MASK;
+	int n = DMA0->HRS;
+	int l = DMA0->TCD[0].CITER_ELINKNO;
+	//PWM_setDuty(50);
+	/*if(i %2)
 	{
 		PWM_setDuty(36); //32
 	}
 	else
 	{
-		PWM_setDuty(68);//64);
-	}
+		//PWM_setDuty(68);//64);
+	*/
 	i++;
 
 }

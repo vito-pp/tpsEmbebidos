@@ -6,6 +6,9 @@
 
 #define DMA_NUM_CH 16
 
+#define FTM_DMA_ON  1
+#define FTM_DMA_OFF 0
+
 typedef enum
 {
     /* 0–9: UART0..UART3 */

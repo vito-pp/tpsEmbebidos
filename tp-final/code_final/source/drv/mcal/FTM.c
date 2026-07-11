@@ -3,6 +3,7 @@
 #include "FTM.h"
 #include "gpio.h"
 #include "PORT.H"
+#include "dma.h"
 #include "MK64F12.h"
 #include <stdint.h>
 #include "drv/mcal/DECODE_V2.h"
@@ -13,7 +14,7 @@ void PWM_Init(void);
 void PWM_ISR(void);
 
 uint16_t PWM_modulus = PWM_MOD; 
-uint16_t PWM_duty    = 50;//5000-1;
+uint16_t PWM_duty    = PWM_MOD/2.0;//5000-1;
 
 static uint32_t ic_freq;
 static uint8_t ic_counter;
@@ -149,7 +150,7 @@ void FTM_Init (void)
 
 	DMA_Init();
 	PWM_Init();
-	IC_Init();
+	//IC_Init();
 	
 }
 
@@ -199,12 +200,20 @@ void PWM_Init (void)
         PORTC->PCR[1]=UserPCR.PCR ;
 
         FTM_SetPrescaler(FTM0, FTM_PSC_x1);
+
+        FTM_SetInterruptMode (FTM0,FTM_CH_0, true);
+
+        FTM_SetWorkingMode(FTM0, 0, FTM_mPulseWidthModulation);			// MSA  / B
+
+        FTM_SetPulseWidthModulationLogic(FTM0, 0, FTM_lAssertedHigh);   // ELSA / B
+
         FTM_SetModulus(FTM0, PWM_modulus);
        // FTM_SetOverflowMode(FTM0, true);
-        FTM_SetWorkingMode(FTM0, 0, FTM_mPulseWidthModulation);			// MSA  / B
-        FTM_SetPulseWidthModulationLogic(FTM0, 0, FTM_lAssertedHigh);   // ELSA / B
+
         FTM_SetCounter(FTM0, 0, PWM_duty);
-		FTM_EnableDMA(FTM0, 0); 						//Enables DMA transfers
+
+        FTM_DmaMode (FTM0,FTM_CH_0,FTM_DMA_ON); // DMA ON
+
         FTM_StartClock(FTM0);
 
 }
@@ -332,8 +341,8 @@ void FTM_ClearInterruptFlag (FTM_t ftm, FTMChannel_t channel)
 }
 
 //Added
-void FTM_EnableDMA (FTM_t ftm, FTMChannel_t channel)
+void FTM_DmaMode (FTM_t ftm, FTMChannel_t channel, bool dma_mode)
 {
-	ftm->CONTROLS[channel].CnSC |= FTM_CnSC_DMA_MASK;
+	ftm->CONTROLS[channel].CnSC = (ftm->CONTROLS[channel].CnSC & ~(FTM_CnSC_DMA_MASK)) |
+			                      (FTM_CnSC_DMA(dma_mode));
 }
-

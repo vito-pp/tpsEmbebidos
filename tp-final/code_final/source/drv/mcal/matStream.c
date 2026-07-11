@@ -1,6 +1,9 @@
 #include "matStream.h"
 #include "FTM.h"
 #include <stdint.h>
+#include "MK64F12.h"
+#include "hardware.h"
+#include"dma.h"
 
 
 
@@ -23,15 +26,24 @@ uint32_t current_bit;
 
 void WS2812_Update(void);
 void WS2812_FrameDone(void);
+
 void WS2812_FrameDone(void)
 {
     // Se terminó de transmitir todo el buffer
-    DMA_Stop();
+	static int i = 0;
+	DMA0->CINT |= 0;
+	i++;
+    //DMA_Stop(0);
 }
 void dispBus_init(void)
 {
     FTM_Init();
-    DMA_Init(); 
+    DMA_Init();
+
+    for(uint32_t i = 0; i < DUTY_BUFFER_SIZE; i++)
+    {
+    	duty_cycles[i] = (i % 2 == 0) ? 100: 0;
+    }
     //config dma source and stop
 
     dma_cfg_t cfg;
@@ -47,10 +59,11 @@ void dispBus_init(void)
     cfg.slast        = - (int32_t)(DUTY_BUFFER_SIZE * 2);   // back to begining
     cfg.dlast        = 0;                              // fixed adress
     cfg.int_major    = true;  
-    cfg.on_major = WS2812_FrameDone;   // <-- callback
+    cfg.on_major = (void*) WS2812_FrameDone;   // <-- callback
     cfg.user = NULL;
 
     DMA_Config(&cfg);
+    DMA_Start(0);
 }
 
 void WS2812_Update(void)
@@ -69,7 +82,7 @@ void WS2812_Update(void)
     cfg.slast        = - (int32_t)(DUTY_BUFFER_SIZE * 2);   // back to begining
     cfg.dlast        = 0;                              // fixed adress
     cfg.int_major    = true;  
-    cfg.on_major = WS2812_FrameDone;   // <-- callback
+    cfg.on_major = (void*) WS2812_FrameDone;   // <-- callback
     cfg.user = NULL;
     DMA_Config(&cfg);
 
