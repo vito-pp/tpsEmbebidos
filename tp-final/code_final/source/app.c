@@ -55,40 +55,27 @@ void App_Init (void)
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run (void)
 {
-	static unsigned long int i = 0;
 	//DMA0->SSRT = DMA_SSRT_SSRT(0);
 	//FTM0->CONTROLS[0].CnSC &= ~FTM_CnSC_CHF_MASK;
 	char display[64] = {
-		    'g','g','g','g','g','g','g','g',
-		    'r','r','r','r','r','r','r','r',
-		    'b','b','b','b','b','b','b','b',
-		    'g','g','g','g','g','g','g','g',
-		    'r','r','r','r','r','r','r','r',
-		    'b','b','b','b','b','b','b','b',
-		    'g','g','g','g','g','g','g','g',
-		    'r','r','r','r','r','r','r','r'
+		    'g','r','g','r','r','g','r','g',
+		    'r','b','r','r','r','r','r','r',
+			'r','b','b','r','r','r','r','r',
+		    'g','r','b','b','r','r','r','g',
+			'g','r','r','b','b','r','r','g',
+		    'g','g','r','r','b','b','g','g',
+		    'g','g','g','r','r','b','g','g',
+			'g','g','g','r','r','g','g','g'
 		    };
 	if(!sendingDMA)
 	{
-		displayMatrix(display,7,sizeof(display));
 		gpioWrite(PORTNUM2PIN(PB,3), 1);
-	}
+		displayMatrix(display,1,sizeof(display));
 
-	//gpioToggle(PORTNUM2PIN(PB,3));
-	//WS2812_Update();
-
-	//PWM_setDuty(50);
-	/*if(i %2)
-	{
-		PWM_setDuty(36); //32
 	}
-	else
-	{
-		//PWM_setDuty(68);//64);
-	*/
-	i++;
 
 }
+
 
 /*******************************************************************************
  *******************************************************************************

@@ -38,9 +38,11 @@ void WS2812_FrameDone(void)
 	i++;
 
     DMA_Stop(0);
-    sendingDMA =0;
-    gpioWrite(PORTNUM2PIN(PB,3), 0);
     PWM_setDuty(0);
+
+    gpioWrite(PORTNUM2PIN(PB,3), 0);
+    
+    sendingDMA = 0;
 }
 void dispBus_init(void)
 {
