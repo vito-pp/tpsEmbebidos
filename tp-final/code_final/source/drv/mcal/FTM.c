@@ -14,7 +14,7 @@ void PWM_Init(void);
 void PWM_ISR(void);
 
 uint16_t PWM_modulus = PWM_MOD; 
-uint16_t PWM_duty    = PWM_MOD/2.0;//5000-1;
+uint16_t PWM_duty    = DC2CNV(2);//5000-1;
 
 static uint32_t ic_freq;
 static uint8_t ic_counter;

@@ -27,6 +27,7 @@
 #include "drv/mcal/bitstream.h"
 #include "drv/mcal/matStream.h"
 #include "drv/hal/matrix.h"
+#include "map.h"
 
 extern uint8_t sendingDMA;
 
@@ -57,7 +58,7 @@ void App_Run (void)
 {
 	//DMA0->SSRT = DMA_SSRT_SSRT(0);
 	//FTM0->CONTROLS[0].CnSC &= ~FTM_CnSC_CHF_MASK;
-	char display[64] = {
+	/*char display[64] = {
 		    'g','r','g','r','r','g','r','g',
 		    'r','b','r','r','r','r','r','r',
 			'r','b','b','r','r','r','r','r',
@@ -67,10 +68,13 @@ void App_Run (void)
 		    'g','g','g','r','r','b','g','g',
 			'g','g','g','r','r','g','g','g'
 		    };
+	*/
+
 	if(!sendingDMA)
 	{
 		gpioWrite(PORTNUM2PIN(PB,3), 1);
-		displayMatrix(display,1,sizeof(display));
+		loadMap();
+		//displayMatrix(display,7,sizeof(display));
 
 	}
 
