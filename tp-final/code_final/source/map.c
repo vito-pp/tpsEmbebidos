@@ -20,7 +20,7 @@ uint8_t getOcupation(uint8_t floor)
 	switch(floor)
 	{
 	case 1: n = 4; break;
-	case 2: n = 2; break;
+	case 2: n = 4; break;
 	case 3: n = 4; break;
 	default: break;
 	}

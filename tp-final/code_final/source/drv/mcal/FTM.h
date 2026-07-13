@@ -64,19 +64,7 @@ typedef enum
 
 uint8_t NCO2PWM(uint16_t lut);
 
-double IC_getFrequency(void);
-uint8_t IC_getCounter(void);
-void IC_clearCounter(void);
-uint8_t IC_getBitStart(void);
-void IC_clearBitStart(void);
-
-
-void setLastBit(void);
-void clearLastBit(void);
-void unAllow(void);
-
 void PWM_setDuty(char);
-void IC_Init (void);
 
 
 typedef FTM_Type *FTM_t;

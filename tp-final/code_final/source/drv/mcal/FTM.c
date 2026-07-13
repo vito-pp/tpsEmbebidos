@@ -5,9 +5,7 @@
 #include "PORT.H"
 #include "dma.h"
 #include "MK64F12.h"
-#include <stdint.h>
-#include "drv/mcal/DECODE_V2.h"
-
+#include <stdint.h>+
 
 
 void PWM_Init(void);
@@ -16,84 +14,9 @@ void PWM_ISR(void);
 uint16_t PWM_modulus = PWM_MOD; 
 uint16_t PWM_duty    = DC2CNV(2);//5000-1;
 
-static uint32_t ic_freq;
-static uint8_t ic_counter;
-static int16_t bit_start;
-
-void IC_ISR(void);
-
-uint8_t IC_getBitStart(void)
-{
-	return bit_start;
-}
-
-void IC_clearBitStart(void)
-{
-	bit_start = 0;
-}
-double IC_getFrequency(void)
-{
-	return ic_freq;
-}
-
-uint8_t IC_getCounter(void)
-{
-	return ic_counter;
-}
-void IC_clearCounter(void)
-{
-	ic_counter = 0;
-}
 __ISR__ FTM3_IRQHandler(void)
 {
-	//gpioToggle(PORTNUM2PIN(PB,2));
-	IC_ISR();
-	//gpioToggle(PORTNUM2PIN(PB,2));
-
-}
-
-void IC_ISR(void) //FTM3 CH5 PTC9 as IC
-{
-	
-	static uint32_t med1,med2,med;
-	static uint8_t  state=0;
-	static int freqs[1000];
-	static int i = 0;
-
-	static int prev_f;
-	static int prev_p;
-	FTM_ClearInterruptFlag (FTM3, FTM_CH_5);
-	uint32_t freq = 0;
-
-	int medision = FTM_GetCounter (FTM3, FTM_CH_5);
-	if(FTM3->SC & FTM_SC_TOF_MASK) //if overflow
-	{
-		FTM_ClearOverflowFlag(FTM3);
-
-		medision += 0xFFFF;
-	}
-	int period = medision - prev_p;
-	freq = (int)(50e6/16.0)/(2.0*period);/// BusClock=sysclk/2= 50MHz
-
-
-	if(freq > 1700 && freq < 3500)
-	{
-		ic_freq= 2200;
-		if(prev_f == 2200)
-		{
-			bit_start++;
-		}
-	}
-	else if(freq > 900 && freq< 1700)
-	{
-		ic_freq= 1200;
-		bit_start = 0;
-	}
-
-	prev_f = ic_freq;
-	prev_p = medision;
-
-
+	FTM_ClearOverflowFlag (FTM3);
 }
 
 
@@ -114,7 +37,7 @@ void PWM_setDuty(char duty)
 	}
 
 	PWM_duty = (uint16_t) (duty * PWM_modulus/100.0);
-	FTM_SetCounter(FTM0, 0, PWM_duty);  //change DC
+	FTM_SetCounter(FTM3, 0, PWM_duty);  //change DC
 }
 
 uint8_t NCO2PWM(uint16_t lut)
@@ -155,32 +78,6 @@ void FTM_Init (void)
 }
 
 
-void IC_Init (void)
-{
-	PCRstr UserPCR;
-
-
-	// PTC9 as IC (FTM3-CH5)
-	UserPCR.PCR=false;			// Default All false, Set only those needed
-
-	UserPCR.FIELD.DSE=true;
-	UserPCR.FIELD.MUX=PORT_mAlt3;
-	UserPCR.FIELD.IRQC=PORT_eDisabled;
-
-	PORTC->PCR[9]=UserPCR.PCR ;
-
-	/// BusClock=sysclk/2= 50MHz
-	/// Set prescaler = divx32 => Timer Clock = 32 x (1/BusClock)= 32x1/50MHz= 0.64 useg
-
-	FTM_SetPrescaler(FTM3, FTM_PSC_x16);	 				// Set Prescaler = divx32
-	FTM3->CNTIN=0x0000;				  		  				// Free running
-	FTM3->MOD=0xFFFF;
-	FTM_SetWorkingMode(FTM3,FTM_CH_5,FTM_mInputCapture);   // Select IC Function
-	FTM_SetInputCaptureEdge (FTM3, FTM_CH_5,FTM_eEither);  // Capture on both edges or rising
-	FTM_SetInterruptMode (FTM3,FTM_CH_5, true);            // Enable interrupts
-	FTM_StartClock(FTM3);                                  // Select BusClk
-}
-
 /// FTM PWM Example
 
 // To Test Connect PC9(IC)-PC8(GPIO)
@@ -191,30 +88,35 @@ void PWM_Init (void)
 		PCRstr UserPCR;
 
 		UserPCR.PCR=0;			// Default All false, Set only those needed
+		/*
+		UserPCR.FIELD.DSE=1;
+		UserPCR.FIELD.MUX=0x4;
+		UserPCR.FIELD.IRQC=0x0;
+		*/
 
 		UserPCR.FIELD.DSE=1;
 		UserPCR.FIELD.MUX=0x4;
 		UserPCR.FIELD.IRQC=0x0;
 
-        //FTM0_CH0 PC1
-        PORTC->PCR[1]=UserPCR.PCR ;
+        //FTM3_CH0 PD0
+        PORTD->PCR[0]=UserPCR.PCR ;
 
-        FTM_SetPrescaler(FTM0, FTM_PSC_x1);
+        FTM_SetPrescaler(FTM3, FTM_PSC_x1);
 
-        FTM_SetInterruptMode (FTM0,FTM_CH_0, true);
+        FTM_SetInterruptMode (FTM3,FTM_CH_0, true);
 
-        FTM_SetWorkingMode(FTM0, 0, FTM_mPulseWidthModulation);			// MSA  / B
+        FTM_SetWorkingMode(FTM3, 0, FTM_mPulseWidthModulation);			// MSA  / B
 
-        FTM_SetPulseWidthModulationLogic(FTM0, 0, FTM_lAssertedHigh);   // ELSA / B
+        FTM_SetPulseWidthModulationLogic(FTM3, 0, FTM_lAssertedHigh);   // ELSA / B
 
-        FTM_SetModulus(FTM0, PWM_modulus);
+        FTM_SetModulus(FTM3, PWM_modulus);
        // FTM_SetOverflowMode(FTM0, true);
 
-        FTM_SetCounter(FTM0, 0, PWM_duty);
+        FTM_SetCounter(FTM3, 0, PWM_duty);
 
-        FTM_DmaMode (FTM0,FTM_CH_0,FTM_DMA_ON); // DMA ON
+        FTM_DmaMode (FTM3,FTM_CH_0,FTM_DMA_ON); // DMA ON
 
-        FTM_StartClock(FTM0);
+        FTM_StartClock(FTM3);
 
 }
 

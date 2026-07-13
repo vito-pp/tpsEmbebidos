@@ -59,9 +59,9 @@ void dispBus_init(void)
     dma_cfg_t cfg;
 
     cfg.ch           = 0;                          //DMA 0 
-    cfg.request_src  = DMA_REQ_FTM0CH0;            // Source FTM0_CH0
+    cfg.request_src  = DMA_REQ_FTM3CH0;            // Source FTM3_CH0
     cfg.saddr        = duty_cycles;                // Origin
-    cfg.daddr        = (void*)(&(FTM0->CONTROLS[0].CnV));  // to: CnV
+    cfg.daddr        = (void*)(&(FTM3->CONTROLS[0].CnV));  // to: CnV
     cfg.elem_size    = 2;                          // 16-bit (CnV es de 16 bits)
     cfg.soff         = 2;                          // Move 2 bytes on source
     cfg.doff         = 0;                          // always write to cnv
@@ -86,9 +86,9 @@ void WS2812_Update(void)
     dma_cfg_t cfg;
 
     cfg.ch           = 0;                          //DMA 0 
-    cfg.request_src  = DMA_REQ_FTM0CH0;            // Source correcto para FTM0_CH0
+    cfg.request_src  = DMA_REQ_FTM3CH0;            // Source correcto para FTM3_CH0
     cfg.saddr        = duty_cycles;                // Origin
-    cfg.daddr        = (void*)&(FTM0->CONTROLS[0].CnV);  // to: CnV
+    cfg.daddr        = (void*)&(FTM3->CONTROLS[0].CnV);  // to: CnV
     cfg.elem_size    = 2;                          // 16-bit (CnV es de 16 bits)
     cfg.soff         = 2;                          // Move 2 bytes on source
     cfg.doff         = 0;                          // always write to cnv

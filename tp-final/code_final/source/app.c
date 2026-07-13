@@ -17,14 +17,8 @@
 #include "drv/mcal/board.h"
 #include "drv/mcal/gpio.h"
 #include "drv/mcal/SysTick.h"
-#include "drv/mcal/UART_strings.h"
-#include "drv/mcal/UART.h"
 #include "drv/mcal/FTM.h"
-#include "drv/mcal/CMP.h"
 #include "drv/mcal/pit.h"
-#include "drv/mcal/DAC.h"
-#include "drv/mcal/DECODE_V2.h"
-#include "drv/mcal/bitstream.h"
 #include "drv/mcal/matStream.h"
 #include "drv/hal/matrix.h"
 #include "map.h"
@@ -34,7 +28,6 @@ extern uint8_t sendingDMA;
 /* Función que se llama 1 vez, al comienzo del programa */
 void App_Init (void)
 {
-	CMP_Init();
 	FTM_Init();
 
 	//PIT_Init();
