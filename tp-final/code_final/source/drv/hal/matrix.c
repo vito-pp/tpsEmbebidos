@@ -9,9 +9,7 @@
 
 
 
-//capaz se puede cambiar por  estructura para mas versatilidad... char*
-// la intensidad e Z ^ [0,7]
-//max intensity = 7.
+
 int displayMatrix(char * colour, uint8_t intensity ,size_t n)
 {
     
@@ -32,11 +30,6 @@ int displayMatrix(char * colour, uint8_t intensity ,size_t n)
             case 'p': word[i] = PURPLE(intensity); break;
             default:  break;
         }
-        /*
-        colour[i] = (led[i].green << 16 ) | 
-                    (led[i].red <<8 )   | 
-                    led[i].blue;
-        */
     }
 
     loadDisplay(word, n);

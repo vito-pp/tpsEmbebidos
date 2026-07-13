@@ -20,7 +20,6 @@
 #include "drv/mcal/FTM.h"
 #include "drv/mcal/pit.h"
 #include "drv/mcal/matStream.h"
-#include "drv/hal/matrix.h"
 #include "map.h"
 
 extern uint8_t sendingDMA;
@@ -29,8 +28,6 @@ extern uint8_t sendingDMA;
 void App_Init (void)
 {
 	FTM_Init();
-
-	//PIT_Init();
 	dispBus_init();
 
 	gpioMode(PIN_LED_RED, OUTPUT);
@@ -40,10 +37,6 @@ void App_Init (void)
 
 	gpioMode(PORTNUM2PIN(PB,3), OUTPUT);
 	gpioWrite(PORTNUM2PIN(PB,3), 0);
-
-
-	//DMA_Start(0);
-
 }
 
 /* Función que se llama constantemente en un ciclo infinito */

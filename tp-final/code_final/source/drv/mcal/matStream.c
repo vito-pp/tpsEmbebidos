@@ -21,9 +21,7 @@ Every 1.25us it should be updated with next bit value.
 */
 
 uint16_t duty_cycles[DUTY_BUFFER_SIZE]; //64*24+1 local array containing the data that should
-                    //be send to display (%DC) + extr a byte to indicate reset (0%DC)
-uint32_t current_word;
-uint32_t current_bit;
+                    //be send to display (%DC) + extra byte to indicate reset (0%DC)
 
 uint8_t sendingDMA = 0;
 
@@ -38,12 +36,16 @@ void WS2812_FrameDone(void)
 	i++;
 
     DMA_Stop(0);
-    PWM_setDuty(0);
 
+    //Set pin low to update matrix
+    PWM_setDuty(0);
+    //For debuging:
     gpioWrite(PORTNUM2PIN(PB,3), 0);
     
     sendingDMA = 0;
 }
+
+
 void dispBus_init(void)
 {
     FTM_Init();
@@ -73,12 +75,8 @@ void dispBus_init(void)
     cfg.user = NULL;
 
     DMA_Config(&cfg);
-
-
-    // borrar siguientes dos lineas
-    //sendingDMA = 1;
-    //DMA_Start(0);
 }
+
 
 void WS2812_Update(void)
 {
@@ -104,8 +102,6 @@ void WS2812_Update(void)
     DMA_Start(0);
 }
 
-//n = # of leds to be controlled
-//load matrix tu show display
 
 void loadDisplay(uint32_t * word, size_t n)
 {
@@ -128,6 +124,5 @@ void loadDisplay(uint32_t * word, size_t n)
             }
         }
     }
-    //duty_cycles[24*i] = LOGICAL_RESET;  //to update changes
     return;
 }
