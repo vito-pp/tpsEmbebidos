@@ -34,15 +34,20 @@
 #define SW_ACTIVE       LOW 
 #define SW_INPUT_TYPE   // ???
 
-//Magnetic Strip Pins
+// Magnetic Strip Pins
 #define STRIP_ENABLE  PORTNUM2PIN(PB, 2)
 #define STRIP_CLK     PORTNUM2PIN(PB, 3)
 #define STRIP_DATA    PORTNUM2PIN(PB, 10)
 
-//Shift Register pins
+// Shift Register pins
 #define SR_DATA PORTNUM2PIN(PC,10)
 #define SR_CLK  PORTNUM2PIN(PC,11)
 #define SR_LCLK PORTNUM2PIN(PB,11)
+
+// Encoder
+#define PIN_ENC_A PORTNUM2PIN(PC,5)
+#define PIN_ENC_B PORTNUM2PIN(PC,7)
+#define PIN_ENC_C PORTNUM2PIN(PC,0)
 
 // PIN BUS
 #define PIN_BUS_0		PORTNUM2PIN(PB,2)

@@ -3,10 +3,6 @@
 #include "gpio.h"
 #include "board.h"
 
-#define PIN_ENC_A PORTNUM2PIN(PC,5)
-#define PIN_ENC_B PORTNUM2PIN(PC,7)
-#define PIN_ENC_C PORTNUM2PIN(PC,0)
-
 // Si RSwitch vale 1 en cualquier instante, el encoder fue apretado.
 
 // Estado de inicializacion, el valor del encoder se encuentra en cero.
