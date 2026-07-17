@@ -104,7 +104,7 @@ void displayHyphens(void)
 
 void dispClear(void)
 {
-	serialCom &= 0x3000;
+	serialCom &= 0x00C0; // keep digit select (SEL1:SEL0), blank all segments
 	sendSerialData(serialCom);
 }
 
@@ -120,19 +120,19 @@ bool turnOnLED(uint8_t led)
 
 	switch(led)
 	{
-		case 0: serialCom |= 0x1000; break;
-		case 1: serialCom |= 0x2000; break;
-		case 2: serialCom |= 0x3000; break;
+		// Custom board: shift register has no status LEDs (U5 QC-QH unused),
+		// and these bits would collide with segments C/D. No-op on hardware.
+		case 0: break;
+		case 1: break;
+		case 2: break;
 	}
-	sendSerialData(serialCom);
 	return 1;
 }
 
 
 void turnOffLEDs(void)
 {
-	serialCom &= ~0x3000;
-	sendSerialData(serialCom);
+	// Custom board: no status LEDs on the shift register. No-op.
 }
 
 bool displayDigit(uint8_t num, uint8_t disp)
@@ -142,27 +142,27 @@ bool displayDigit(uint8_t num, uint8_t disp)
 		return 0;
 	}
 	const uint16_t bcd_to_7seg[] = {
-		    0x3F0, // 0
-		    0x060, // 1
-		    0x5B0, // 2
-		    0x4F0, // 3
-		    0x660, // 4
-		    0x6D0, // 5
-		    0x7D0, // 6
-		    0x070, // 7
-		    0x7F0, // 8
-		    0x6F0, // 9
-			0x400, // -
-			0x000  // none
+		    0xFC00, // 0  A B C D E F
+		    0x6000, // 1  B C
+		    0xDA00, // 2  A B G E D
+		    0xF200, // 3  A B G C D
+		    0x6600, // 4  F G B C
+		    0xB600, // 5  A F G C D
+		    0xBE00, // 6  A F G E D C
+		    0xE000, // 7  A B C
+		    0xFE00, // 8  A B C D E F G
+		    0xF600, // 9  A B C D F G
+			0x0200, // -  G
+			0x0000  // none
 	};
 
-	serialCom &= 0x3000; //Resets all bits except led ones.
+	serialCom = 0x0000; // rebuild: segments (b8-15) + SEL1:SEL0 (b7:6)
 	switch(disp)
 	{
 		case 0: serialCom |=  (bcd_to_7seg[num]);break;
-		case 1: serialCom |= (0x4000 | bcd_to_7seg[num]);break;
-		case 2: serialCom |= (0x8000 | bcd_to_7seg[num]);break;
-		case 3: serialCom |= (0xC000 | bcd_to_7seg[num]);break;
+		case 1: serialCom |= (0x0040 | bcd_to_7seg[num]);break; // SEL0
+		case 2: serialCom |= (0x0080 | bcd_to_7seg[num]);break; // SEL1
+		case 3: serialCom |= (0x00C0 | bcd_to_7seg[num]);break; // SEL1|SEL0
 		default: break;
 	}
 	sendSerialData(serialCom);
