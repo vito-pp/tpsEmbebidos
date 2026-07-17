@@ -25,18 +25,28 @@ void hw_Init (void)
     SIM->SCGC5 |= SIM_SCGC5_PORTA_MASK | SIM_SCGC5_PORTB_MASK | SIM_SCGC5_PORTC_MASK | SIM_SCGC5_PORTD_MASK | SIM_SCGC5_PORTE_MASK; /* All PORTs enabled */
 
     MCG->SC = MCG_SC_FCRDIV(0x02); /* Fast clock internal reference divider */
-    MCG->C2 = MCG_C2_RANGE(0x02); /* High frequency range external reference selection */
-
-    OSC->CR = OSC_CR_ERCLKEN_MASK; /* Set external reference clock (OSCERCLK) */
-
-    MCG->C7 = MCG_C7_OSCSEL(0x00); /* Set FLL external reference clock (OSCCLK0) */
-    MCG->C1 = MCG_C1_CLKS(0x02) | MCG_C1_FRDIV(0x07); /* Set external reference as source, FLL external reference divider (PBE mode) */
-    while((MCG->S & MCG_S_IREFST_MASK) != 0x00U); /* Check external reference validation */
-    MCG->C5 = MCG_C5_PRDIV0(0x0F); /* Set PLL divider while PLL turned off */
-    MCG->C6 = MCG_C6_PLLS_MASK | MCG_C6_VDIV0(0x08); /* Set PLL multiplier and PLL select */
-    while((MCG->S & MCG_S_LOCK0_MASK) == 0x00U); /* Wait until PLL is locked*/
+    
+    // Custom board clock configuration below
+    MCG->C2 = MCG_C2_RANGE(0x02) | MCG_C2_EREFS_MASK;
+    /* Very-high freq range + enable crystal oscillator */
+    
+    OSC->CR = OSC_CR_ERCLKEN_MASK;
+    
+    MCG->C7 = MCG_C7_OSCSEL(0x00);
+    
+    MCG->C1 = MCG_C1_CLKS(0x02) | MCG_C1_FRDIV(0x07);
+    
+    while((MCG->S & MCG_S_OSCINIT0_MASK) == 0x00U);
+    while((MCG->S & MCG_S_IREFST_MASK) != 0x00U);
+    
+    MCG->C5 = MCG_C5_PRDIV0(0x07);
+    MCG->C6 = MCG_C6_PLLS_MASK | MCG_C6_VDIV0(0x08);
+    
+    while((MCG->S & MCG_S_LOCK0_MASK) == 0x00U);
+    
     MCG->C1 &= ~MCG_C1_CLKS_MASK;
-    while((MCG->S & MCG_S_CLKST_MASK) != 0x0CU); /* Wait until output of the PLL is selected */
+    
+    while((MCG->S & MCG_S_CLKST_MASK) != 0x0CU);
 }
 
 void hw_EnableInterrupts (void)

@@ -19,12 +19,12 @@
 
 /***** BOARD defines **********************************************************/
 
-// On Board User LEDs
-#define PIN_LED_RED     PORTNUM2PIN(PB, 22)   // PTB22
-#define PIN_LED_GREEN   PORTNUM2PIN(PE, 26)   // PTE26
-#define PIN_LED_BLUE    PORTNUM2PIN(PB, 21)   // PTB21
+// On Board User LEDs, custom board, active LOW
+#define PIN_LED_RED    PORTNUM2PIN(PB, 17) // PTB17 / LED_R
+#define PIN_LED_GREEN  PORTNUM2PIN(PB, 19) // PTB19 / LED_G
+#define PIN_LED_BLUE   PORTNUM2PIN(PB, 21) // PTB21 / LED_A
 
-#define LED_ACTIVE      LOW
+#define LED_ACTIVE LOW
 
 
 // On Board User Switches
@@ -35,34 +35,34 @@
 #define SW_INPUT_TYPE   // ???
 
 // Magnetic Strip Pins
-#define STRIP_ENABLE  PORTNUM2PIN(PB, 2)
-#define STRIP_CLK     PORTNUM2PIN(PB, 3)
-#define STRIP_DATA    PORTNUM2PIN(PB, 10)
+#define STRIP_ENABLE   PORTNUM2PIN(PB, 2)
+#define STRIP_CLK      PORTNUM2PIN(PB, 3)
+#define STRIP_DATA     PORTNUM2PIN(PB, 10)
 
-// Shift Register pins
-#define SR_DATA PORTNUM2PIN(PC,10)
-#define SR_CLK  PORTNUM2PIN(PC,11)
-#define SR_LCLK PORTNUM2PIN(PB,11)
+// Shift Register pins, custom board
+#define SR_DATA        PORTNUM2PIN(PC, 16) // SERIAL_DATA
+#define SR_CLK         PORTNUM2PIN(PC, 1)  // SERIAL_CLOCK
+#define SR_LCLK        PORTNUM2PIN(PC, 18) // SERIAL_LATCH
 
 // Encoder
-#define PIN_ENC_A PORTNUM2PIN(PC,5)
-#define PIN_ENC_B PORTNUM2PIN(PC,7)
-#define PIN_ENC_C PORTNUM2PIN(PC,0)
+#define PIN_ENC_A      PORTNUM2PIN(PC,4) // ENCODER_A
+#define PIN_ENC_B      PORTNUM2PIN(PC,5) // ENCODER_B
+#define PIN_ENC_C      PORTNUM2PIN(PC,3) // ENCODER_SW
 
 // PIN BUS
-#define PIN_BUS_0		PORTNUM2PIN(PB,2)
-#define PIN_BUS_1		PORTNUM2PIN(PC,3)
-#define PIN_BUS_2		PORTNUM2PIN(PC,2)
-#define PIN_BUS_3		PORTNUM2PIN(PA,2)
-#define PIN_BUS_4		PORTNUM2PIN(PB,23)
-#define PIN_BUS_5		PORTNUM2PIN(PA,1)
-#define PIN_BUS_6		PORTNUM2PIN(PB,9)
-#define PIN_BUS_7		PORTNUM2PIN(PC,17)
+#define PIN_BUS_0	PORTNUM2PIN(PB,2)
+#define PIN_BUS_1	PORTNUM2PIN(PC,3)
+#define PIN_BUS_2	PORTNUM2PIN(PC,2)
+#define PIN_BUS_3	PORTNUM2PIN(PA,2)
+#define PIN_BUS_4	PORTNUM2PIN(PB,23)
+#define PIN_BUS_5	PORTNUM2PIN(PA,1)
+#define PIN_BUS_6	PORTNUM2PIN(PB,9)
+#define PIN_BUS_7	PORTNUM2PIN(PC,17)
 
 
 // PIN STATE
-#define PIN_STATUS_0		PORTNUM2PIN(PB,20)
-#define PIN_STATUS_1		PORTNUM2PIN(PC,5)
+#define PIN_STATUS_0	PORTNUM2PIN(PB,20)
+#define PIN_STATUS_1	PORTNUM2PIN(PC,5)
 
 /*******************************************************************************
  ******************************************************************************/
