@@ -1,0 +1,22 @@
+# Build artifacts
+Debug/
+Release/
+*.o
+*.d
+*.axf
+*.elf
+*.map
+*.su
+*.launch
+*.xml
+*.so
+
+# IDE settings 
+.vscode/
+
+# Virtual Enviroments
+.venv/
+venv/
+
+# Doxygen output
+docs/
