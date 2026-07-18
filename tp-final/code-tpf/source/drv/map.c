@@ -1,84 +1,67 @@
-#include "drv/map.h"
+/*
+ * map.c
+ *
+ *  Created on: 12 jul. 2026
+ *      Author: Usuario
+ */
 
-#include "drv/matrix.h"
+#include "matrix.h"
+#include "map.h"
 
-#define FLOORS 3u
+#define FLOORS 3
 
-static uint8_t getOccupation(uint8_t floor)
+
+uint8_t getOcupation(uint8_t floor);
+
+
+uint8_t getOcupation(uint8_t floor)
 {
-    /*
-     * Test version:
-     * all floors full, 4 people per floor.
-     *
-     * Later this should read the real occupancy state.
-     */
-    switch (floor) {
-    case 1:
-        return 4;
-
-    case 2:
-        return 4;
-
-    case 3:
-        return 4;
-
-    default:
-        return 0;
-    }
+	int n = 0;
+	switch(floor)
+	{
+	case 1: n = 4; break;
+	case 2: n = 4; break;
+	case 3: n = 4; break;
+	default: break;
+	}
+	return n;
 }
+
 
 void loadMap(void)
 {
-    uint8_t i;
-    uint8_t n;
+    int i;
     char id;
     char colour[64];
 
-    for (i = 0; i < 64u; i++) {
+    for(i= 0; i < 64; i++)
+    {
         colour[i] = 0;
     }
+    for(i = 0; i < FLOORS; i++)
+    {
+        uint8_t n = getOcupation(i+1);
 
-    for (i = 0; i < FLOORS; i++) {
-        n = getOccupation(i + 1u);
-
-        while (n > 0u) {
-            switch (n) {
-            case 1:
-                id = 'r';
-                break;
-
-            case 2:
-                id = 'b';
-                break;
-
-            case 3:
-                id = 'g';
-                break;
-
-            case 4:
-                id = 'p';
-                break;
-
-            default:
-                id = 0;
-                break;
+        while(n)
+        {
+            switch(n)
+            {
+                case 1: id = 'r'; break;
+                case 2: id = 'b'; break;
+                case 3: id = 'g'; break;
+                case 4: id = 'p'; break;
+                default: id = 0; break;
             }
+            colour[(2*(4-n))*8 + i*2] = id;
+            colour[(2*(4-n))*8 + i*2 + 1] = id;
 
-            /*
-             * Each person is a 2x2 block.
-             *
-             * Floor 1: columns 0-1
-             * Floor 2: columns 2-3
-             * Floor 3: columns 4-5
-             */
-            colour[(2u * (4u - n)) * 8u + i * 2u] = id;
-            colour[(2u * (4u - n)) * 8u + i * 2u + 1u] = id;
-            colour[(2u * (4u - n) + 1u) * 8u + i * 2u] = id;
-            colour[(2u * (4u - n) + 1u) * 8u + i * 2u + 1u] = id;
-
+            colour[(2*(4-n) + 1)*8 + i*2] = id;
+            colour[(2*(4-n) + 1)*8 + i*2 + 1] = id;
             n--;
         }
     }
 
-    displayMatrix(colour, 7u, 64u);
+    displayMatrix(colour, 7, 64);
+
+    return;
 }

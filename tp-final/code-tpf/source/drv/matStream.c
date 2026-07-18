@@ -1,120 +1,128 @@
-#include "drv/matStream.h"
-
-#include <stdbool.h>
-
-#include "drv/FTM.h"
-#include "drv/dma.h"
-
+#include "matStream.h"
+#include "FTM.h"
+#include <stdint.h>
 #include "MK64F12.h"
+#include "hardware.h"
+#include"dma.h"
+#include"gpio.h"
 
-#define WS2812_LED_COUNT       64u
-#define WS2812_BITS_PER_LED    24u
-#define DUTY_BUFFER_SIZE       (WS2812_LED_COUNT * WS2812_BITS_PER_LED)
 
-#define LOGICAL_1              DC2CNV(WS2812_DUTY_1_PCT)
-#define LOGICAL_0              DC2CNV(WS2812_DUTY_0_PCT)
 
-static uint16_t duty_cycles[DUTY_BUFFER_SIZE];
-static volatile bool sendingDMA = false;
 
-static void WS2812_FrameDone(void *user)
+//CNV values to achieve desiredduty cycle
+//cambiar por macros parametrizadas definidas en ftm.h
+#define LOGICAL_1   DC2CNV(68)
+#define LOGICAL_0   DC2CNV(34)
+
+#define DUTY_BUFFER_SIZE 1536
+
+/* A register containing de current DC (bit value) to set should exist.
+Every 1.25us it should be updated with next bit value.
+*/
+
+uint16_t duty_cycles[DUTY_BUFFER_SIZE]; //64*24+1 local array containing the data that should
+                    //be send to display (%DC) + extra byte to indicate reset (0%DC)
+
+uint8_t sendingDMA = 0;
+
+
+void WS2812_FrameDone(void);
+
+void WS2812_FrameDone(void)
 {
-    (void)user;
+    // Se terminó de transmitir todo el buffer
+	static int i = 0;
+	DMA0->CINT |= 0;
+	i++;
 
     DMA_Stop(0);
 
-    /*
-     * Hold line low after the frame.
-     * This gives the WS2812 reset/latch time.
-     */
+    //Set pin low to update matrix
     PWM_setDuty(0);
-
-    sendingDMA = false;
+    //For debuging:
+    gpioWrite(PORTNUM2PIN(PB,3), 0);
+    
+    sendingDMA = 0;
 }
+
 
 void dispBus_init(void)
 {
-    uint32_t i;
-    dma_cfg_t cfg;
-
     FTM_Init();
     DMA_Init();
 
-    for (i = 0; i < DUTY_BUFFER_SIZE; i++) {
-        duty_cycles[i] = DC2CNV(0);
+    uint32_t i;
+    for(i = 0; i < DUTY_BUFFER_SIZE; i++)
+    {
+    	duty_cycles[i] = DC2CNV(5);
     }
+    //config dma source and stop
 
-    cfg.ch = 0;
-    cfg.request_src = DMA_REQ_FTM3CH0;
+    dma_cfg_t cfg;
 
-    cfg.saddr = duty_cycles;
-    cfg.daddr = (void *)&(FTM3->CONTROLS[0].CnV);
-
-    cfg.elem_size = 2;
-
-    cfg.soff = 2;
-    cfg.doff = 0;
-
-    cfg.major_count = DUTY_BUFFER_SIZE;
-
-    cfg.slast = -(int32_t)sizeof(duty_cycles);
-    cfg.dlast = 0;
-
-    cfg.int_major = true;
-    cfg.on_major = WS2812_FrameDone;
+    cfg.ch           = 0;                          //DMA 0 
+    cfg.request_src  = DMA_REQ_FTM3CH0;            // Source FTM3_CH0
+    cfg.saddr        = duty_cycles;                // Origin
+    cfg.daddr        = (void*)(&(FTM3->CONTROLS[0].CnV));  // to: CnV
+    cfg.elem_size    = 2;                          // 16-bit (CnV es de 16 bits)
+    cfg.soff         = 2;                          // Move 2 bytes on source
+    cfg.doff         = 0;                          // always write to cnv
+    cfg.major_count  = DUTY_BUFFER_SIZE;                // # of elements
+    cfg.slast        = - sizeof(duty_cycles);   // back to begining
+    cfg.dlast        = 0;                              // fixed adress
+    cfg.int_major    = true;  
+    cfg.on_major = (void*) WS2812_FrameDone;   // <-- callback
     cfg.user = NULL;
 
     DMA_Config(&cfg);
 }
 
-void loadDisplay(uint32_t *word, size_t n)
-{
-    size_t i;
-    uint8_t j;
-    size_t k = 0;
-
-    if (word == NULL) {
-        return;
-    }
-
-    if (n > WS2812_LED_COUNT) {
-        n = WS2812_LED_COUNT;
-    }
-
-    /*
-     * Gonza's original implementation effectively maps each 24-bit LED word
-     * into a sequence of PWM duty cycles.
-     *
-     * This keeps the same LSB-first bit order used by the working branch.
-     */
-    for (i = 0; i < n; i++) {
-        for (j = 0; j < WS2812_BITS_PER_LED; j++) {
-            if (word[i] & (1u << j)) {
-                duty_cycles[k] = LOGICAL_1;
-            } else {
-                duty_cycles[k] = LOGICAL_0;
-            }
-
-            k++;
-        }
-    }
-
-    /*
-     * Turn off remaining LEDs if n < 64.
-     */
-    while (k < DUTY_BUFFER_SIZE) {
-        duty_cycles[k] = LOGICAL_0;
-        k++;
-    }
-}
 
 void WS2812_Update(void)
 {
-    if (sendingDMA) {
-        return;
-    }
+    //lleno el buffer?
+    dma_cfg_t cfg;
 
-    sendingDMA = true;
+    cfg.ch           = 0;                          //DMA 0 
+    cfg.request_src  = DMA_REQ_FTM3CH0;            // Source correcto para FTM3_CH0
+    cfg.saddr        = duty_cycles;                // Origin
+    cfg.daddr        = (void*)&(FTM3->CONTROLS[0].CnV);  // to: CnV
+    cfg.elem_size    = 2;                          // 16-bit (CnV es de 16 bits)
+    cfg.soff         = 2;                          // Move 2 bytes on source
+    cfg.doff         = 0;                          // always write to cnv
+    cfg.major_count  = DUTY_BUFFER_SIZE;                // # of elements
+    cfg.slast        = - (int32_t)(DUTY_BUFFER_SIZE * 2);   // back to begining
+    cfg.dlast        = 0;                              // fixed adress
+    cfg.int_major    = true;  
+    cfg.on_major = (void*) WS2812_FrameDone;   // <-- callback
+    cfg.user = NULL;
+    DMA_Config(&cfg);
 
+    sendingDMA=1;
     DMA_Start(0);
+}
+
+
+void loadDisplay(uint32_t * word, size_t n)
+{
+    //Transforms bits from word to physical signals.
+    int i, j;
+    //For each word
+    for(i = 0; i < n; i++)
+    {
+        //For each bit in word
+        for(j = 0; j < 24; j++) //convertir luego en operador ternario para leve opt
+        {
+            if(word[i] & (1<<j)) //boolean value of i-bit
+            {
+                duty_cycles[24*i + j] = LOGICAL_1;
+            }
+            else
+            {
+                duty_cycles[24*i + j] = LOGICAL_0;
+
+            }
+        }
+    }
+    return;
 }

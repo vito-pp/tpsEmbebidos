@@ -1,27 +1,110 @@
-#ifndef DRV_FTM_H_
-#define DRV_FTM_H_
+#ifndef SOURCES_FTM_H_
+#define SOURCES_FTM_H_
 
-#include <stdint.h>
-#include "MK64F12.h"
+#include "hardware.h"
 
-/*
- * WS2812 timing:
- *
- * FTM clock = bus clock = 50 MHz
- * MOD = 61, so period = 62 ticks
- *
- * 50 MHz / 62 = ~806 kHz
- *
- * This is close to the WS2812 target of 800 kHz.
- */
-#define WS2812_PWM_MOD      (62u - 1u)
+#define FTM_DMA_ON  1
+#define FTM_DMA_OFF 0
 
-#define WS2812_DUTY_0_PCT   34u
-#define WS2812_DUTY_1_PCT   68u
+typedef enum
+{
+	FTM_mInputCapture,
+	FTM_mOutputCompare,
+	FTM_mPulseWidthModulation,
+} FTMMode_t;
 
-#define DC2CNV(pct)         ((uint16_t)((WS2812_PWM_MOD * (pct)) / 100u))
+typedef enum
+{
+	FTM_eRising 		= 0x01,
+	FTM_eFalling 		= 0x02,
+	FTM_eEither 		= 0x03,
+} FTMEdge_t;
 
-void FTM_Init(void);
-void PWM_setDuty(uint8_t duty_percent);
+typedef enum
+{
+	FTM_eToggle 		= 0x01,
+	FTM_eClear 			= 0x02,
+	FTM_eSet 			= 0x03,
+} FTMEffect_t;
 
-#endif /* DRV_FTM_H_ */
+typedef enum
+{
+	FTM_lAssertedHigh	= 0x02,
+	FTM_lAssertedLow 	= 0x03,
+} FTMLogic_t;
+
+typedef enum
+{
+	FTM_PSC_x1		= 0x00,
+	FTM_PSC_x2		= 0x01,
+	FTM_PSC_x4		= 0x02,
+	FTM_PSC_x8		= 0x03,
+	FTM_PSC_x16		= 0x04,
+	FTM_PSC_x32		= 0x05,
+	FTM_PSC_x64		= 0x06,
+	FTM_PSC_x128	= 0x07,
+
+} FTM_Prescal_t;
+
+
+
+
+#define FTM_CH_0 0
+#define FTM_CH_1 1
+#define FTM_CH_2 2
+#define FTM_CH_3 3
+#define FTM_CH_4 4
+#define FTM_CH_5 5
+#define FTM_CH_6 6
+#define FTM_CH_7 7
+
+#define PWM_MOD (62-1) // Freq = 50Meg/(1*100) = sysclck /((pwm_modulus+1)*Prescale)
+#define DC2CNV(x) (PWM_MOD * (x)/100.0)
+
+uint8_t NCO2PWM(uint16_t lut);
+
+void PWM_setDuty(char);
+
+
+typedef FTM_Type *FTM_t;
+typedef uint16_t FTMData_t;
+typedef uint32_t FTMChannel_t; /* FTM0/FTM3: Channel 1-8; FTM1/FTM2: Channel 1-2 */
+
+//__ISR__ 	FTM0_IRQHandler					 (void);
+//__ISR__ 	FTM1_IRQHandler					 (void);
+//__ISR__ 	FTM2_IRQHandler					 (void);
+//__ISR__ 	FTM3_IRQHandler					 (void);
+
+void 		FTM_Init 						 (void);
+
+void        FTM_SetPrescaler 				 (FTM_t, FTM_Prescal_t);
+void     	FTM_SetModulus 					 (FTM_t, FTMData_t);
+FTMData_t 	FTM_GetModulus 					 (FTM_t);
+
+void 		FTM_StartClock					 (FTM_t);
+void 		FTM_StopClock					 (FTM_t);
+
+void 		FTM_SetOverflowMode   			 (FTM_t, bool);
+bool 		FTM_IsOverflowPending 			 (FTM_t);
+void 		FTM_ClearOverflowFlag 			 (FTM_t);
+
+void        FTM_SetWorkingMode				 (FTM_t, FTMChannel_t, FTMMode_t);
+FTMMode_t   FTM_GetWorkingMode				 (FTM_t, FTMChannel_t);
+void        FTM_SetInputCaptureEdge 		 (FTM_t, FTMChannel_t, FTMEdge_t);
+FTMEdge_t   FTM_GetInputCaptureEdge 		 (FTM_t, FTMChannel_t);
+void        FTM_SetOutputCompareEffect 	 	 (FTM_t, FTMChannel_t, FTMEffect_t);
+FTMEffect_t FTM_GetOutputCompareEffect 		 (FTM_t, FTMChannel_t);
+void        FTM_SetPulseWidthModulationLogic (FTM_t, FTMChannel_t, FTMLogic_t);
+FTMLogic_t  FTM_GetPulseWidthModulationLogic (FTM_t, FTMChannel_t);
+
+void        FTM_SetCounter 					 (FTM_t, FTMChannel_t, FTMData_t);
+FTMData_t   FTM_GetCounter 					 (FTM_t, FTMChannel_t);
+
+void 		FTM_SetInterruptMode   			 (FTM_t, FTMChannel_t, bool);
+bool 		FTM_IsInterruptPending 			 (FTM_t, FTMChannel_t);
+void 		FTM_ClearInterruptFlag 			 (FTM_t, FTMChannel_t);
+
+void 		FTM_DmaMode						 (FTM_t ftm, FTMChannel_t channel, bool dma_mode);
+
+
+#endif
