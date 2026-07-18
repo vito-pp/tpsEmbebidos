@@ -21,6 +21,8 @@
 #include "ui/display.h"
 #include "ui/fsm.h"
 #include "ui/auth_ui.h"
+#include "drv/matStream.h"
+#include "drv/map.h"
 
 
 /*******************************************************************************
@@ -51,11 +53,17 @@ tim_id_t inactivity_id;
 void App_Init (void)
 {
     encoderInit();
-
-	magStrip_Init();
-
-	display_init();
-
+    magStrip_Init();
+    display_init();
+    
+    /*
+     * LED matrix test.
+     * dispBus_init() configures FTM3_CH0 + DMA.
+     * loadMap() sends one static test frame to the WS2812 matrix.
+     */
+    dispBus_init();
+    loadMap();
+    
     current = getInitState();
 
     timerInit();
