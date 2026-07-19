@@ -6,6 +6,7 @@
 #define BLUE(x) (0x010000 << ((uint8_t)(x)))
 #define GREEN(x) (0x1 << ((uint8_t)(x)))
 #define PURPLE(x) (0x010100 << ((uint8_t)(x)))
+#define WHITE   0xFFF
 
 
 
@@ -28,6 +29,7 @@ int displayMatrix(char * colour, uint8_t intensity ,size_t n)
             case 'r': word[i] = RED(intensity); break;
             case 'b': word[i] = BLUE(intensity); break;
             case 'p': word[i] = PURPLE(intensity); break;
+            case 'w': word[i] = WHITE; break;
             default:  break;
         }
     }

@@ -8,6 +8,8 @@
 #ifndef MAP_H_
 #define MAP_H_
 
+#include <stdbool.h>
+
 /**
  * @brief Updates the LED matrix to display the current occupancy map.
  *
@@ -30,5 +32,34 @@
  *       Occupancy grows from top to bottom.
  */
 void loadMap(void);
+
+/**
+ * @brief Sets intensity of display (0 = maximum, 7 = min)
+ *
+ * n e [0,7]
+ */
+void setIntensity(uint8_t n);
+
+/**
+ * @brief Sets error flag X
+ *
+ * x e [1,4]
+ */
+void setErrorX(uint8_t x);
+
+/**
+ * @brief Clears error flag X
+ *
+ * x e [1,4]
+ */
+void clearErrorX(uint8_t x);
+
+/**
+ * @brief Sets quantity of occupants per floor 
+ *
+ * florr e [1,3]
+ * n e [0,4]
+ */
+void setOcupation(uint8_t floor, uint8_t n);
 
 #endif /* MAP_H_ */
