@@ -6,7 +6,7 @@
  */
 
 #include "matrix.h"
-#include "map.h"
+#include "../ui/map.h"
 
 #define FLOORS 3
 
