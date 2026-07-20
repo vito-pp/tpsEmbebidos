@@ -107,10 +107,10 @@ void loadMap(void)
     
     if(error[0])
     {
-        colour[54] = 'w';
-        colour[55] = 'w';
-        colour[62] = 'w';
-        colour[63] = 'w';
+        colour[54] = 'g';
+        colour[55] = 'g';
+        colour[62] = 'g';
+        colour[63] = 'g';
 
     }
     if(error[1])
@@ -122,10 +122,10 @@ void loadMap(void)
     }
     if(error[2])
     {
-        colour[22] = 'w';
-        colour[23] = 'w';
-        colour[30] = 'w';
-        colour[31] = 'w';
+        colour[22] = 'b';
+        colour[23] = 'b';
+        colour[30] = 'b';
+        colour[31] = 'b';
     }
     if(error[3])
     {
