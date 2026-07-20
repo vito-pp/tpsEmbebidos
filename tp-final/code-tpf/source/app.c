@@ -6,31 +6,15 @@
 #include <stdio.h>
 
 #include "drv/SysTick.h"
-#include "drv/board.h"
-#include "drv/gpio.h"
 #include "drv/mag_strip.h"
 #include "drv/matStream.h"
 #include "drv/rotary_encoder.h"
 #include "drv/shift_registers.h"
 #include "misc/timer.h"
-#include "ui/map.h"
+#include "rtos/matrix_task.h"
 #include "ui/auth_ui.h"
 #include "ui/display.h"
 #include "ui/fsm.h"
-
-/*******************************************************************************
- * EXTERN VARIABLES
- ******************************************************************************/
-
-extern uint8_t sendingDMA;
-
-/*******************************************************************************
- * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
- ******************************************************************************/
-
-// int pan2Id(uint64_t pan);
-
-void matrixSyncFromCredentials(void);
 
 static FSM_State_t *current;
 static FSM_event_t event;
@@ -70,41 +54,14 @@ void App_Run(void) {
   event = getEvent();
   current = fsmStep(current, event);
 
+  if (event == EV_VALID) {
+    MatrixTask_RequestRefresh();
+  }
+
   if (event != EV_NONE) {
     timerStop(inactivity_id);
     timerStart(inactivity_id, 20000, TIM_MODE_PERIODIC, triggerTimeout);
   }
 
   timerUpdate();
-  if (!sendingDMA) {
-    gpioWrite(PORTNUM2PIN(PB, 3), 1);
-    matrixSyncFromCredentials();
-    // displayMatrix(display,7,sizeof(display));
-  }
-}
-
-/*******************************************************************************
- *******************************************************************************
-                        LOCAL FUNCTION DEFINITIONS
- *******************************************************************************
- ******************************************************************************/
-
-void matrixSyncFromCredentials(void)
-{
-	setOcupation(1, getFloorOccupancy(1));
-	setOcupation(2, getFloorOccupancy(2));
-	setOcupation(3, getFloorOccupancy(3));
-
-	clearErrorX(1);
-	clearErrorX(2);
-	clearErrorX(3);
-	clearErrorX(4);
-
-	// if last event was valid:
-	//     setErrorX(1);      // access OK indicator
-	//
-	// if last event was invalid:
-	//     setErrorX(2);      // invalid credential indicator
-
-	loadMap();
 }

@@ -4,6 +4,7 @@
 #include "app.h"
 #include "hardware.h"
 #include "app_main_task.h"
+#include "matrix_task.h"
 
 #define APP_MAIN_TASK_PRIO       5u
 #define APP_MAIN_TASK_STK_SIZE   1024u
@@ -48,6 +49,8 @@ static void AppMainTask(void *p_arg)
     App_Init();
 
     hw_EnableInterrupts();
+
+    MatrixTask_Create();
 
     while (1) {
         App_Run();
