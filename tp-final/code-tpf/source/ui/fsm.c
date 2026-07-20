@@ -73,9 +73,10 @@ FSM_event_t getEvent(void)
     default:                    break;
     }
 
-    if (isMagDataReady() && validateData()) 
-    {      
-        return EV_MAG_DATA; // jump to insertPIN
+    if (isMagDataReady())
+    {
+    	if(validateData())
+    		return EV_MAG_DATA; // jump to insertPIN
     }
 
     if (isTimeout())

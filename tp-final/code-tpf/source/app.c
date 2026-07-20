@@ -28,7 +28,9 @@ extern uint8_t sendingDMA;
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
 
-int pan2Id(uint64_t pan);
+// int pan2Id(uint64_t pan);
+
+void matrixSyncFromCredentials(void);
 
 static FSM_State_t *current;
 static FSM_event_t event;
@@ -76,7 +78,7 @@ void App_Run(void) {
   timerUpdate();
   if (!sendingDMA) {
     gpioWrite(PORTNUM2PIN(PB, 3), 1);
-    loadMap();
+    matrixSyncFromCredentials();
     // displayMatrix(display,7,sizeof(display));
   }
 }
@@ -86,3 +88,23 @@ void App_Run(void) {
                         LOCAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
+
+void matrixSyncFromCredentials(void)
+{
+	setOcupation(1, getFloorOccupancy(1));
+	setOcupation(2, getFloorOccupancy(2));
+	setOcupation(3, getFloorOccupancy(3));
+
+	clearErrorX(1);
+	clearErrorX(2);
+	clearErrorX(3);
+	clearErrorX(4);
+
+	// if last event was valid:
+	//     setErrorX(1);      // access OK indicator
+	//
+	// if last event was invalid:
+	//     setErrorX(2);      // invalid credential indicator
+
+	loadMap();
+}

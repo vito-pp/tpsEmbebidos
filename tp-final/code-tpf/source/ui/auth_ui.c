@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "auth_ui.h"
 #include "display.h"
@@ -21,6 +22,8 @@ static uint8_t pin_len;
 static bool credentials_checked;
 static bool credentials_ok;
 static bool timeout_pending;
+
+static uint8_t last_valid_floor;
 
 // static local functions prototypes
 static uint64_t pan2Id(uint64_t pan);
@@ -172,15 +175,37 @@ void storeMagStripID(void)
 void checkCredentials(void)
 {
     credentials_checked = true;
+    credentials_ok = false;
+
     for (size_t i = 0; i < number_of_users; i++) 
     {
         if (credentials[i].id  == current_id &&
             credentials[i].pin == current_pin) 
         {
+	    credentials[i].present = true;
+            last_valid_floor = credentials[i].floor;
             credentials_ok = true;
             break;
         }
     }
+}
+
+uint8_t getFloorOccupancy(uint8_t floor)
+{
+	int occupancy = 0;
+	for (size_t i = 0; i < number_of_users; i++)
+	{
+		if (credentials[i].floor == floor && credentials[i].present == true)
+		{
+			occupancy++;
+		}
+	}
+	return occupancy;
+}
+
+uint8_t getLastValidFloor(void)
+{
+	return last_valid_floor;
 }
 
 bool isDataReady(void)

@@ -35,9 +35,9 @@
 #define SW_INPUT_TYPE   // ???
 
 // Magnetic Strip Pins
-#define STRIP_ENABLE   PORTNUM2PIN(PB, 2)
-#define STRIP_CLK      PORTNUM2PIN(PB, 3)
-#define STRIP_DATA     PORTNUM2PIN(PB, 10)
+#define STRIP_ENABLE   PORTNUM2PIN(PB, 0)
+#define STRIP_CLK      PORTNUM2PIN(PB, 2)
+#define STRIP_DATA     PORTNUM2PIN(PB, 9)
 
 // Shift Register pins, custom board
 #define SR_DATA        PORTNUM2PIN(PC, 16) // SERIAL_DATA

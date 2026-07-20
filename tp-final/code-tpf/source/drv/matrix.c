@@ -25,12 +25,12 @@ int displayMatrix(char * colour, uint8_t intensity ,size_t n)
         switch(colour[i])
         {
             //añadir shift para intensidad}
-            case 'g': word[i] = GREEN(intensity); break;
-            case 'r': word[i] = RED(intensity); break;
-            case 'b': word[i] = BLUE(intensity); break;
-            case 'p': word[i] = PURPLE(intensity); break;
-            case 'w': word[i] = WHITE; break;
-            default:  break;
+	    case 'g': word[i] = GREEN(intensity); break;
+	    case 'r': word[i] = RED(intensity); break;
+	    case 'b': word[i] = BLUE(intensity); break;
+	    case 'p': word[i] = PURPLE(intensity); break;
+	    case 'w': word[i] = WHITE; break;
+	    default:  word[i] = OFF; break;
         }
     }
 

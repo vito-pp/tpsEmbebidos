@@ -37,6 +37,10 @@ void storeMagStripID(void);
 
 void checkCredentials(void);
 
+uint8_t getFloorOccupancy(uint8_t floor);
+
+uint8_t getLastValidFloor(void);
+
 bool isDataReady(void);
 
 bool isValid(void);
