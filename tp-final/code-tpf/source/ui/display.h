@@ -39,6 +39,14 @@ void display(unsigned int number, bool hide, uint8_t lenght);
 void displayHyphens(void);
 
 /**
+ * @brief Refreshes the retained display request for one multiplex cycle.
+ *
+ * Called by DisplayTask. Application code updates the retained request through
+ * display(), displayHyphens(), or dispClear().
+ */
+void displayRefresh(void);
+
+/**
  * @brief Clears display
  */
 void dispClear(void);

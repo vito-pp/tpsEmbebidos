@@ -10,7 +10,6 @@
 #include "board.h"
 #include "gpio.h"
 #include "shift_registers.h"
-#include "../misc/timer.h"
 
 #define DATA_SIZE 16 //contains serial data buffer size in bits
 #define LCLK_ACTIVE HIGH

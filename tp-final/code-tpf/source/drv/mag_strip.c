@@ -4,6 +4,9 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+#include "rtos/app_event.h"
+#include "ui/fsm.h"
+
 
 #define STRIP_ACTIVE LOW
 #define MAX_DIGITS 40
@@ -60,6 +63,7 @@ void releaseData(void)
 
 	reset_reader = 1;
 	readTrack2Data();
+	AppEvent_PostFromISR(EV_MAG_DATA);
 
 	return;
 }
@@ -205,5 +209,4 @@ void resetMagData(void)
 	is_data_ready = false;
 	reset_reader = true;
 }
-
 

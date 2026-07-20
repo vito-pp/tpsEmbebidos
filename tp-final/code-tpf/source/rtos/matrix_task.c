@@ -24,11 +24,10 @@ typedef struct
     MatrixMessageType_t type;
 } MatrixMessage_t;
 
-extern uint8_t sendingDMA;
-
 static OS_TCB  MatrixTaskTCB;
 static CPU_STK MatrixTaskStk[MATRIX_TASK_STK_SIZE];
 static OS_Q    MatrixQueue;
+static OS_SEM  MatrixDmaReady;
 
 static MatrixMessage_t refresh_message = {MATRIX_MSG_REFRESH};
 
@@ -38,6 +37,16 @@ static void MatrixTask_UpdateDisplay(void);
 void MatrixTask_Create(void)
 {
     OS_ERR err;
+
+    OSSemCreate(&MatrixDmaReady,
+                "Matrix DMA Ready",
+                1u,
+                &err);
+
+    if (err != OS_ERR_NONE) {
+        while (1) {
+        }
+    }
 
     OSQCreate(&MatrixQueue,
               "Matrix Queue",
@@ -67,6 +76,13 @@ void MatrixTask_Create(void)
         while (1) {
         }
     }
+}
+
+void MatrixTask_FrameDoneFromISR(void)
+{
+    OS_ERR err;
+
+    OSSemPost(&MatrixDmaReady, OS_OPT_POST_1, &err);
 }
 
 void MatrixTask_RequestRefresh(void)
@@ -113,6 +129,16 @@ static void MatrixTask_UpdateDisplay(void)
     uint8_t floor;
     uint8_t indicator;
 
+    OSSemPend(&MatrixDmaReady,
+              0u,
+              OS_OPT_PEND_BLOCKING,
+              0,
+              &err);
+
+    if (err != OS_ERR_NONE) {
+        return;
+    }
+
     for (floor = 1u; floor <= MATRIX_FLOOR_COUNT; floor++) {
         setOcupation(floor, getFloorOccupancy(floor));
     }
@@ -121,10 +147,6 @@ static void MatrixTask_UpdateDisplay(void)
          indicator <= MATRIX_INDICATOR_COUNT;
          indicator++) {
         clearErrorX(indicator);
-    }
-
-    while (sendingDMA != 0u) {
-        OSTimeDly(1u, OS_OPT_TIME_DLY, &err);
     }
 
     gpioWrite(PORTNUM2PIN(PB, 3), 1);

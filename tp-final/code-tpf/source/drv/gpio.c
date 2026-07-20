@@ -8,9 +8,12 @@
  ******************************************************************************/
 
 #include <stddef.h>
+#include <os.h>
+
 #include "MK64F12.h"
 #include "gpio.h"
 #include "hardware.h"
+#include "rtos/cpu_cfg.h"
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -91,6 +94,8 @@ bool gpioIRQ (pin_t pin, irq_mode_t irqMode, pinIrqFun_t irqFun)
   kPort[PIN2PORT(pin)]->PCR[PIN2NUM(pin)] |= PORT_PCR_IRQC(irqMode);
 
   // enable the IRQ through NVIC's ISER register
+  NVIC_SetPriority(IRQn_PORTS_BASE + PIN2PORT(pin),
+                   CPU_CFG_KA_IPL_BOUNDARY);
   __NVIC_EnableIRQ(IRQn_PORTS_BASE + PIN2PORT(pin));
   
   callback_tbl[PIN2PORT(pin)][PIN2NUM(pin)] = irqFun;
@@ -99,6 +104,7 @@ bool gpioIRQ (pin_t pin, irq_mode_t irqMode, pinIrqFun_t irqFun)
 
 __ISR__ PORTA_IRQHandler(void)
 {
+    OSIntEnter();
     for (int i = 0; i < PINS_PER_PORT; i++)
     {
         if (PORTA->ISFR & (1 << i))
@@ -108,10 +114,12 @@ __ISR__ PORTA_IRQHandler(void)
             callback_tbl[PA][i]();
         }
     }
+    OSIntExit();
 }
 
 __ISR__ PORTB_IRQHandler(void)
 {
+    OSIntEnter();
     for (int i = 0; i < PINS_PER_PORT; i++)
     {
         if (PORTB->ISFR & (1 << i))
@@ -121,10 +129,12 @@ __ISR__ PORTB_IRQHandler(void)
             callback_tbl[PB][i]();
         }
     }
+    OSIntExit();
 }
 
 __ISR__ PORTC_IRQHandler(void)
 {
+    OSIntEnter();
     for (int i = 0; i < PINS_PER_PORT; i++)
     {
         if (PORTC->ISFR & (1 << i))
@@ -134,10 +144,12 @@ __ISR__ PORTC_IRQHandler(void)
             callback_tbl[PC][i]();
         }
     }
+    OSIntExit();
 }
 
 __ISR__ PORTD_IRQHandler(void)
 {
+    OSIntEnter();
     for (int i = 0; i < PINS_PER_PORT; i++)
     {
         if (PORTD->ISFR & (1 << i))
@@ -147,10 +159,12 @@ __ISR__ PORTD_IRQHandler(void)
             callback_tbl[PD][i]();
         }
     }
+    OSIntExit();
 }
 
 __ISR__ PORTE_IRQHandler(void)
 {
+    OSIntEnter();
     for (int i = 0; i < PINS_PER_PORT; i++)
     {
         if (PORTE->ISFR & (1 << i))
@@ -160,4 +174,5 @@ __ISR__ PORTE_IRQHandler(void)
             callback_tbl[PE][i]();
         }
     }
+    OSIntExit();
 }

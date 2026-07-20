@@ -4,6 +4,9 @@
 #include "app.h"
 #include "hardware.h"
 #include "app_main_task.h"
+#include "app_event.h"
+#include "display_task.h"
+#include "encoder_task.h"
 #include "matrix_task.h"
 
 #define APP_MAIN_TASK_PRIO       5u
@@ -40,25 +43,21 @@ void AppMainTask_Create(void)
 
 static void AppMainTask(void *p_arg)
 {
-    OS_ERR err;
-
     (void)p_arg;
 
     CPU_Init();
 
+    AppEvent_Create();
+    EncoderTask_Create();
+
     App_Init();
+
+    DisplayTask_Create();
+    MatrixTask_Create();
 
     hw_EnableInterrupts();
 
-    MatrixTask_Create();
-
     while (1) {
         App_Run();
-
-        /*
-         * Temporary RTOS migration delay.
-         * Later App_Run() will stop polling and will block on events.
-         */
-        OSTimeDly(1, OS_OPT_TIME_DLY, &err);
     }
 }

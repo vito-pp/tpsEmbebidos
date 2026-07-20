@@ -39,8 +39,6 @@ typedef struct FSM_State_t
 
 FSM_State_t *fsmStep(FSM_State_t *state_table, FSM_event_t ev);
 
-FSM_event_t getEvent(void);
-
 FSM_State_t *getInitState(void);
 
 #endif // FSM_H_

@@ -5,8 +5,6 @@
 #include "fsm.h"
 #include "display.h"
 #include "auth_ui.h"
-#include "../drv/rotary_encoder.h"
-#include "../drv/mag_strip.h"
 
 /*******************************************************************************
  * DECLARIATION OF STATES
@@ -54,37 +52,6 @@ FSM_State_t *fsmStep(FSM_State_t *state_table, FSM_event_t ev)
         state_table->action();
     }
     return state_table->next_state_table;
-}
-
-FSM_event_t getEvent(void)
-{
-    if (isDataReady()) // when id&pin have been registered
-    {
-        return isValid() ? EV_VALID : EV_INVALID;
-    }
-
-    switch (encoder_update()) // input from the user
-    {
-    case ENC_BUTTON_PRESS:      return EV_ENTER;
-    case ENC_DOUBLE_PRESS:      return EV_DOUBLE_ENTER;
-    case ENC_CW:                return EV_FORWARD;
-    case ENC_CCW:               return EV_BACKWARD;
-    case ENC_BUTTON_LONG_PRESS: return EV_RESET;
-    default:                    break;
-    }
-
-    if (isMagDataReady())
-    {
-    	if(validateData())
-    		return EV_MAG_DATA; // jump to insertPIN
-    }
-
-    if (isTimeout())
-    {
-        return EV_TIMEOUT;
-    }
-
-    return EV_NONE;
 }
 
 /* ========= ACTION CALLBACKS FOR TESTING ========= */

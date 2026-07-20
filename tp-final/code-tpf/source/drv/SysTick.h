@@ -40,8 +40,8 @@
  *        f_systick = 100 MHz / count
  *        Count is nonnegative and cant be bigger than 
  *        2^(25)-1 = 33'554'431, which equals f_systick = 2.98 Hz
- * @return Initialization and registration succeed. funcallback = NULL or 
- * invalid count returns false
+ * @return Initialization and registration succeed. Invalid count returns false.
+ *         A NULL callback configures the Micrium tick without an extra callback.
  */
 bool SysTick_Init(void (*funcallback)(void), uint32_t count);
 

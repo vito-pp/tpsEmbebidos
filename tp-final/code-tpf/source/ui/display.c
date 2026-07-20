@@ -18,8 +18,19 @@
 #define CANT_DISPLAYS 4
 #define NONE 11
 
+typedef enum
+{
+    DISPLAY_MODE_CLEAR,
+    DISPLAY_MODE_NUMBER,
+    DISPLAY_MODE_HYPHENS
+} display_mode_t;
+
 static uint8_t pwm;
 static uint16_t serialCom;
+static display_mode_t display_mode;
+static unsigned int display_number;
+static bool display_hide;
+static uint8_t display_length;
 
 /**
  * @brief Writes character to indexed display. (0-9, '-' or none)
@@ -29,11 +40,13 @@ static uint16_t serialCom;
  * @return FALSE: invalid character
  */
 bool displayDigit(uint8_t num, uint8_t disp);
+static void displayClearHardware(void);
 
 int display_init(void)
 {
 	serialCom = 0;
 	pwm = 0;
+	display_mode = DISPLAY_MODE_CLEAR;
 	return serialData_init();
 }
 
@@ -44,9 +57,58 @@ void setPWM(uint8_t desired_pwm)
 
 void display(unsigned int number, bool hide, uint8_t lenght)
 {
-	int i, j;
-	int current_digit = number % 10;
+	display_number = number;
+	display_hide = hide;
+	display_length = lenght;
+	display_mode = DISPLAY_MODE_NUMBER;
+}
 
+void displayHyphens(void)
+{
+	display_mode = DISPLAY_MODE_HYPHENS;
+}
+
+void dispClear(void)
+{
+	display_mode = DISPLAY_MODE_CLEAR;
+	displayClearHardware();
+}
+
+void displayRefresh(void)
+{
+	int i;
+	int j;
+	int current_digit;
+	unsigned int number = display_number;
+	bool hide = display_hide;
+	uint8_t lenght = display_length;
+
+	if (display_mode == DISPLAY_MODE_CLEAR)
+	{
+		displayClearHardware();
+		return;
+	}
+
+	if (display_mode == DISPLAY_MODE_HYPHENS)
+	{
+		for(i = 0; i < CANT_DISPLAYS; i++)
+		{
+			for(j = 0; j < BRIGHTNESS_LEVELS; j++)
+			{
+				if(j <= pwm)
+				{
+					displayDigit(HYPHEN, 3 - i);
+				}
+				else
+				{
+					displayClearHardware();
+				}
+			}
+		}
+		return;
+	}
+
+	current_digit = number % 10;
 	for(i = 0; i < CANT_DISPLAYS; i++)
 	{
 		if(i > 0)
@@ -64,45 +126,23 @@ void display(unsigned int number, bool hide, uint8_t lenght)
 				current_digit = number % 10;
 			}
 		}
-		//Splits i-th display 'ON' time into 'BRIGHTNESS_LEVELS' pieces
-		for(j = 0; j < BRIGHTNESS_LEVELS; j ++)
-		{
-			if(j <= pwm) // turns led (pwm/BRIGHTNESS_LEVELS * 100)% of the time
-			{
 
+		for(j = 0; j < BRIGHTNESS_LEVELS; j++)
+		{
+			if(j <= pwm)
+			{
 				displayDigit(current_digit, 3 - i);
 			}
 			else
 			{
-				dispClear();
+				displayClearHardware();
 			}
 		}
-		number /=10;
-
+		number /= 10;
 	}
 }
 
-void displayHyphens(void)
-{
-	for(int i = 0; i < CANT_DISPLAYS; i++)
-	{
-		//Splits i-th display 'ON' time into 'BRIGHTNESS_LEVELS' pieces
-		for(int j = 0; j < BRIGHTNESS_LEVELS; j ++)
-		{
-			if(j <= pwm) // turns led (pwm/BRIGHTNESS_LEVELS * 100)% of the time
-			{
-
-				displayDigit(HYPHEN, 3 - i);
-			}
-			else
-			{
-				dispClear();
-			}
-		}
-	}
-}
-
-void dispClear(void)
+static void displayClearHardware(void)
 {
 	serialCom &= 0x00C0; // keep digit select (SEL1:SEL0), blank all segments
 	sendSerialData(serialCom);

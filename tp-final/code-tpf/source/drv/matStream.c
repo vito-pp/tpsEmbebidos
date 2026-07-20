@@ -1,10 +1,14 @@
 #include "matStream.h"
 #include "FTM.h"
 #include <stdint.h>
+#include <os.h>
+
 #include "MK64F12.h"
 #include "hardware.h"
 #include"dma.h"
 #include"gpio.h"
+#include "rtos/cpu_cfg.h"
+#include "rtos/matrix_task.h"
 
 
 
@@ -30,6 +34,8 @@ void WS2812_FrameDone(void);
 
 void WS2812_FrameDone(void)
 {
+    OSIntEnter();
+
     // Se terminó de transmitir todo el buffer
 	static int i = 0;
 	DMA0->CINT |= 0;
@@ -43,6 +49,9 @@ void WS2812_FrameDone(void)
     gpioWrite(PORTNUM2PIN(PB,3), 0);
     
     sendingDMA = 0;
+    MatrixTask_FrameDoneFromISR();
+
+    OSIntExit();
 }
 
 
@@ -75,6 +84,7 @@ void dispBus_init(void)
     cfg.user = NULL;
 
     DMA_Config(&cfg);
+    NVIC_SetPriority(DMA0_IRQn, CPU_CFG_KA_IPL_BOUNDARY);
 }
 
 

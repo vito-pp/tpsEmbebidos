@@ -51,18 +51,7 @@ typedef enum
  ******************************************************************************/
 
 /**
- * @brief Reads and handles the state of the rotary encoder and its button.
- * @return Current state of the encoder. Event priority: Double Press > Long Press > Press > CW = CCW
- */
-enc_input_t encoder_update(void);
-
-/**
- * @brief Interrupt callback for encoder analysis. "Flag up"
- */
-void encoder_callback(void);
-
-/**
- * @brief Sets up the pins for reading the rotary encoder and its button
+ * @brief Sets up edge interrupts for the rotary encoder and its button.
  */
 void encoderInit(void);
 

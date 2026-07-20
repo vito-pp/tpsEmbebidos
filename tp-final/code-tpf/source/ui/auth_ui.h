@@ -49,10 +49,6 @@ void unlockLED(void);
 
 void invalidCredentials(void);
 
-void triggerTimeout(void);
-
-bool isTimeout(void);
-
 void reset(void);
 
 #endif // _AUTH_UI_H_

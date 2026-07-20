@@ -4,7 +4,6 @@
 #include "auth_ui.h"
 #include "display.h"
 #include "credentials.h"
-#include "../misc/timer.h"
 #include "../drv/mag_strip.h"
 
 // zero-initialized variables
@@ -21,8 +20,6 @@ static uint8_t pin_len;
 
 static bool credentials_checked;
 static bool credentials_ok;
-static bool timeout_pending;
-
 static uint8_t last_valid_floor;
 
 // static local functions prototypes
@@ -221,41 +218,14 @@ bool isValid(void)
 void unlockLED(void)
 {
     dispClear();
-    tim_id_t tim_id = timerGetId();
-    if (tim_id != TIMER_INVALID_ID)
-    {
-        timerStart(tim_id, 10000, TIM_MODE_SINGLESHOT, NULL);
-    }
-    while(!timerExpired(tim_id))
-    {
-        turnOnLED(1);
-        turnOnLED(2);
-        turnOnLED(3);
-    }
-    turnOffLEDs();
-    reset();
+    turnOnLED(1);
+    turnOnLED(2);
+    turnOnLED(3);
 }
 
 void invalidCredentials(void)
 {
     turnOffLEDs();
-    tim_id_t tim_id = timerGetId();
-    if (tim_id != TIMER_INVALID_ID)
-    {
-        timerStart(tim_id, 10000, TIM_MODE_SINGLESHOT, NULL);
-    }
-    while(!timerExpired(tim_id));
-    reset();
-}
-
-void triggerTimeout(void)
-{
-    timeout_pending = true;
-}
-
-bool isTimeout(void)
-{
-    return timeout_pending;
 }
 
 void reset(void)
@@ -268,7 +238,6 @@ void reset(void)
     pin_len = 0;
     credentials_checked = 0;
     credentials_ok = 0;
-    timeout_pending = false;
     resetMagData();
     turnOffLEDs();
 }
